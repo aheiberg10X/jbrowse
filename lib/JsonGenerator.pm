@@ -27,6 +27,8 @@ my $lazyIndex = 2;
 
 my $histChunkSize = 10_000;
 
+my $density_estimate = 0.1;
+
 my %builtinDefaults =
   (
    "class"        => "feature"
@@ -155,10 +157,6 @@ sub evalSubStrings {
 }
 
 sub new {
-	open OUTPUT, '>', "json_output.txt" or die $!;
-	open ERROR, '>', "json_error.txt" or die $!;
-	print "hillo?\n";
-	print OUTPUT "what der fuck\n";
     my ($class, $outDir, $chunkBytes, $compress, $label, $segName,
         $refStart, $refEnd, $setStyle, $headers, $subfeatHeaders,
         $featureCount) = @_;
@@ -190,18 +188,18 @@ sub new {
     # a relatively high-resolution histogram; we can always throw
     # away the higher-resolution histogram data later, so a dense
     # estimate is conservative.  A dense estimate does cost more RAM, though)
-    $featureCount = $refEnd * 0.25 unless defined($featureCount);
+    $featureCount = $refEnd * $density_estimate unless defined($featureCount);
 
     # $histBinThresh is the approximate the number of bases per
     # histogram bin at the zoom level where FeatureTrack.js switches
     # to the histogram view by default
-    my $histBinThresh = ($refEnd * 2.5) / $featureCount;
+    my $histBinThresh = ($refEnd * $density_estimate * 10) / $featureCount;
     $self->{histBinBases} = $multiples[0];
     foreach my $multiple (@multiples) {
         $self->{histBinBases} = $multiple;
         last if $multiple > $histBinThresh;
     }
-	print OUTPUT "probably here\n";
+
     # initialize histogram arrays to all zeroes
     $self->{hists} = [];
     for (my $i = 0; $i <= $#multiples; $i++) {
@@ -209,7 +207,6 @@ sub new {
         $self->{hists}->[$i] = [(0) x ceil($refEnd / $binBases)];
         # somewhat arbitrarily cut off the histograms at 100 bins
         last if $binBases * 100 > $refEnd;
-	print OUTPUT "probably not here?\n";
     }
 
     mkdir($outDir) unless (-d $outDir);
@@ -246,8 +243,6 @@ sub new {
                                         $chunkBytes);
 
     bless $self, $class;
-	close OUTPUT;
-	close ERROR;
     return $self;
 }
 
@@ -295,7 +290,7 @@ sub generateTrack {
 
     # approximate the number of bases per histogram bin at the zoom level where
     # FeatureTrack.js switches to histogram view, by default
-    my $histBinThresh = ($self->{refEnd} * 2.5) / $self->{count};
+    my $histBinThresh = ($self->{refEnd} * $density_estimate * 10) / $self->{count};
 
     # find multiple of base hist bin size that's just over $histBinThresh
     my $i;

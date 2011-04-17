@@ -1,3 +1,4 @@
+
 #!/usr/bin/perl
 
 use strict;
@@ -18,6 +19,7 @@ use Bio::DB::Bam::AlignWrapper;
 use IO::Handle;
 
 use Cwd;
+use GlobalConfig;
 
 ###CGI STUFF####
 
@@ -29,8 +31,8 @@ if( not defined $bam_filename or $bam_filename eq '' ) {
 
 print $cgi->header;
 
-open OUTPUT, '>', "bam_output.txt" or die $!;
-open ERROR,  '>', "bam_error.txt"  or die $!;
+open OUTPUT, '>', $upload_dir . "/" . "bam_output.txt" or die $!;
+open ERROR,  '>', $upload_dir . "/" . "bam_error.txt"  or die $!;
 
 #STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
 #STDERR->fdopen( \*ERROR,  'w' ) or die $!;
@@ -64,9 +66,7 @@ my @folders = split(/\//,$folders);
 $key = $folders[-1];
 $trackLabel = $key;
 
-my $rootdir = "/var/www/html/jbrowse";
-my $outdir = $rootdir . "/data";
-my $bamFile = $rootdir . "/bin/$bam_filename"; #"/bin/" . $bam_filename;
+my $bamFile = $upload_dir . "/" . $bam_filename;
 
 if (!defined($nclChunk)) {
     # default chunk size is 50KiB
@@ -77,28 +77,16 @@ if (!defined($nclChunk)) {
 }
 
 my $trackRel = "tracks";
-my $trackDir = "$outdir/$trackRel";
-mkdir($outdir) unless (-d $outdir);
+my $trackDir = "$data_dir/$trackRel";
+mkdir($data_dir) unless (-d $data_dir);
 mkdir($trackDir) unless (-d $trackDir);
 
-
-my @refSeqs = @{JsonGenerator::readJSON("$outdir/refSeqs.js", [], 1)};
-
-print "bamFile: $bamFile\n";
-print "wer\n";
-print "heoihwef\n";
-print "oiuwerub\n";
-print "238h9f9\n";
+my @refSeqs = @{JsonGenerator::readJSON("$data_dir/refSeqs.js", [], 1)};
 
 my $bam = Bio::DB::Bam->open($bamFile);
-print $bam;
-print "\n";
 my $hdr = $bam->header();
-print $hdr;
-print "\n";
 my $index = Bio::DB::Bam->index($bamFile, 1);
-print "whhhhhattttttttttttt\n";
-print "index created: $index\n";
+
 
 my @bamHeaders = ("start", "end", "strand","subfeatures");
 my @subfeatureHeaders = ("start","end","strand","type");
@@ -121,8 +109,6 @@ $style{clientConfig} = JSON::from_json($clientConfig)
 #    $style{clientConfig}->{histScale} = 2
 #        unless defined($style{clientConfig}->{histScale});
 #}
-
-#my @pairs = $sam->features(-type=>'read_pair');
 
 foreach my $seqInfo (@refSeqs) {
     #hdr is the bam header
@@ -155,8 +141,12 @@ foreach my $seqInfo (@refSeqs) {
         my $ix = 0;
         $index->fetch($bam, $tid, $start, $end, sub { a2a( \$ix, $_[0], $_[1]) }, \%paired_info);
 
-        foreach my $key (sort {$paired_info{$a}[0] <=> $paired_info{$b}[0]} keys %paired_info){
-          $sorter->addSorted( a2a_helper( $paired_info{$key} ) );
+        print "starting sort\n";
+        my @sorted = sort {$paired_info{$a}[0] <=> $paired_info{$b}[0]} keys %paired_info;
+        print "done with sort\n";
+
+        foreach my $key (@sorted){
+          $sorter->addSorted( $paired_info{$key} );
         }
         
         $sorter->flush();
@@ -169,7 +159,7 @@ foreach my $seqInfo (@refSeqs) {
 
 my $ext = ($compress ? "jsonz" : "json");
 JsonGenerator::writeTrackEntry(
-    "$outdir/trackInfo.js",
+    "$data_dir/trackInfo.js",
     {
         'label' => $trackLabel,
         'key' => $key,
@@ -178,27 +168,7 @@ JsonGenerator::writeTrackEntry(
     }
 );
 
-#default
-# sub align2array {
-#   my $align = shift;
-#   my $thing1 = ["dude","what the heck"];
-#   my $thing2 = ["aabbaa","ccdd"];
-#     return [$align->pos,
-#             $align->calend + 1,
-#             $align->reversed ? -1 : 1,
-#            [$thing1,$thing2]];
-# }
-
-sub a2a_helper {
-  my $arref = shift;
-  #ix zero is the order index
-  return [$arref->[1],$arref->[2],$arref->[3],
-          [[$arref->[4],$arref->[5],$arref->[6],$arref->[7]],
-           [$arref->[8],$arref->[9],$arref->[10],$arref->[11]]]];
-}
-
 sub a2a {
-    #print "a2a called\n";
     my $ix = shift;
     my $align = shift;
     my $paired_info = shift;
@@ -207,20 +177,17 @@ sub a2a {
     my $right = $align->calend+1;
     my $len = $align->data_len;
     my $mleft = $align->mate_start;
-    my $mright = $align->mate_end;
-    my $mlen = $align->mate_len;
-
+    
     if( $left < $mleft ){
         my $reversed = $align->reversed ? -1 : 1;
-        $paired_info->{$align->qname} = [$$ix,$left,42,1,$left,$right,$reversed,"left",42,42,42,"right"];
-        $$ix = $$ix + 1;
+        $paired_info->{$align->qname} = [$left,42,1,[$left,$right,$reversed,"left"],[42,42,42,"right"]];
     }
     else{
       my $reversed = $align->reversed ? -1 : 1;
       my $arref = $paired_info->{$align->qname};
-      $arref->[2] = $right;
-      $arref->[8] = $left;
-      $arref->[9] = $right;
-      $arref->[10] = $reversed;
+      $arref->[1] = $right;
+      $arref->[4]->[0] = $left;
+      $arref->[4]->[1] = $right;
+      $arref->[4]->[2] = $reversed;
     }
 }
