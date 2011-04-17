@@ -294,7 +294,7 @@ Browser.prototype.createTrackList = function(parent, params) {
     track_manager_div.appendChild( track_manager_form );
     leftPane.appendChild( track_manager_div );
 
-    //// end my stuff/////////////////////
+    //// end my stuffy stuff/////////////////////
 
 
 
