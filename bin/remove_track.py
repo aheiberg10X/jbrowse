@@ -8,9 +8,11 @@ from shutil import rmtree
 import cgi
 import cgitb
 
+import sys
+
 #cgitb.enable()
 
-def removeTracks( track_keys_to_remove, ref, delete=False, filename = "../data/trackInfo.js" ) :
+def removeTracks( chrom, track_keys_to_remove, delete=False, filename = "../data/trackInfo.js" ) :
 
     #the name javascript expects the json to be loaded into
     js_var_name = "trackInfo"
@@ -37,7 +39,7 @@ def removeTracks( track_keys_to_remove, ref, delete=False, filename = "../data/t
         if str(track["key"]).lower() not in track_keys_to_remove :
             retained_tracks.append( track )
         elif delete :
-            deleteTracks( ref, [track["label"]] )
+            deleteTracks( chrom, [track["label"]] )
 
     if len(retained_tracks) == len(json_tracks) :
         raise Exception("No tracks were removed. Check to make sure the supplied track names are correct")
@@ -46,9 +48,9 @@ def removeTracks( track_keys_to_remove, ref, delete=False, filename = "../data/t
     tifile.write( "%s = \n%s" % (js_var_name, json.dumps( retained_tracks, indent=4 )))
     tifile.close()
 
-def deleteTracks( ref, track_labels ) :
+def deleteTracks( chrom, track_labels ) :
     for label in track_labels :
-        rmtree( "../data/tracks/%s/%s" % (ref,label) )
+        rmtree( "../data/tracks/%s/%s" % (chrom,label) )
 
 
 if __name__ == '__main__' :
@@ -57,17 +59,21 @@ if __name__ == '__main__' :
     #print                               # blank line, end of headers
     #print 'sup'
     fields = cgi.FieldStorage()
-
-    delete_name = "delete_track"
-    if delete_name not in fields :
+    print 'Content-type: text/html\n\n'
+    
+    if not fields :
+      	chrom = sys.argv[1]
 	to_remove = sys.argv[2:]
-	ref = sys.argv[1]
-
-#	print "ref: ", ref, "to_remove: ", to_remove
-        removeTracks( to_remove, ref, delete=True )
+        removeTracks( chrom, to_remove, delete=True )
     else :
-        print "noooooooooooooooo"
-#	        removeTracks( fields[delete_name], fields[ref_name], delete=True )
+        sys.stderr = open("/home/andrew/school/dnavis/jbrowse/uploads/delete_error.txt",'w')
+        sys.stdout = open("/home/andrew/school/dnavis/jbrowse/uploads/delete_output.txt",'w')
+        print "iuoasdhvoweovnwie"
+        print fields
+        print fields.getvalue("chrom")
+        print fields.getlist("delete_track")
+        
+        removeTracks( fields.getvalue("chrom"), fields.getlist("delete_track"), delete=True )
              
     #removeTracks( ['Linked Test rEAds'], delete=True );
     

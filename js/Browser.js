@@ -173,7 +173,84 @@ var Browser = function(params) {
         });
 };
 
-Browser.prototype.setupTrackListDiv = function(params) {
+Browser.prototype.createTrackList2 = function(parent, params) {
+
+    var deleteSubmit = function(brwsr) {
+        var current_chrom = brwsr.chromList.options[brwsr.chromList.selectedIndex].value;
+        var tracks_in_trash = [];
+        brwsr.trash_drop.forInItems(function(obj, id, map) {
+            tracks_in_trash.push(obj.data.key);
+        });
+
+        
+        var args = {chrom: current_chrom,
+                    delete_track: tracks_in_trash};
+        var url = "../bin/remove_track.py?" + dojo.objectToQuery(args);
+
+        var xhrArgs = {
+            url: url,
+            form: dojo.byId("track_manager_form"),
+            handleAs: "text",
+            load: function(data,ioargs) {
+                dojo.byId("track_manager_status").innerHTML = "Message posted.";
+            },
+            error: function(error) {
+                dojo.byId("track_manager_status").innerHTML = "fail";
+            }
+        }
+        //Call the asynchronous xhrPost
+        var deferred = dojo.xhrPost(xhrArgs);
+        dojo.byId("track_manager_status").innerHTML = "posted"
+    };
+
+    var uploadBAM = function() {
+            dojo.io.iframe.send({
+            url: "../bin/bam_to_json_paired_cgi.pl",
+            method: "post",
+            handleAs: "text",
+            form: dojo.byId("track_manager_form"),
+            load: function(data) {
+                //alert(data);
+                dojo.byId("track_manager_status").innerHTML = "bam posted"
+            }
+        });
+    };
+
+    var uploadRegion = function() {
+            dojo.io.iframe.send({
+            url: "../bin/region_to_json.pl",
+            method: "post",
+            handleAs: "text",
+            form: dojo.byId("track_manager_form"),
+            load: function(data) {
+                //alert(data);
+                dojo.byId("track_manager_status").innerHTML = "region posted"
+            }
+        });
+    };
+
+    var ep = new dojox.layout.ExpandoPane({id: 7,
+	                                   title: "Left Section Test",
+                                           region: "left",
+                                           style: "width: 20%; height: 98%; background-color:#FFDEAD",
+                                           splitter: "true"
+                                          }).placeAt(parent);
+
+    var form_pane = new dijit.layout.ContentPane({id:8, 
+                                                  title: "formPane",
+                                                  region: "top",
+                                                  style: "height: 50%; background-color:#FF0000",
+                                                  splitter: "true"
+                                                 }).placeAt(ep);
+
+    var track_pane = new dijit.layout.ContentPane({id:9, 
+                                                   title: "trackPane",
+                                                   region: "bottom",
+                                                   style: "height: 50%; background-color: #00FF00",
+                                                   splitter: "true"
+                                                  }).placeAt(ep);
+
+    //////////// start creating trackListDiv ///////////////////////////////////////
     var trackListDiv = document.createElement("div");
     trackListDiv.id = "tracksAvail";
     trackListDiv.className = "container handles";
@@ -231,12 +308,14 @@ Browser.prototype.setupTrackListDiv = function(params) {
         }
         return {node: node, data: track, type: ["track"]};
     };
+
     this.viewDndWidget = new dojo.dnd.Source(this.view.zoomContainer,
                                        {
                                            creator: trackCreate,
                                            accept: ["track"],
                                            withHandles: true
                                        });
+
     dojo.subscribe("/dnd/drop", function(source,nodes,iscopy){
                        brwsr.onVisibleTracksChanged();
                        //multi-select too confusing?
@@ -253,83 +332,9 @@ Browser.prototype.setupTrackListDiv = function(params) {
         this.showTracks(params.defaultTracks);
     }
 
-    return trackListDiv;
-};
-
-Browser.prototype.createTrackList2 = function(parent, params) {
-
-    var deleteSubmit = function() {
-       var xhrArgs = {
-         url: "../bin/dostuff.pl",
-         form: dojo.byId("track_manager_form"),
-         handleAs: "text",
-         load: function(data,ioargs) {
-             dojo.byId("track_manager_status").innerHTML = "Message posted.";
-         },
-         error: function(error) {
-             dojo.byId("track_manager_status").innerHTML = "fail";
-         }
-       }
-       //Call the asynchronous xhrPost
-       var deferred = dojo.xhrPost(xhrArgs);
-       dojo.byId("track_manager_status").innerHTML = "posted"
-    };
-
-    var uploadBAM = function() {
-            dojo.io.iframe.send({
-            url: "../bin/bam_to_json_paired_cgi.pl",
-            method: "post",
-            handleAs: "text",
-            form: dojo.byId("track_manager_form"),
-            load: function(data) {
-                //alert(data);
-                dojo.byId("track_manager_status").innerHTML = "bam posted"
-            }
-        });
-    };
-
-    var uploadRegion = function() {
-            dojo.io.iframe.send({
-            url: "../bin/region_to_json.pl",
-            method: "post",
-            handleAs: "text",
-            form: dojo.byId("track_manager_form"),
-            load: function(data) {
-                //alert(data);
-                dojo.byId("track_manager_status").innerHTML = "region posted"
-            }
-        });
-    };
-
-    var ep = new dojox.layout.ExpandoPane({id: 7,
-	                                   title: "Left Section Test",
-                                           region: "left",
-                                           style: "width: 20%; height: 98%; background-color:#FFDEAD",
-                                           splitter: "true"
-                                          }).placeAt(parent);
-
-    var form_pane = new dijit.layout.ContentPane({id:8, 
-                                                  title: "formPane",
-                                                  region: "top",
-                                                  style: "height: 50%; background-color:#FF0000",
-                                                  splitter: "true"
-                                                 }).placeAt(ep);
-
-    var track_pane = new dijit.layout.ContentPane({id:9, 
-                                                   title: "trackPane",
-                                                   region: "bottom",
-                                                   style: "height: 50%; background-color: #00FF00",
-                                                   splitter: "true"
-                                                  }).placeAt(ep);
-
-    var trackListDiv = this.setupTrackListDiv(params);
+    /////////////////// end creating trackListDiv //////////////////////////////
 
     track_pane.domNode.appendChild(trackListDiv);
-
-    //var form = dijit.form.Form({id:"track_manager_form", 
-    //                            method: "post", 
-    //                            enctype: "multipart/form-data"
-    //                           }).placeAt( form_pane.domNode );
 
     var track_manager_form = document.createElement("form");
     track_manager_form.id = "track_manager_form";
@@ -343,20 +348,40 @@ Browser.prototype.createTrackList2 = function(parent, params) {
     input_bamfile.name = "bam_filename";
     track_manager_form.appendChild( input_bamfile );
 
-    var track_manager_status = document.createElement("div");
-    track_manager_status.id = "track_manager_status";
-    track_manager_status.innerHTML = "status";
-    track_manager_form.appendChild( track_manager_status );
- 
     var upload_bamfile = new dijit.form.Button({id: "upload_bamfile", 
                                                 label: "Upload BAM", 
                                                 onClick: uploadBAM}).placeAt( track_manager_form );
     
+    var input_regionfile = document.createElement("input");
+    input_regionfile.type = "file";
+    input_regionfile.name = "region_filename";
+    track_manager_form.appendChild( input_regionfile );
 
-    var button = new dijit.form.Button({id: "rdelete_button", 
-                                        label: "Delete Track",
-                                        onClick: deleteSubmit
-                                       }).placeAt( track_manager_form );
+    var upload_regionfile = new dijit.form.Button({id: "upload_regionfile", 
+                                                   label: "Upload Region", 
+                                                   onClick: uploadRegion}).placeAt( track_manager_form );
+    
+
+    var trashcan_div = document.createElement("div");
+    trashcan_div.id = "trashcan_div";
+    trashcan_div.style.cssText = "background-color: #FF00FF";
+    trashcan_div.innerHTML = "trashcan";
+    form_pane.domNode.appendChild( trashcan_div );
+
+    this.trash_drop = new dojo.dnd.Source(trashcan_div, {creator: trackListCreate,
+                                                        accept:["track"]/*, 
+                                                        withHandles:"false"*/});
+
+    var button = new dijit.form.Button({id: "delete_button", 
+                                        label: "Delete Tracks",
+                                        onClick: function(){ deleteSubmit(brwsr) }
+                                       }).placeAt( form_pane.domNode );
+
+    var track_manager_status = document.createElement("div");
+    track_manager_status.id = "track_manager_status";
+    track_manager_status.innerHTML = "status";
+    form_pane.domNode.appendChild( track_manager_status );
+    
             
 };
 
@@ -522,6 +547,7 @@ Browser.prototype.createTrackList = function(parent, params) {
         node.id = dojo.dnd.getUniqueId();
         return {node: node, data: track, type: ["track"]};
     };
+
     this.trackListWidget = new dojo.dnd.Source(trackListDiv,
                                                {creator: trackListCreate,
 						accept: ["track"],
