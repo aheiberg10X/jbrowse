@@ -1,4 +1,3 @@
-
 #!/usr/bin/perl
 
 use strict;
@@ -25,23 +24,25 @@ use GlobalConfig;
 
 my $cgi = CGI::new();
 my $bam_filename = $cgi->param('bam_filename');
-if( not defined $bam_filename or $bam_filename eq '' ) {
-    $bam_filename = "evidence.illumina.c1.400.1M.5.bam";
-}
+#if( not defined $bam_filename or $bam_filename eq '' ) {
+#    print "not definennenenene\n";
+#    $bam_filename = "evidence.illumina.c1.400.1M.5.bam";
+#}
 
 print $cgi->header;
 
 open OUTPUT, '>', $upload_dir . "/" . "bam_output.txt" or die $!;
 open ERROR,  '>', $upload_dir . "/" . "bam_error.txt"  or die $!;
 
-#STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
-#STDERR->fdopen( \*ERROR,  'w' ) or die $!;
+STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
+STDERR->fdopen( \*ERROR,  'w' ) or die $!;
 
-#open (OUTFILE, ">", "$bam_filename") or die "Couldn't open $bam_filename for writing: $!";
-#while(<$bam_filename>){
-#  print OUTFILE $_;
-#}
-#close OUTFILE;
+print $upload_dir ."/". $bam_filename;
+open (OUTFILE, ">", "$upload_dir/$bam_filename") or die "Couldn't open $bam_filename for writing: $!";
+while(<$bam_filename>){
+  print OUTFILE $_;
+}
+close OUTFILE;
 
 ### / CGI #####
 

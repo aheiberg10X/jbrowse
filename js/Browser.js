@@ -31,6 +31,7 @@ var Browser = function(params) {
     dojo.require("dijit.form.TextBox");
     dojo.require("dojox.form.FileInput");
     dojo.require("dojo.io.iframe");
+    dojo.require("dojox.layout.ExpandoPane");
     // end my stuff
 
     var refSeqs = params.refSeqs;
@@ -135,7 +136,9 @@ var Browser = function(params) {
             dojo.connect(gv, "onCoarseMove", brwsr, "onCoarseMove");
 
             //set up track list
-            var trackListDiv = brwsr.createTrackList(brwsr.container, params);
+            //var trackListDiv = brwsr.createTrackList(brwsr.container, params);
+            brwsr.createTrackList2( containerWidget, params );
+
             containerWidget.startup();
 
 	    brwsr.isInitialized = true;
@@ -169,6 +172,194 @@ var Browser = function(params) {
 	    brwsr.deferredFunctions = [];
         });
 };
+
+Browser.prototype.setupTrackListDiv = function(params) {
+    var trackListDiv = document.createElement("div");
+    trackListDiv.id = "tracksAvail";
+    trackListDiv.className = "container handles";
+    trackListDiv.style.cssText =
+        "width: 100%; height: 100%; overflow-x: hidden; overflow-y: auto;";
+    trackListDiv.innerHTML =
+        "Available Tracks:<br/>(Drag <img src=\""
+        + (params.browserRoot ? params.browserRoot : "")
+        + "img/right_arrow.png\"/> to view)<br/><br/>";
+    //leftPane.appendChild(trackListDiv);
+
+    var brwsr = this;
+
+    var changeCallback = function() {
+        brwsr.view.showVisibleBlocks(true);
+    };
+
+    var trackListCreate = function(track, hint) {
+        var node = document.createElement("div");
+        node.className = "tracklist-label";
+        node.innerHTML = track.key;
+        //in the list, wrap the list item in a container for
+        //border drag-insertion-point monkeying
+        if ("avatar" != hint) {
+            var container = document.createElement("div");
+            container.className = "tracklist-container";
+            container.appendChild(node);
+            node = container;
+        }
+        node.id = dojo.dnd.getUniqueId();
+        return {node: node, data: track, type: ["track"]};
+    };
+    this.trackListWidget = new dojo.dnd.Source(trackListDiv,
+                                               {creator: trackListCreate,
+						accept: ["track"],
+						withHandles: false});
+
+    var trackCreate = function(track, hint) {
+        var node;
+        if ("avatar" == hint) {
+            return trackListCreate(track, hint);
+        } else {
+            var replaceData = {refseq: brwsr.refSeq.name};
+            var url = track.url.replace(/\{([^}]+)\}/g, function(match, group) {return replaceData[group];});
+            var klass = eval(track.type);
+            var newTrack = new klass(track, url, brwsr.refSeq,
+                                     {
+                                         changeCallback: changeCallback,
+                                         trackPadding: brwsr.view.trackPadding,
+                                         baseUrl: brwsr.dataRoot,
+                                         charWidth: brwsr.view.charWidth,
+                                         seqHeight: brwsr.view.seqHeight
+                                     });
+            node = brwsr.view.addTrack(newTrack);
+        }
+        return {node: node, data: track, type: ["track"]};
+    };
+    this.viewDndWidget = new dojo.dnd.Source(this.view.zoomContainer,
+                                       {
+                                           creator: trackCreate,
+                                           accept: ["track"],
+                                           withHandles: true
+                                       });
+    dojo.subscribe("/dnd/drop", function(source,nodes,iscopy){
+                       brwsr.onVisibleTracksChanged();
+                       //multi-select too confusing?
+                       //brwsr.viewDndWidget.selectNone();
+                   });
+
+    this.trackListWidget.insertNodes(false, params.trackData);
+    var oldTrackList = dojo.cookie(this.container.id + "-tracks");
+    if (params.tracks) {
+        this.showTracks(params.tracks);
+    } else if (oldTrackList) {
+        this.showTracks(oldTrackList);
+    } else if (params.defaultTracks) {
+        this.showTracks(params.defaultTracks);
+    }
+
+    return trackListDiv;
+};
+
+Browser.prototype.createTrackList2 = function(parent, params) {
+
+    var deleteSubmit = function() {
+       var xhrArgs = {
+         url: "../bin/dostuff.pl",
+         form: dojo.byId("track_manager_form"),
+         handleAs: "text",
+         load: function(data,ioargs) {
+             dojo.byId("track_manager_status").innerHTML = "Message posted.";
+         },
+         error: function(error) {
+             dojo.byId("track_manager_status").innerHTML = "fail";
+         }
+       }
+       //Call the asynchronous xhrPost
+       var deferred = dojo.xhrPost(xhrArgs);
+       dojo.byId("track_manager_status").innerHTML = "posted"
+    };
+
+    var uploadBAM = function() {
+            dojo.io.iframe.send({
+            url: "../bin/bam_to_json_paired_cgi.pl",
+            method: "post",
+            handleAs: "text",
+            form: dojo.byId("track_manager_form"),
+            load: function(data) {
+                //alert(data);
+                dojo.byId("track_manager_status").innerHTML = "bam posted"
+            }
+        });
+    };
+
+    var uploadRegion = function() {
+            dojo.io.iframe.send({
+            url: "../bin/region_to_json.pl",
+            method: "post",
+            handleAs: "text",
+            form: dojo.byId("track_manager_form"),
+            load: function(data) {
+                //alert(data);
+                dojo.byId("track_manager_status").innerHTML = "region posted"
+            }
+        });
+    };
+
+    var ep = new dojox.layout.ExpandoPane({id: 7,
+	                                   title: "Left Section Test",
+                                           region: "left",
+                                           style: "width: 20%; height: 98%; background-color:#FFDEAD",
+                                           splitter: "true"
+                                          }).placeAt(parent);
+
+    var form_pane = new dijit.layout.ContentPane({id:8, 
+                                                  title: "formPane",
+                                                  region: "top",
+                                                  style: "height: 50%; background-color:#FF0000",
+                                                  splitter: "true"
+                                                 }).placeAt(ep);
+
+    var track_pane = new dijit.layout.ContentPane({id:9, 
+                                                   title: "trackPane",
+                                                   region: "bottom",
+                                                   style: "height: 50%; background-color: #00FF00",
+                                                   splitter: "true"
+                                                  }).placeAt(ep);
+
+    var trackListDiv = this.setupTrackListDiv(params);
+
+    track_pane.domNode.appendChild(trackListDiv);
+
+    //var form = dijit.form.Form({id:"track_manager_form", 
+    //                            method: "post", 
+    //                            enctype: "multipart/form-data"
+    //                           }).placeAt( form_pane.domNode );
+
+    var track_manager_form = document.createElement("form");
+    track_manager_form.id = "track_manager_form";
+    track_manager_form.method = "post";
+    track_manager_form.enctype = "multipart/form-data";
+
+    form_pane.domNode.appendChild( track_manager_form );
+
+    var input_bamfile = document.createElement("input");
+    input_bamfile.type = "file";
+    input_bamfile.name = "bam_filename";
+    track_manager_form.appendChild( input_bamfile );
+
+    var track_manager_status = document.createElement("div");
+    track_manager_status.id = "track_manager_status";
+    track_manager_status.innerHTML = "status";
+    track_manager_form.appendChild( track_manager_status );
+ 
+    var upload_bamfile = new dijit.form.Button({id: "upload_bamfile", 
+                                                label: "Upload BAM", 
+                                                onClick: uploadBAM}).placeAt( track_manager_form );
+    
+
+    var button = new dijit.form.Button({id: "rdelete_button", 
+                                        label: "Delete Track",
+                                        onClick: deleteSubmit
+                                       }).placeAt( track_manager_form );
+            
+};
+
 
 /**
  * @private
@@ -273,7 +464,7 @@ Browser.prototype.createTrackList = function(parent, params) {
     var input_bamfile = document.createElement("input");
     input_bamfile.type = "file";
     input_bamfile.name = "bam_filename";
-
+ 
     var upload_bamfile = new dijit.form.Button({id: "upload_bamfile", label: "Upload BAM", onClick: uploadBAM});
 
     var input_regionfile = document.createElement("input");
@@ -294,7 +485,7 @@ Browser.prototype.createTrackList = function(parent, params) {
     track_manager_div.appendChild( track_manager_form );
     leftPane.appendChild( track_manager_div );
 
-    //// end my stuffy stuff/////////////////////
+    //// end my stuff/////////////////////
 
 
 
