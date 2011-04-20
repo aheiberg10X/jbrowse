@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use CGI;
+use CGI qw(:standard);
 
 use FindBin qw($Bin);
 use lib "$Bin/../lib";
@@ -30,14 +30,17 @@ my $bam_filename = $cgi->param('bam_filename');
 #}
 
 print $cgi->header;
+print "<html><body><textarea>\n";
 
 open OUTPUT, '>', $upload_dir . "/" . "bam_output.txt" or die $!;
 open ERROR,  '>', $upload_dir . "/" . "bam_error.txt"  or die $!;
 
-STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
+print OUTPUT $cgi->header("application/json");
+
+#STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
 STDERR->fdopen( \*ERROR,  'w' ) or die $!;
 
-print $upload_dir ."/". $bam_filename;
+print OUTPUT $upload_dir ."/". $bam_filename;
 open (OUTFILE, ">", "$upload_dir/$bam_filename") or die "Couldn't open $bam_filename for writing: $!";
 while(<$bam_filename>){
   print OUTFILE $_;
@@ -46,7 +49,7 @@ close OUTFILE;
 
 ### / CGI #####
 
-print getcwd();
+print OUTPUT getcwd();
 
 
 my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $compress, $key);
@@ -114,13 +117,13 @@ $style{clientConfig} = JSON::from_json($clientConfig)
 foreach my $seqInfo (@refSeqs) {
     #hdr is the bam header
     my ($tid, $start, $end) = $hdr->parse_region($seqInfo->{name});
-    print "tid: $tid, start: $start, end: $end\n";
+    print OUTPUT "tid: $tid, start: $start, end: $end\n";
     
     mkdir("$trackDir/" . $seqInfo->{name})
         unless (-d "$trackDir/" . $seqInfo->{name});
 
     if (defined($tid)) {
-        print "trackDir: $trackDir\n, trackLabel: $trackLabel\n";
+        print OUTPUT "trackDir: $trackDir\n, trackLabel: $trackLabel\n";
         my $jsonGen = JsonGenerator->new("$trackDir/" . $seqInfo->{name}
                                          . "/" . $trackLabel,
                                          $nclChunk,
@@ -142,9 +145,9 @@ foreach my $seqInfo (@refSeqs) {
         my $ix = 0;
         $index->fetch($bam, $tid, $start, $end, sub { a2a( \$ix, $_[0], $_[1]) }, \%paired_info);
 
-        print "starting sort\n";
+        print OUTPUT "starting sort\n";
         my @sorted = sort {$paired_info{$a}[0] <=> $paired_info{$b}[0]} keys %paired_info;
-        print "done with sort\n";
+        print OUTPUT "done with sort\n";
 
         foreach my $key (@sorted){
           $sorter->addSorted( $paired_info{$key} );
@@ -155,19 +158,27 @@ foreach my $seqInfo (@refSeqs) {
     }
 }
 
+
+
 #add a new entry to trackInfo.js
 #what if we want to group specific tracks to particular reference sequences
 
 my $ext = ($compress ? "jsonz" : "json");
-JsonGenerator::writeTrackEntry(
-    "$data_dir/trackInfo.js",
-    {
+my $new_entry_json = {
         'label' => $trackLabel,
         'key' => $key,
         'url' => "$trackRel/{refseq}/" . $trackLabel . "/trackData.$ext",
         'type' => "FeatureTrack",
-    }
-);
+    };
+JsonGenerator::writeTrackEntry( "$data_dir/trackInfo.js", $new_entry_json );
+
+close OUTPUT;
+close ERROR;
+
+print 'trackInfo = [';
+print JSON::to_json($new_entry_json, {pretty => 1});
+print ']';
+print "\n</textarea></body></html>";
 
 sub a2a {
     my $ix = shift;

@@ -141,11 +141,12 @@ sub writeTrackEntry {
             }
             $trackList[$i] = $entry;
             
-            open NEW_TRACK, '>', "$upload_dir/newly_added.js";
-            print NEW_TRACK "trackInfo = [";
-            print NEW_TRACK JSON::to_json($entry, {pretty => 1});
-            print NEW_TRACK "]";
-            close NEW_TRACK;
+            #first hacky attempt to do autorefesh when done processing
+            #open NEW_TRACK, '>', "$upload_dir/newly_added.js";
+            #print NEW_TRACK "trackInfo = [";
+            #print NEW_TRACK JSON::to_json($entry, {pretty => 1});
+            #print NEW_TRACK "]";
+            #close NEW_TRACK;
 
             return \@trackList;
         });

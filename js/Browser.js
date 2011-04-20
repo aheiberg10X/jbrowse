@@ -195,6 +195,7 @@ Browser.prototype.createTrackList2 = function(parent, params) {
             handleAs: "text",
             load: function(data,ioargs) {
                 //remove track object
+                brwsr.trash_drop.selectAll();
                 brwsr.trash_drop.deleteSelectedNodes();
                 
                 //for( id in ids_to_trash) {
@@ -215,17 +216,11 @@ Browser.prototype.createTrackList2 = function(parent, params) {
         dojo.io.iframe.send({
             url: "../bin/bam_to_json_paired_cgi.pl",
             method: "post",
-            handleAs: "html",
+            handleAs: "json",
             form: dojo.byId("track_manager_form"),
-            load: function(data) {
-                dojo.xhrGet({
-                    url: "../uploads/newly_added.js",
-                    handleAs: "json",
-                    load: function(track) {
-                        brwsr.trackListWidget.insertNodes(false,track);                        
-                    },
-                });
-                dojo.byId("track_manager_status").innerHTML = "bam posted"
+            load: function(data,ioArgs) {
+                brwsr.trackListWidget.insertNodes(false,data);
+                dojo.byId("track_manager_status").innerHTML = "bam posted";
             }
         });
     };
@@ -234,43 +229,33 @@ Browser.prototype.createTrackList2 = function(parent, params) {
         dojo.io.iframe.send({
             url: "../bin/region_to_json.pl",
             method: "post",
-            handleAs: "html",
+            handleAs: "json",
             form: dojo.byId("track_manager_form"),
             load: function(data) {
-                dojo.xhrGet({
-                    url: "../uploads/newly_added.js",
-                    handleAs: "json",
-                    load: function(track) {
-                        brwsr.trackListWidget.insertNodes(false,track);                        
-                    },
-                    error: function(err) {
-                        /* this will execute if the response couldn't be converted to a JS object,
-                           or if the request was unsuccessful altogether. */
-                    }
-                });
+                brwsr.trackListWidget.insertNodes(false,data);                        
                 dojo.byId("track_manager_status").innerHTML = "region posted"
             }
         });
     };
 
     var ep = new dojox.layout.ExpandoPane({id: 7,
-	                                   title: "Left Section Test",
+	                                   title: "",
                                            region: "left",
-                                           style: "width: 20%; height: 98%; background-color:#FFDEAD",
+                                           style: "width: 20%; height: 98%; background-color:#CFCFCF",
                                            splitter: "true"
                                           }).placeAt(parent);
 
     var form_pane = new dijit.layout.ContentPane({id:8, 
                                                   title: "formPane",
                                                   region: "top",
-                                                  style: "height: 50%; background-color:#FF0000",
+                                                  style: "height: 30%; background-color:#FBFAE9",
                                                   splitter: "true"
                                                  }).placeAt(ep);
 
     var track_pane = new dijit.layout.ContentPane({id:9, 
                                                    title: "trackPane",
                                                    region: "bottom",
-                                                   style: "height: 50%; background-color: #00FF00",
+                                                   style: "height: 70%; background-color: #EBFBE9",
                                                    splitter: "true"
                                                   }).placeAt(ep);
 
