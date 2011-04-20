@@ -16,6 +16,8 @@ use List::Util qw(min max sum reduce);
 use PerlIO::gzip;
 use constant MAX_JSON_DEPTH => 2048;
 
+use GlobalConfig;
+
 #this series of numbers is used in JBrowse for zoom level relationships
 my @multiples = (1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000,
                  10_000, 20_000, 50_000, 100_000, 200_000, 500_000, 1_000_000);
@@ -99,6 +101,7 @@ sub writeJSON {
     $fh->print($json->encode($toWrite));
     $fh->close()
       or die "couldn't close $file: $!";
+
 }
 
 sub modifyJSFile {
@@ -137,6 +140,13 @@ sub writeTrackEntry {
                 last if ($trackList[$i]->{'label'} eq $entry->{'label'});
             }
             $trackList[$i] = $entry;
+            
+            open NEW_TRACK, '>', "$upload_dir/newly_added.js";
+            print NEW_TRACK "trackInfo = [";
+            print NEW_TRACK JSON::to_json($entry, {pretty => 1});
+            print NEW_TRACK "]";
+            close NEW_TRACK;
+
             return \@trackList;
         });
 }

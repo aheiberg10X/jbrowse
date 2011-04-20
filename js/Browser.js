@@ -178,8 +178,10 @@ Browser.prototype.createTrackList2 = function(parent, params) {
     var deleteSubmit = function(brwsr) {
         var current_chrom = brwsr.chromList.options[brwsr.chromList.selectedIndex].value;
         var tracks_in_trash = [];
+        var ids_to_trash = [];
         brwsr.trash_drop.forInItems(function(obj, id, map) {
             tracks_in_trash.push(obj.data.key);
+            ids_to_trash.push(id);
         });
 
         
@@ -192,6 +194,12 @@ Browser.prototype.createTrackList2 = function(parent, params) {
             form: dojo.byId("track_manager_form"),
             handleAs: "text",
             load: function(data,ioargs) {
+                //remove track object
+                brwsr.trash_drop.deleteSelectedNodes();
+                
+                //for( id in ids_to_trash) {
+                //    brwsr.trash_drop.delItem(id);
+                //}
                 dojo.byId("track_manager_status").innerHTML = "Message posted.";
             },
             error: function(error) {
@@ -204,26 +212,42 @@ Browser.prototype.createTrackList2 = function(parent, params) {
     };
 
     var uploadBAM = function() {
-            dojo.io.iframe.send({
+        dojo.io.iframe.send({
             url: "../bin/bam_to_json_paired_cgi.pl",
             method: "post",
-            handleAs: "text",
+            handleAs: "html",
             form: dojo.byId("track_manager_form"),
             load: function(data) {
-                //alert(data);
+                dojo.xhrGet({
+                    url: "../uploads/newly_added.js",
+                    handleAs: "json",
+                    load: function(track) {
+                        brwsr.trackListWidget.insertNodes(false,track);                        
+                    },
+                });
                 dojo.byId("track_manager_status").innerHTML = "bam posted"
             }
         });
     };
 
-    var uploadRegion = function() {
-            dojo.io.iframe.send({
+    var uploadRegion = function(brwsr) {
+        dojo.io.iframe.send({
             url: "../bin/region_to_json.pl",
             method: "post",
-            handleAs: "text",
+            handleAs: "html",
             form: dojo.byId("track_manager_form"),
             load: function(data) {
-                //alert(data);
+                dojo.xhrGet({
+                    url: "../uploads/newly_added.js",
+                    handleAs: "json",
+                    load: function(track) {
+                        brwsr.trackListWidget.insertNodes(false,track);                        
+                    },
+                    error: function(err) {
+                        /* this will execute if the response couldn't be converted to a JS object,
+                           or if the request was unsuccessful altogether. */
+                    }
+                });
                 dojo.byId("track_manager_status").innerHTML = "region posted"
             }
         });
@@ -359,7 +383,8 @@ Browser.prototype.createTrackList2 = function(parent, params) {
 
     var upload_regionfile = new dijit.form.Button({id: "upload_regionfile", 
                                                    label: "Upload Region", 
-                                                   onClick: uploadRegion}).placeAt( track_manager_form );
+                                                   onClick: function() {uploadRegion(brwsr)}
+                                                  }).placeAt( track_manager_form );
     
 
     var trashcan_div = document.createElement("div");
