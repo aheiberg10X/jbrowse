@@ -219,8 +219,13 @@ Browser.prototype.createTrackList2 = function(parent, params) {
             handleAs: "json",
             form: dojo.byId("track_manager_form"),
             load: function(data,ioArgs) {
-                brwsr.trackListWidget.insertNodes(false,data);
-                dojo.byId("track_manager_status").innerHTML = "bam posted";
+                if( data == "badbam" ) {
+                    alert("This BAM file can't be read by Bio::DB::Bam (reporting that there are 0 alignments)");
+                }
+                else{
+                    brwsr.trackListWidget.insertNodes(false,data);
+                    dojo.byId("track_manager_status").innerHTML = "bam posted";
+                }
             }
         });
     };

@@ -90,6 +90,8 @@ my @refSeqs = @{JsonGenerator::readJSON("$data_dir/refSeqs.js", [], 1)};
 my $bam = Bio::DB::Bam->open($bamFile);
 my $hdr = $bam->header();
 my $index = Bio::DB::Bam->index($bamFile, 1);
+#catch divide by 0 errors
+my $bad_bam = 0;
 
 
 my @bamHeaders = ("start", "end", "strand","subfeatures");
@@ -154,31 +156,42 @@ foreach my $seqInfo (@refSeqs) {
         }
         
         $sorter->flush();
-        $jsonGen->generateTrack();
+        eval {
+            $jsonGen->generateTrack();
+            1;
+        } or do {
+            $bad_bam = 1;
+        }
     }
 }
 
+if( $bad_bam ){
+    print OUTPUT "bad bam\n";
+    print '"badbam"';
+    print "\n</textarea></body></html>";
+}
+else{
+    print OUTPUT "good bam\n";
+    #add a new entry to trackInfo.js
+    #what if we want to group specific tracks to particular reference sequences
 
+    my $ext = ($compress ? "jsonz" : "json");
+    my $new_entry_json = {
+                          'label' => $trackLabel,
+                          'key' => $key,
+                          'url' => "$trackRel/{refseq}/" . $trackLabel . "/trackData.$ext",
+                          'type' => "FeatureTrack",
+                         };
+    JsonGenerator::writeTrackEntry( "$data_dir/trackInfo.js", $new_entry_json );
 
-#add a new entry to trackInfo.js
-#what if we want to group specific tracks to particular reference sequences
+    close OUTPUT;
+    close ERROR;
 
-my $ext = ($compress ? "jsonz" : "json");
-my $new_entry_json = {
-        'label' => $trackLabel,
-        'key' => $key,
-        'url' => "$trackRel/{refseq}/" . $trackLabel . "/trackData.$ext",
-        'type' => "FeatureTrack",
-    };
-JsonGenerator::writeTrackEntry( "$data_dir/trackInfo.js", $new_entry_json );
-
-close OUTPUT;
-close ERROR;
-
-print 'trackInfo = [';
-print JSON::to_json($new_entry_json, {pretty => 1});
-print ']';
-print "\n</textarea></body></html>";
+    print 'trackInfo = [';
+    print JSON::to_json($new_entry_json, {pretty => 1});
+    print ']';
+    print "\n</textarea></body></html>";
+}
 
 sub a2a {
     my $ix = shift;
