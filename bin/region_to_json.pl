@@ -35,11 +35,11 @@ if ($using_CGI) {
     #for debugging when doing CGI 
     open OUTPUT, '>', "$upload_dir/region_output.txt" or die $!;
     open ERROR,  '>', "$upload_dir/region_error.txt"  or die $!;
-
-#    STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
     STDERR->fdopen( \*ERROR,  'w' ) or die $!;
 
-    open (OUTFILE, ">", "$upload_dir/$region_filename") or die "Couldn't open $region_filename for writing: $!";
+    open (OUTFILE, ">", "$upload_dir/$region_filename") 
+    or die "Couldn't open $region_filename for writing: $!";
+
     while(<$region_filename>){
         print OUTFILE $_;
     }
@@ -49,7 +49,9 @@ else{
     $region_filename = "/home/andrew/school/dnavis/jbrowse/data/svn/regions.illumina.c1.400.1M.5.txt";
 }
 
-my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $bamFile, $trackLabel, $key, $nclChunk, $compress);
+my ($tracks, $cssClass, $arrowheadClass, 
+    $subfeatureClasses, $clientConfig, $bamFile, 
+    $trackLabel, $key, $nclChunk, $compress);
 
 my $defaultClass = "transcript";
 $cssClass = $defaultClass;
@@ -58,12 +60,8 @@ my $reversed = reverse $region_filename;
 my ($extension, $folders) = split(/\./, $reversed, 2);
 $extension = reverse $extension;
 $folders = reverse $folders;
-print OUTPUT "extension: $extension\n";
-print OUTPUT "string folders: $folders\n";
 my @folders = split(/\//,$folders);
-print OUTPUT "folders array: @folders\n";
 $key = $folders[-1];
-print OUTPUT "key: $key\n";
 $trackLabel = $key;
 
 if (!defined($nclChunk)) {
@@ -90,8 +88,6 @@ my %style = ("class" => $cssClass,
 
 $style{clientConfig} = JSON::from_json($clientConfig) if (defined($clientConfig));
 
-
-
 #if ($cssClass eq $defaultClass) {
 #    $style{clientConfig}->{featureCss} = "background-color: #668; height: 8px;"
 #    unless defined($style{clientConfig}->{featureCss});
@@ -103,28 +99,31 @@ $style{clientConfig} = JSON::from_json($clientConfig) if (defined($clientConfig)
 
 #need to define a refSeq and trackLabel for this region
 
-my ($jsonGen, $sorter);
+my ($jsonGen, $sorter, $seqName);
 
-open( region_FH, '<', "$upload_dir/$region_filename" ) or die $!;
-#header variables
-my $seqName;
+open( region_FH, '<', "$upload_dir/$region_filename" ) 
+or die $!;
 
 #body variables
 my (@splt, $start, $end);
 my $line_num = 1;
 
+my $error = 0;
 while (<region_FH>) {
-    print OUTPUT "$_\n";
+
     #process headers
     if ($line_num == 1){
-	#rtrim
-        $_ =~ s/\s+$//;
+        $_ =~ s/\s+$//;  #rtrim
 	print OUTPUT "trimmed |$_|\n";
-	
+
         my @splt = split(/\s+/,$_);
 	print OUTPUT "splt: ", @splt;
+        if( $splt[0] ne ">chrom" ){
+            $error = 1;
+            last;
+        }
         $seqName = $splt[1];
-        
+
         print OUTPUT "seqName : $seqName\n";
         foreach my $seqInfo (@refSeqs) {
             print OUTPUT "||" . $seqInfo->{name} . "||";
@@ -145,8 +144,9 @@ while (<region_FH>) {
                            \@bamHeaders);
 
                 $sorter = NCLSorter->new(
-                            sub { $jsonGen->addFeature($_[0]) },
-                            $startIndex, $endIndex
+                            sub { $jsonGen->addFeature($_[0]) },_
+                            $startIndex, 
+                            $endIndex
                           );
             }
         }
@@ -158,35 +158,59 @@ while (<region_FH>) {
         $end = int($splt[2]);
         $sorter->addSorted( [$start,$end,1] );
     }
-    
+
     $line_num++;
+
 }
 
-print OUTPUT "before flush\n";
+if( $error ){
+    open SEQS, "<", "$data_dir/refSeqs.js";
+    local $/=undef;
+    my $json_text = <SEQS>;
+    $json_text =~ s/\s+/ /g;  #rtrim
+    $json_text =~ s/refSeqs = //;
 
-$sorter->flush();
-$jsonGen->generateTrack();
+    print OUTPUT "\n$json_text\n";
+    my @available_refseqs = from_json($json_text);
+    my @refseq_names;
+    print OUTPUT "\n$available_refseqs[0][0]\n";
+    foreach my $seq ($available_refseqs[0][0]) {
+        print OUTPUT "\n$seq\n";
+        push(@refseq_names, $seq->{name});
+    }
 
-print OUTPUT "after gentrack\n";
+    my $refseq_options = join(", ",@refseq_names);
 
-my $ext = ($compress ? "jsonz" : "json");
-my $new_entry_json = {
-        'label' => $trackLabel,
-        'key' => $key,
-        'url' => "$trackRel/{refseq}/" . $trackLabel . "/trackData.$ext",
-        'type' => "FeatureTrack",
-    };
+    print "\"Missing '>chrom' header on region file.  Options are: @refseq_names\"";
+    print "\n</textarea></body></html>";
+}
+else{
 
-JsonGenerator::writeTrackEntry(
-    "$data_dir/trackInfo.js",
-    $new_entry_json
-);
+    print OUTPUT "before flush\n";
 
-print 'trackInfo = [';
-print JSON::to_json($new_entry_json, {pretty => 1});
-print ']';
-print "\n</textarea></body></html>";
+    $sorter->flush();
+    $jsonGen->generateTrack();
 
+    print OUTPUT "after gentrack\n";
+
+    my $ext = ($compress ? "jsonz" : "json");
+    my $new_entry_json = {
+                          'label' => $trackLabel,
+                          'key' => $key,
+                          'url' => "$trackRel/{refseq}/" . $trackLabel . "/trackData.$ext",
+                          'type' => "FeatureTrack",
+                         };
+
+    JsonGenerator::writeTrackEntry(
+                                   "$data_dir/trackInfo.js",
+                                   $new_entry_json
+                                  );
+
+    print 'trackInfo = [';
+    print JSON::to_json($new_entry_json, {pretty => 1});
+    print ']';
+    print "\n</textarea></body></html>";
+}
 
 if ($using_CGI) {
     close OUTPUT;

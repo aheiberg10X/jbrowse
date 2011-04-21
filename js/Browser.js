@@ -237,8 +237,13 @@ Browser.prototype.createTrackList2 = function(parent, params) {
             handleAs: "json",
             form: dojo.byId("track_manager_form"),
             load: function(data) {
-                brwsr.trackListWidget.insertNodes(false,data);                        
-                dojo.byId("track_manager_status").innerHTML = "region posted"
+                if( data.substr(0,8).toLowerCase() != "trackdata") {
+                    alert(data);
+                }
+                else{
+                    brwsr.trackListWidget.insertNodes(false,data);                        
+                    dojo.byId("track_manager_status").innerHTML = "region posted";
+                }
             }
         });
     };
