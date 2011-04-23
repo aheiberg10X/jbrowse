@@ -263,23 +263,23 @@ sub addFeature {
     $self->{features}->addSorted($feature);
     $self->{count}++;
 
-    my $histograms = $self->{hists};
-    my $curHist;
-    my $start = max(0, min($feature->[$startIndex], $self->{refEnd}));
-    my $end = min($feature->[$endIndex], $self->{refEnd});
-    return if ($end < 0);
+    # my $histograms = $self->{hists};
+    # my $curHist;
+    # my $start = max(0, min($feature->[$startIndex], $self->{refEnd}));
+    # my $end = min($feature->[$endIndex], $self->{refEnd});
+    # return if ($end < 0);
 
-    for (my $i = 0; $i <= $#multiples; $i++) {
-        my $binBases = $self->{histBinBases} * $multiples[$i];
-        $curHist = $histograms->[$i];
-        last unless defined($curHist);
+    # for (my $i = 0; $i <= $#multiples; $i++) {
+    #     my $binBases = $self->{histBinBases} * $multiples[$i];
+    #     $curHist = $histograms->[$i];
+    #     last unless defined($curHist);
 
-        my $firstBin = int($start / $binBases);
-        my $lastBin = int($end / $binBases);
-        for (my $bin = $firstBin; $bin <= $lastBin; $bin++) {
-            $curHist->[$bin] += 1;
-        }
-    }
+    #     my $firstBin = int($start / $binBases);
+    #     my $lastBin = int($end / $binBases);
+    #     for (my $bin = $firstBin; $bin <= $lastBin; $bin++) {
+    #         $curHist->[$bin] += 1;
+    #     }
+    # }
 }
 
 sub featureCount {
