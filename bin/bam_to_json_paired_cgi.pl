@@ -198,7 +198,7 @@ sub a2a {
     my $align = shift;
     my $paired_info = shift;
 
-    my $left = $align->pos;
+    my $left = $align->pos+1;
     my $right = $align->calend+1;
     my $len = $align->data_len;
     my $mleft = $align->mate_start;
