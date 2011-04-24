@@ -624,7 +624,7 @@ div.transcript-hist {
     position: absolute;
     height: 15px;
     margin-top: -4px;
-    background-image: url('img/readleft.svg');
+    background-image: url('img/readleft.png');
     background-repeat: repeat-x;
     background-color: #FF0000;
 /*  border-width: 2px 0px 3px 0px;

@@ -55,7 +55,7 @@ print OUTPUT getcwd();
 my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $compress, $key);
 
 my $defaultClass = "transcript";
-my $defaultSubfeatureClasses = {"left","transcript-CDS",
+my $defaultSubfeatureClasses = {"left","readleft",
                                 "right","readright",
                                 "hanging","feature3"};
 
@@ -205,7 +205,7 @@ sub a2a {
     #my $mleft = $align->mate_start;
 
     if( ! defined $paired_info->{$qname} ){
-        $paired_info->{$qname} = [$left,$right,$reversed,"hanging"];
+        $paired_info->{$qname} = [$left,$right,$reversed,[$left,$right,$reversed,"hanging"]];
     }
     else {
         my $mates_info = $paired_info->{$qname};
