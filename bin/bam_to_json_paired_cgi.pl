@@ -55,7 +55,7 @@ print OUTPUT getcwd();
 my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $compress, $key);
 
 my $defaultClass = "transcript";
-my $defaultSubfeatureClasses = {"left","readleft",
+my $defaultSubfeatureClasses = {"left","transcript-CDS",
                                 "right","readright",
                                 "hanging","feature3"};
 
@@ -205,14 +205,14 @@ sub a2a {
     
     if( $left < $mleft ){
         my $reversed = $align->reversed ? -1 : 1;
-        $paired_info->{$align->qname} = [$left,42,1,[$left,$right,$reversed,"left"],[42,42,42,"right"]];
+        $paired_info->{$align->qname} = [$left,42,1,[[$left,$right,$reversed,"left"],[42,42,42,"right"]]];
     }
     else{
       my $reversed = $align->reversed ? -1 : 1;
       my $arref = $paired_info->{$align->qname};
       $arref->[1] = $right;
-      $arref->[4]->[0] = $left;
-      $arref->[4]->[1] = $right;
-      $arref->[4]->[2] = $reversed;
+      $arref->[3]->[1]->[0] = $left;
+      $arref->[3]->[1]->[1] = $right;
+      $arref->[3]->[1]->[2] = $reversed;
     }
 }
