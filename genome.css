@@ -558,10 +558,10 @@ div.transcript-hist {
 .plus-transcript,
 .minus-transcript {
     position: absolute;
-    height: 4px;
+    height: 2px;
     margin-top: 4px;
     margin-bottom: 4px;
-    background-color: #999;
+    background-color: #CCC;
     z-index: 6;
     min-width: 1px;
     cursor: pointer;
@@ -605,6 +605,47 @@ div.transcript-hist {
     height: 12px;
     margin-top: -4px;
     background-image: url('img/cds.png');
+    background-repeat: repeat-x;
+/*  border-width: 2px 0px 3px 0px;
+    border-style: solid;
+    border-color: white;
+    background-color: #FF9185;
+    border-style: solid;
+    border-color: #00f;
+    border-width: 1px;*/
+    cursor: pointer;
+    z-index: 10;
+    min-width: 1px;
+}
+
+.readleft,
+.plus-readleft,
+.minus-readleft {
+    position: absolute;
+    height: 15px;
+    margin-top: -4px;
+    background-image: url('img/readleft.svg');
+    background-repeat: repeat-x;
+    background-color: #FF0000;
+/*  border-width: 2px 0px 3px 0px;
+    border-style: solid;
+    border-color: white;
+    background-color: #FF9185;
+    border-style: solid;
+    border-color: #00f;
+    border-width: 1px;*/
+    cursor: pointer;
+    z-index: 10;
+    min-width: 1px;
+}
+
+.readright,
+.plus-readright,
+.minus-readright {
+    position: absolute;
+    height: 15px;
+    margin-top: -4px;
+    background-image: url('img/readright.png');
     background-repeat: repeat-x;
 /*  border-width: 2px 0px 3px 0px;
     border-style: solid;

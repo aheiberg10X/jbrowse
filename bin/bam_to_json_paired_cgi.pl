@@ -144,8 +144,7 @@ foreach my $seqInfo (@refSeqs) {
 
 
         my %paired_info;
-        my $ix = 0;
-        $index->fetch($bam, $tid, $start, $end, sub { a2a( \$ix, $_[0], $_[1]) }, \%paired_info);
+        $index->fetch($bam, $tid, $start, $end, sub { a2a( $_[0], $_[1]) }, \%paired_info);
 
         print OUTPUT "starting sort\n";
         my @sorted = sort {$paired_info{$a}[0] <=> $paired_info{$b}[0]} keys %paired_info;
@@ -194,25 +193,44 @@ else{
 }
 
 sub a2a {
-    my $ix = shift;
     my $align = shift;
     my $paired_info = shift;
 
     my $left = $align->pos+1;
     my $right = $align->calend+1;
-    my $len = $align->data_len;
-    my $mleft = $align->mate_start;
-    
-    if( $left < $mleft ){
-        my $reversed = $align->reversed ? -1 : 1;
-        $paired_info->{$align->qname} = [$left,42,1,[[$left,$right,$reversed,"left"],[42,42,42,"right"]]];
+    my $reversed = $align->strand; #$align->reversed ? -1 : 1;
+    my $qname = $align->qname;
+
+    #i don't think it is a wise idea to trust mate_start
+    #my $mleft = $align->mate_start;
+
+    if( ! defined $paired_info->{$qname} ){
+        $paired_info->{$qname} = [$left,$right,$reversed,"hanging"];
     }
-    else{
-      my $reversed = $align->reversed ? -1 : 1;
-      my $arref = $paired_info->{$align->qname};
-      $arref->[1] = $right;
-      $arref->[3]->[1]->[0] = $left;
-      $arref->[3]->[1]->[1] = $right;
-      $arref->[3]->[1]->[2] = $reversed;
+    else {
+        my $mates_info = $paired_info->{$qname};
+        if( $mates_info->[0] < $left ){
+            $mates_info->[3] = "left";
+            $paired_info->{$qname} = [$mates_info->[0],$right,1,[$mates_info,[$left,$right,$reversed,"right"]]];
+        }
+        else{
+            $mates_info->[3] = "right";
+            $paired_info->{$qname} = [$left,$mates_info->[1],1,[[$left,$right,$reversed,"left"],$mates_info]];
+        }
+        #sanity check for overlap?
     }
+
+    # #assuming the left read is always coming before the right read in the BAM file, catch violations?
+    # if( $left < $mleft ){
+    #     #this reflects our knowledge so far: [left,42,1[[left,right,rev,"left"],[42,42,42,"right"]]]
+    #     #BUT, we fill it in as such to handle the case where the right read never shows up
+    #     $paired_info->{$align->qname} = [$left,$right,1,[[$left,$right,$reversed,"left"],[$left,$right,$reversed,"hanging"]]];
+    # }
+    # else{
+    #   my $arref = $paired_info->{$align->qname};
+    #   $arref->[1] = $right;
+    #   $arref->[3]->[1]->[0] = $left;
+    #   $arref->[3]->[1]->[1] = $right;
+    #   $arref->[3]->[1]->[2] = $reversed;
+    # }
 }
