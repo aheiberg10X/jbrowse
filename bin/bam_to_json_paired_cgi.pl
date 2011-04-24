@@ -206,17 +206,17 @@ sub a2a {
 
     #remember the -1 on the main $right are so it doesnt poke out from the subfeature
     if( ! defined $paired_info->{$qname} ){
-        $paired_info->{$qname} = [$left,$right,$reversed,[$left,$right,$reversed,"hanging"]];
+        $paired_info->{$qname} = [$left,$right-2,$reversed,[$left,$right,$reversed,"hanging"]];
     }
     else {
         my $mates_info = $paired_info->{$qname};
         if( $mates_info->[0] < $left ){
             $mates_info->[3] = "left";
-            $paired_info->{$qname} = [$mates_info->[0],$right,1,[$mates_info,[$left,$right,$reversed,"right"]]];
+            $paired_info->{$qname} = [$mates_info->[0],$right-2,1,[$mates_info,[$left,$right,$reversed,"right"]]];
         }
         else{
             $mates_info->[3] = "right";
-            $paired_info->{$qname} = [$left,$mates_info->[1],1,[[$left,$right,$reversed,"left"],$mates_info]];
+            $paired_info->{$qname} = [$left,$mates_info->[1]-2,1,[[$left,$right,$reversed,"left"],$mates_info]];
         }
         #sanity check for overlap?
     }
