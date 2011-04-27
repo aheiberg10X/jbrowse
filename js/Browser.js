@@ -176,6 +176,7 @@ var Browser = function(params) {
 Browser.prototype.createTrackList2 = function(parent, params) {
 
     var deleteSubmit = function(brwsr) {
+        //can get this easier: brwsr.refSeq.name ??
         var current_chrom = brwsr.chromList.options[brwsr.chromList.selectedIndex].value;
         var tracks_in_trash = [];
         var ids_to_trash = [];
@@ -219,11 +220,11 @@ Browser.prototype.createTrackList2 = function(parent, params) {
             handleAs: "json",
             form: dojo.byId("track_manager_form"),
             load: function(data,ioArgs) {
-                if( data == "badbam" ) {
-                    alert("This BAM file can't be read by Bio::DB::Bam (reporting that there are 0 alignments)");
+                if( data['status'] == "ERROR" ) {
+                    alert(data['message']);
                 }
                 else{
-                    brwsr.trackListWidget.insertNodes(false,data);
+                    brwsr.trackListWidget.insertNodes(false,data['trackData']);
                     dojo.byId("track_manager_status").innerHTML = "bam posted";
                 }
             }
@@ -237,11 +238,11 @@ Browser.prototype.createTrackList2 = function(parent, params) {
             handleAs: "json",
             form: dojo.byId("track_manager_form"),
             load: function(data) {
-                if( data.substr(0,8).toLowerCase() != "trackdata") {
-                    alert(data);
+                if( data['status'] == "ERROR" ) {
+                    alert(data['message']);
                 }
                 else{
-                    brwsr.trackListWidget.insertNodes(false,data);                        
+                    brwsr.trackListWidget.insertNodes(false, data['trackData']);                        
                     dojo.byId("track_manager_status").innerHTML = "region posted";
                 }
             }
@@ -317,6 +318,7 @@ Browser.prototype.createTrackList2 = function(parent, params) {
             var klass = eval(track.type);
             var newTrack = new klass(track, url, brwsr.refSeq,
                                      {
+                                         //calls GenomeView showVisibleBlocks()
                                          changeCallback: changeCallback,
                                          trackPadding: brwsr.view.trackPadding,
                                          baseUrl: brwsr.dataRoot,

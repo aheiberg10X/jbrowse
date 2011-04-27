@@ -166,8 +166,7 @@ foreach my $seqInfo (@refSeqs) {
 
 if( $bad_bam ){
     print OUTPUT "bad bam\n";
-    print '"badbam"';
-    print "\n</textarea></body></html>";
+    print '{"status":"ERROR", "message":"This BAM file can\'t be read by Bio::DB::Bam (reporting that there are 0 alignments)"}';
 }
 else{
     print OUTPUT "good bam\n";
@@ -186,11 +185,12 @@ else{
     close OUTPUT;
     close ERROR;
 
-    print 'trackInfo = [';
+    print '{"status":"OK", "trackData":[';
     print JSON::to_json($new_entry_json, {pretty => 1});
-    print ']';
-    print "\n</textarea></body></html>";
+    print ']}';
 }
+print "\n</textarea></body></html>";
+
 
 sub a2a {
     my $align = shift;
@@ -205,18 +205,19 @@ sub a2a {
     #my $mleft = $align->mate_start;
 
     #remember the -1 on the main $right are so it doesnt poke out from the subfeature
+    my $hanging_fix = 20;
     if( ! defined $paired_info->{$qname} ){
-        $paired_info->{$qname} = [$left,$right-2,$reversed,[$left,$right,$reversed,"hanging"]];
+        $paired_info->{$qname} = [$left,$right-$hanging_fix,$reversed,[$left,$right,$reversed,"hanging"]];
     }
     else {
         my $mates_info = $paired_info->{$qname};
         if( $mates_info->[0] < $left ){
             $mates_info->[3] = "left";
-            $paired_info->{$qname} = [$mates_info->[0],$right-2,1,[$mates_info,[$left,$right,$reversed,"right"]]];
+            $paired_info->{$qname} = [$mates_info->[0],$right-$hanging_fix,1,[$mates_info,[$left,$right,$reversed,"right"]]];
         }
         else{
             $mates_info->[3] = "right";
-            $paired_info->{$qname} = [$left,$mates_info->[1]-2,1,[[$left,$right,$reversed,"left"],$mates_info]];
+            $paired_info->{$qname} = [$left,$mates_info->[1]-$hanging_fix,1,[[$left,$right,$reversed,"left"],$mates_info]];
         }
         #sanity check for overlap?
     }

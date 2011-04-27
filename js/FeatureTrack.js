@@ -34,6 +34,8 @@ function FeatureTrack(trackMeta, url, refSeq, browserParams) {
 FeatureTrack.prototype = new Track("");
 
 FeatureTrack.prototype.loadSuccess = function(trackInfo) {
+    //was 80, makes subfeatures display even when zoomed out
+    var my_subfeat_scale = 5;
     var startTime = new Date().getTime();
     this.count = trackInfo.featureCount;
     this.fields = {};
@@ -57,7 +59,7 @@ FeatureTrack.prototype.loadSuccess = function(trackInfo) {
 
     this.histScale = 4 * (trackInfo.featureCount / this.refSeq.length);
     this.labelScale = 50 * (trackInfo.featureCount / this.refSeq.length);
-    this.subfeatureScale = 80 * (trackInfo.featureCount / this.refSeq.length);
+    this.subfeatureScale = my_subfeat_scale * (trackInfo.featureCount / this.refSeq.length);  
     this.className = trackInfo.className;
     this.subfeatureClasses = trackInfo.subfeatureClasses;
     this.arrowheadClass = trackInfo.arrowheadClass;
@@ -75,7 +77,7 @@ FeatureTrack.prototype.loadSuccess = function(trackInfo) {
         var density = trackInfo.featureCount / this.refSeq.length;
         this.histScale = (cc.histScale ? cc.histScale : 4) * density;
         this.labelScale = (cc.labelScale ? cc.labelScale : 50) * density;
-        this.subfeatureScale = (cc.subfeatureScale ? cc.subfeatureScale : 80)
+        this.subfeatureScale = (cc.subfeatureScale ? cc.subfeatureScale : my_subfeat_scale)
                                    * density;
         if (cc.featureCss) this.featureCss = cc.featureCss;
         if (cc.histCss) this.histCss = cc.histCss;

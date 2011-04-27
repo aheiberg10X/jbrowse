@@ -144,8 +144,8 @@ while (<region_FH>) {
                            \@bamHeaders);
 
                 $sorter = NCLSorter->new(
-                            sub { $jsonGen->addFeature($_[0]) },_
-                            $startIndex, 
+                            sub { $jsonGen->addFeature($_[0]) },
+                            $startIndex,
                             $endIndex
                           );
             }
@@ -181,8 +181,7 @@ if( $error ){
 
     my $refseq_options = join(", ",@refseq_names);
 
-    print "\"Missing '>chrom' header on region file.  Options are: @refseq_names\"";
-    print "\n</textarea></body></html>";
+    print "{\"status\":\"ERROR\", \"message\": \"Missing '>chrom' header on region file.  Options are: @refseq_names\"}";
 }
 else{
 
@@ -206,11 +205,11 @@ else{
                                    $new_entry_json
                                   );
 
-    print 'trackInfo = [';
+    print '{"status":"OK", "trackData" : [';
     print JSON::to_json($new_entry_json, {pretty => 1});
-    print ']';
-    print "\n</textarea></body></html>";
+    print ']}';
 }
+print "\n</textarea></body></html>";
 
 if ($using_CGI) {
     close OUTPUT;
