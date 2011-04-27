@@ -249,26 +249,29 @@ Browser.prototype.createTrackList2 = function(parent, params) {
         });
     };
 
-    var ep = new dojox.layout.ExpandoPane({id: 7,
-	                                   title: "",
-                                           region: "left",
-                                           style: "width: 20%; height: 98%; background-color:#CFCFCF",
-                                           splitter: "true"
-                                          }).placeAt(parent);
+    var ep = new dojox.layout.ExpandoPane(
+        {id: 7,
+	 title: "",
+         region: "left",
+         style: "width: 20%; height: 98%; background-color:#CBCBCB; border-style: none solid none none; border-color: #818181",
+         splitter: "true"
+        }).placeAt(parent);
 
-    var form_pane = new dijit.layout.ContentPane({id:8, 
-                                                  title: "formPane",
-                                                  region: "top",
-                                                  style: "height: 30%; background-color:#FBFAE9",
-                                                  splitter: "true"
-                                                 }).placeAt(ep);
+    var form_pane = new dijit.layout.ContentPane(
+        {id:8, 
+         title: "formPane",
+         region: "top",
+         style: "height: 30%; background-color:#efefef;",
+         splitter: "true"
+        }).placeAt(ep);
 
-    var track_pane = new dijit.layout.ContentPane({id:9, 
-                                                   title: "trackPane",
-                                                   region: "bottom",
-                                                   style: "height: 70%; background-color: #EBFBE9",
-                                                   splitter: "true"
-                                                  }).placeAt(ep);
+    var track_pane = new dijit.layout.ContentPane(
+        {id:9, 
+         title: "trackPane",
+         region: "bottom",
+         style: "height: 70%; background-color: #efefef; border-style: solid none none none; border-color: #818181",
+         splitter: "true"
+        }).placeAt(ep);
 
     //////////// start creating trackListDiv ///////////////////////////////////////
     var trackListDiv = document.createElement("div");
@@ -367,35 +370,44 @@ Browser.prototype.createTrackList2 = function(parent, params) {
     var input_bamfile = document.createElement("input");
     input_bamfile.type = "file";
     input_bamfile.name = "bam_filename";
+    input_bamfile.style.cssText = "border-top: 10px;";
     track_manager_form.appendChild( input_bamfile );
 
-    var upload_bamfile = new dijit.form.Button({id: "upload_bamfile", 
-                                                label: "Upload BAM", 
-                                                onClick: uploadBAM}).placeAt( track_manager_form );
+    var upload_bamfile = new dijit.form.Button(
+        {id: "upload_bamfile", 
+         label: "Upload BAM", 
+         style: "margin-bottom: 15px;",
+         onClick: uploadBAM
+        }).placeAt( track_manager_form );
     
     var input_regionfile = document.createElement("input");
     input_regionfile.type = "file";
     input_regionfile.name = "region_filename";
     track_manager_form.appendChild( input_regionfile );
 
-    var upload_regionfile = new dijit.form.Button({id: "upload_regionfile", 
-                                                   label: "Upload Region", 
-                                                   onClick: function() {uploadRegion(brwsr)}
-                                                  }).placeAt( track_manager_form );
+    var upload_regionfile = new dijit.form.Button(
+        {id: "upload_regionfile", 
+         label: "Upload Region", 
+         style: "margin-bottom: 15px;",
+         onClick: function() {uploadRegion(brwsr)}
+        }).placeAt( track_manager_form );
     
 
     var trashcan_div = document.createElement("div");
     trashcan_div.id = "trashcan_div";
-    trashcan_div.style.cssText = "background-color: #FF00FF";
-    trashcan_div.innerHTML = "trashcan";
+    trashcan_div.style.cssText = "background-color: #FF00FF; text-align: center";
+    trashcan_div.innerHTML = "trash drop";
     form_pane.domNode.appendChild( trashcan_div );
 
-    this.trash_drop = new dojo.dnd.Source(trashcan_div, {creator: trackListCreate,
-                                                        accept:["track"]/*, 
-                                                        withHandles:"false"*/});
+    this.trash_drop = new dojo.dnd.Source(trashcan_div, 
+                                          {creator: trackListCreate,
+                                           accept:["track"]/*, 
+                                           withHandles:"false"*/
+                                          });
 
     var button = new dijit.form.Button({id: "delete_button", 
                                         label: "Delete Tracks",
+                                        style: "align-text: right;",
                                         onClick: function(){ deleteSubmit(brwsr) }
                                        }).placeAt( form_pane.domNode );
 
