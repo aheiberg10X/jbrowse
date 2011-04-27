@@ -198,7 +198,7 @@ sub a2a {
 
     my $left = $align->pos+1;
     my $right = $align->calend+1;
-    my $reversed = $align->strand; #$align->reversed ? -1 : 1;
+    my $reversed = $align->flag & 0x10; #$align->strand; #$align->reversed ? -1 : 1;
     my $qname = $align->qname;
 
     #i don't think it is a wise idea to trust mate_start
