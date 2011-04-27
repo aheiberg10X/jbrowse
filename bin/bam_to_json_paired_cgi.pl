@@ -211,13 +211,26 @@ sub a2a {
     }
     else {
         my $mates_info = $paired_info->{$qname};
-        if( $mates_info->[0] < $left ){
+        my $this_style;
+
+        if( $reversed == 1 ){
+            $this_style = "left";
+        }
+        else{
+            $this_style = "right";
+        }
+        if( $mates_info->[2] == 1 ){
             $mates_info->[3] = "left";
-            $paired_info->{$qname} = [$mates_info->[0],$right-$hanging_fix,1,[$mates_info,[$left,$right,$reversed,"right"]]];
         }
         else{
             $mates_info->[3] = "right";
-            $paired_info->{$qname} = [$left,$mates_info->[1]-$hanging_fix,1,[[$left,$right,$reversed,"left"],$mates_info]];
+        }
+
+        if( $mates_info->[0] < $left ){
+            $paired_info->{$qname} = [$mates_info->[0],$right-$hanging_fix,1,[$mates_info,[$left,$right,$reversed,$this_style]]];
+        }
+        else{
+            $paired_info->{$qname} = [$left,$mates_info->[1]-$hanging_fix,1,[[$left,$right,$reversed,$this_style],$mates_info]];
         }
         #sanity check for overlap?
     }
