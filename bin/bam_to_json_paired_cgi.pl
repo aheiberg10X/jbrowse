@@ -55,9 +55,10 @@ print OUTPUT getcwd();
 my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $compress, $key);
 
 my $defaultClass = "transcript";
-my $defaultSubfeatureClasses = {"left","readleft",
-                                "right","readright",
-                                "hanging","feature3"};
+my $defaultSubfeatureClasses = {"forward","forward-strand",
+                                "reverse","reverse-strand",
+                                "hanging","feature3",
+                                "SNP","SNP"};
 
 $cssClass = $defaultClass;
 $subfeatureClasses = $defaultSubfeatureClasses;
@@ -198,7 +199,8 @@ sub a2a {
 
     my $left = $align->pos+1;
     my $right = $align->calend+1;
-    my $reversed = ($align->flag & 0x10) >> 4; #$align->strand; #$align->reversed ? -1 : 1;
+    my $strand = ($align->flag & 0x10) >> 4; #$align->strand; #$align->strand ? -1 : 1;
+    #print OUTPUT "$strand\n";
     my $qname = $align->qname;
 
     #i don't think it is a wise idea to trust mate_start
@@ -207,42 +209,44 @@ sub a2a {
     #remember the -1 on the main $right are so it doesnt poke out from the subfeature
     my $hanging_fix = 20;
     if( ! defined $paired_info->{$qname} ){
-        $paired_info->{$qname} = [$left,$right-$hanging_fix,$reversed,[$left,$right,$reversed,"hanging"]];
+        $paired_info->{$qname} = [$left,$right-$hanging_fix,$strand,[$left,$right,$strand,"hanging"]];
     }
     else {
         my $mates_info = $paired_info->{$qname};
         my $this_style;
 
-        if( $reversed == 1 ){
-            $this_style = "left";
-        }
-        else{
-            $reversed = -1;
-            $this_style = "right";
-        }
+        $this_style = $strand ? "reverse" : "forward";
+        $mates_info->[3] = $mates_info->[2] ? "reverse" : "forward";
 
-        if( $mates_info->[2] == 1 ){
-            $mates_info->[3] = "left";
-        }
-        else{
-            $mates_info->[2] = -1;
-            $mates_info->[3] = "right";
-        }
+
+        # if( $strand == 0 ){
+        #     $this_style = "forward";
+        # }
+        # else{
+        #     $this_style = "reverse";
+        # }
+
+        # if( $mates_info->[2] == 1 ){
+        #     $mates_info->[3] = "forward";
+        # }
+        # else{
+        #     $mates_info->[3] = "reverse";
+        # }
 
         if( $mates_info->[0] < $left ){
-            $paired_info->{$qname} = [$mates_info->[0],$right-$hanging_fix,1,[$mates_info,[$left,$right,$reversed,$this_style]]];
+            $paired_info->{$qname} = [$mates_info->[0],$right-$hanging_fix,1,[$mates_info,[$left,$right,$strand,$this_style]]];
         }
         else{
-            $paired_info->{$qname} = [$left,$mates_info->[1]-$hanging_fix,1,[[$left,$right,$reversed,$this_style],$mates_info]];
+            $paired_info->{$qname} = [$left,$mates_info->[1]-$hanging_fix,1,[[$left,$right,$strand,$this_style],$mates_info]];
         }
         #sanity check for overlap?
     }
 
     # #assuming the left read is always coming before the right read in the BAM file, catch violations?
     # if( $left < $mleft ){
-    #     #this reflects our knowledge so far: [left,42,1[[left,right,rev,"left"],[42,42,42,"right"]]]
+    #     #this reflects our knowledge so far: [left,42,1[[left,right,rev,"forward"],[42,42,42,"reverse"]]]
     #     #BUT, we fill it in as such to handle the case where the right read never shows up
-    #     $paired_info->{$align->qname} = [$left,$right,1,[[$left,$right,$reversed,"left"],[$left,$right,$reversed,"hanging"]]];
+    #     $paired_info->{$align->qname} = [$left,$right,1,[[$left,$right,$reversed,"forward"],[$left,$right,$reversed,"hanging"]]];
     # }
     # else{
     #   my $arref = $paired_info->{$align->qname};
