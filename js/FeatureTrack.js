@@ -34,8 +34,8 @@ function FeatureTrack(trackMeta, url, refSeq, browserParams) {
 FeatureTrack.prototype = new Track("");
 
 FeatureTrack.prototype.loadSuccess = function(trackInfo) {
-    //was 80, makes subfeatures display even when zoomed out
-    var my_subfeat_scale = 5;
+    var my_subfeat_scale = .025; //was 80, makes subfeatures display even when zoomed out
+    var my_hist_scale = .025; // was 4
     var startTime = new Date().getTime();
     this.count = trackInfo.featureCount;
     this.fields = {};
@@ -57,7 +57,7 @@ FeatureTrack.prototype.loadSuccess = function(trackInfo) {
         this.subfeatureArray = new LazyArray(trackInfo.subfeatureArray,
                                              this.trackBaseUrl);
 
-    this.histScale = 4 * (trackInfo.featureCount / this.refSeq.length);
+    this.histScale = my_hist_scale * (trackInfo.featureCount / this.refSeq.length);
     this.labelScale = 50 * (trackInfo.featureCount / this.refSeq.length);
     this.subfeatureScale = my_subfeat_scale * (trackInfo.featureCount / this.refSeq.length);  
     this.className = trackInfo.className;

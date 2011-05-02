@@ -260,18 +260,25 @@ Browser.prototype.createTrackList2 = function(parent, params) {
     var form_pane = new dijit.layout.ContentPane(
         {id:8, 
          title: "formPane",
-         region: "top",
+         region: "bottom",
          style: "height: 30%; background-color:#efefef;",
          splitter: "true"
         }).placeAt(ep);
 
+
     var track_pane = new dijit.layout.ContentPane(
         {id:9, 
          title: "trackPane",
-         region: "bottom",
-         style: "height: 70%; background-color: #efefef; border-style: solid none none none; border-color: #818181",
+         region: "top",
+         style: "height: 70%; background-color: #efefef; border-style: none none solid none; border-color: #818181",
          splitter: "true"
         }).placeAt(ep);
+
+
+
+
+
+    
 
     //////////// start creating trackListDiv ///////////////////////////////////////
     var trackListDiv = document.createElement("div");
