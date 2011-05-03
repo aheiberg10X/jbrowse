@@ -20,10 +20,12 @@ use IO::Handle;
 use Cwd;
 use GlobalConfig;
 
+
 ###CGI STUFF####
 
 my $cgi = CGI::new();
 my $bam_filename = $cgi->param('bam_filename');
+my $bam_linking = defined $cgi->param('bam_linking');
 #if( not defined $bam_filename or $bam_filename eq '' ) {
 #    print "not definennenenene\n";
 #    $bam_filename = "evidence.illumina.c1.400.1M.5.bam";
@@ -34,11 +36,9 @@ print "<html><body><textarea>\n";
 
 open OUTPUT, '>', $upload_dir . "/" . "bam_output.txt" or die $!;
 open ERROR,  '>', $upload_dir . "/" . "bam_error.txt"  or die $!;
-
-print OUTPUT $cgi->header("application/json");
-
-#STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
 STDERR->fdopen( \*ERROR,  'w' ) or die $!;
+
+print OUTPUT "bam_linking: $bam_linking\n";
 
 print OUTPUT $upload_dir ."/". $bam_filename;
 open (OUTFILE, ">", "$upload_dir/$bam_filename") or die "Couldn't open $bam_filename for writing: $!";
@@ -143,19 +143,32 @@ foreach my $seqInfo (@refSeqs) {
         #$index->fetch($bam, $tid, $start, $end,
         #              sub { $sorter->addSorted(align2array($_[0])) });
 
+        if( $bam_linking ) {
+            print OUTPUT "linking\n";
+            my %paired_info;
+            $index->fetch($bam, $tid, $start, $end, sub { a2a( $_[0], $_[1]) }, \%paired_info);
 
-        my %paired_info;
-        $index->fetch($bam, $tid, $start, $end, sub { a2a( $_[0], $_[1]) }, \%paired_info);
-
-        print OUTPUT "starting sort\n";
-        my @sorted = sort {$paired_info{$a}[0] <=> $paired_info{$b}[0]} keys %paired_info;
-        print OUTPUT "done with sort\n";
-
-        foreach my $key (@sorted){
-          $sorter->addSorted( $paired_info{$key} );
+            my @sorted = sort {$paired_info{$a}[0] <=> $paired_info{$b}[0]} keys %paired_info;
+            foreach my $key (@sorted){
+                $sorter->addSorted( $paired_info{$key} );
+            }
         }
-        
+        else{
+            print OUTPUT "not linking\n";
+            my @tosort;
+            $index->fetch( $bam,
+                           $tid,
+                           $start,
+                           $end,
+                           sub{ align2array($_[0],$_[1])}, \@tosort);
+
+            foreach my $read (sort {$a->[0] <=> $b->[0]} @tosort){
+                $sorter->addSorted( $read );
+            }
+        }
+
         $sorter->flush();
+        #catching error, i.e not finding alignments in BAM file and consequently dividing by 0
         eval {
             $jsonGen->generateTrack();
             1;
@@ -192,6 +205,20 @@ else{
 }
 print "\n</textarea></body></html>";
 
+sub align2array {
+    my $align = shift;
+    my $tosort = shift;
+
+    my $left = $align->pos+1;
+    my $right = $align->calend+1;
+    my $strand = ($align->flag & 0x10) >> 4;
+
+    #if strand is one according to flag, that means it is reversed.  To jbrowse, reverse/minus is -1, forward/plus is 1.
+    $strand = $strand ? -1 : 1;
+    #my $qname = $align->qname;
+
+    push(@$tosort, [$left,$right,$strand]); #[[$left,$right,$strand,$strand ? "reverse" : "forward"]]]);
+}
 
 sub a2a {
     my $align = shift;
@@ -200,16 +227,12 @@ sub a2a {
     my $left = $align->pos+1;
     my $right = $align->calend+1;
     my $strand = ($align->flag & 0x10) >> 4; #$align->strand; #$align->strand ? -1 : 1;
-    #print OUTPUT "$strand\n";
     my $qname = $align->qname;
 
-    #i don't think it is a wise idea to trust mate_start
-    #my $mleft = $align->mate_start;
-
-    #remember the -1 on the main $right are so it doesnt poke out from the subfeature
+    #remember the -$hanging_fix on the main $right are so it doesnt poke out from the subfeature
     my $hanging_fix = 20;
     if( ! defined $paired_info->{$qname} ){
-        $paired_info->{$qname} = [$left,$right-$hanging_fix,$strand,[$left,$right,$strand,"hanging"]];
+        $paired_info->{$qname} = [$left,$right-$hanging_fix,$strand,[$left,$right,$strand, $strand ? "reverse" : "forward" ]];
     }
     else {
         my $mates_info = $paired_info->{$qname};
@@ -218,41 +241,12 @@ sub a2a {
         $this_style = $strand ? "reverse" : "forward";
         $mates_info->[3] = $mates_info->[2] ? "reverse" : "forward";
 
-
-        # if( $strand == 0 ){
-        #     $this_style = "forward";
-        # }
-        # else{
-        #     $this_style = "reverse";
-        # }
-
-        # if( $mates_info->[2] == 1 ){
-        #     $mates_info->[3] = "forward";
-        # }
-        # else{
-        #     $mates_info->[3] = "reverse";
-        # }
-
         if( $mates_info->[0] < $left ){
-            $paired_info->{$qname} = [$mates_info->[0],$right-$hanging_fix,1,[$mates_info,[$left,$right,$strand,$this_style]]];
+            $paired_info->{$qname} = [$mates_info->[0],$right-$hanging_fix,0,[$mates_info,[$left,$right,$strand,$this_style]]];
         }
         else{
-            $paired_info->{$qname} = [$left,$mates_info->[1]-$hanging_fix,1,[[$left,$right,$strand,$this_style],$mates_info]];
+            $paired_info->{$qname} = [$left,$mates_info->[1]-$hanging_fix,0,[[$left,$right,$strand,$this_style],$mates_info]];
         }
         #sanity check for overlap?
     }
-
-    # #assuming the left read is always coming before the right read in the BAM file, catch violations?
-    # if( $left < $mleft ){
-    #     #this reflects our knowledge so far: [left,42,1[[left,right,rev,"forward"],[42,42,42,"reverse"]]]
-    #     #BUT, we fill it in as such to handle the case where the right read never shows up
-    #     $paired_info->{$align->qname} = [$left,$right,1,[[$left,$right,$reversed,"forward"],[$left,$right,$reversed,"hanging"]]];
-    # }
-    # else{
-    #   my $arref = $paired_info->{$align->qname};
-    #   $arref->[1] = $right;
-    #   $arref->[3]->[1]->[0] = $left;
-    #   $arref->[3]->[1]->[1] = $right;
-    #   $arref->[3]->[1]->[2] = $reversed;
-    # }
 }

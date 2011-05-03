@@ -30,6 +30,7 @@ var Browser = function(params) {
     dojo.require("dijit.form.Button");
     dojo.require("dijit.form.TextBox");
     dojo.require("dojox.form.FileInput");
+    dojo.require("dijit.form.CheckBox");
     dojo.require("dojo.io.iframe");
     dojo.require("dojox.layout.ExpandoPane");
     // end my stuff
@@ -176,15 +177,15 @@ var Browser = function(params) {
 Browser.prototype.createTrackList2 = function(parent, params) {
 
     var deleteSubmit = function(brwsr) {
-        //can get this easier: brwsr.refSeq.name ??
-        var current_chrom = brwsr.chromList.options[brwsr.chromList.selectedIndex].value;
+
+        //brwsr.chromList.options[brwsr.chromList.selectedIndex].value;
+        var current_chrom = brwsr.refSeq.name;
         var tracks_in_trash = [];
         var ids_to_trash = [];
         brwsr.trash_drop.forInItems(function(obj, id, map) {
             tracks_in_trash.push(obj.data.key);
             ids_to_trash.push(id);
         });
-
         
         var args = {chrom: current_chrom,
                     delete_track: tracks_in_trash};
@@ -374,18 +375,30 @@ Browser.prototype.createTrackList2 = function(parent, params) {
 
     form_pane.domNode.appendChild( track_manager_form );
 
-    var input_bamfile = document.createElement("input");
-    input_bamfile.type = "file";
-    input_bamfile.name = "bam_filename";
-    input_bamfile.style.cssText = "border-top: 10px;";
-    track_manager_form.appendChild( input_bamfile );
+    var bam_input = document.createElement("input");
+    bam_input.type = "file";
+    bam_input.name = "bam_filename";
+    bam_input.style.cssText = "border-top: 10px;";
+    track_manager_form.appendChild( bam_input );
 
-    var upload_bamfile = new dijit.form.Button(
-        {id: "upload_bamfile", 
+    var bam_upload = new dijit.form.Button(
+        {name: "bam_upload", 
          label: "Upload BAM", 
          style: "margin-bottom: 15px;",
          onClick: uploadBAM
         }).placeAt( track_manager_form );
+
+    var bam_linking = new dijit.form.CheckBox(
+        {name: "bam_linking",
+         value: "1",
+         checked: false,
+        }
+    ).placeAt( track_manager_form );
+
+    var bam_linking_label = document.createElement("label");
+    bam_linking_label.innerHTML = "Link Read Pairs";
+    dojo.attr(bam_linking_label,'for', bam_linking.name);
+    track_manager_form.appendChild( bam_linking_label );
     
     var input_regionfile = document.createElement("input");
     input_regionfile.type = "file";
