@@ -582,7 +582,7 @@ div.transcript-hist {
     margin-top: -2px;
     background-color: #FE9A2E;
     z-index: 6;
-    min-width: 4px;
+    min-width: 2px;
     cursor: pointer;
 }
 .minus-transcript {
@@ -591,7 +591,7 @@ div.transcript-hist {
     margin-top: -2px;
     background-color: #0000FF;
     z-index: 6;
-    min-width: 4px;
+    min-width: 2px;
     cursor: pointer;
 }
 
@@ -662,8 +662,8 @@ div.transcript-hist {
 .plus-forward-strand,
 .minus-forward-strand {
     position: absolute;
-    height: 6px;
-    margin-top: -3px;
+    height: 4px;
+    margin-top: -2px;
     /*background-image: url('img/readleft.png');
     background-repeat: repeat-x;*/
     background-color: #FE9A2E;
@@ -683,8 +683,8 @@ div.transcript-hist {
 .plus-reverse-strand,
 .minus-reverse-strand {
     position: absolute;
-    height: 6px;
-    margin-top: -3px;
+    height: 4px;
+    margin-top: -2px;
     /*background-image: url('img/readright.png');
     background-repeat: repeat-x;*/
     background-color: #0000FF;
@@ -771,3 +771,19 @@ div.generic_parent-hist {
     min-width: 1px;
     cursor: pointer;
 }
+
+#bam_controls, #region_controls {
+    margin-left: 15px;
+}
+
+#bamfile, #regionfile {
+    margin-top: 0px;
+}
+
+#bamhistogram {
+    margin-top: -10px;
+}
+
+#bamlinking {
+    margin-top: -10px;
+

@@ -170,7 +170,7 @@ sub evalSubStrings {
 sub new {
     my ($class, $outDir, $chunkBytes, $compress, $label, $segName,
         $refStart, $refEnd, $setStyle, $headers, $subfeatHeaders,
-        $featureCount) = @_;
+        $featureCount, $pregen_histograms) = @_;
 
     my %style = ("key" => $label,
                  %builtinDefaults,
@@ -220,6 +220,18 @@ sub new {
         last if $binBases * 100 > $refEnd;
     }
 
+    ################
+    ### start me ###
+    if( defined $pregen_histograms ){
+        my $hist_detail_levels = scalar @{$pregen_histograms};
+        if( $DEBUG ){
+            print OUTPUT "hist_detail_levels: $hist_detail_levels\n";
+        }
+
+    }
+    ### end me ###
+    ##############
+
     mkdir($outDir) unless (-d $outDir);
     unlink (glob $outDir . "/hist*");
     unlink (glob $outDir . "/lazyfeatures*");
@@ -263,7 +275,7 @@ sub addFeature {
     $self->{features}->addSorted($feature);
     $self->{count}++;
 
-    if( $HISTOGRAMMING ){
+    if( ! $PREGEN_HISTOGRAMS ){
         my $histograms = $self->{hists};
         my $curHist;
         my $start = max(0, min($feature->[$startIndex], $self->{refEnd}));

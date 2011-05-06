@@ -262,7 +262,7 @@ Browser.prototype.createTrackList2 = function(parent, params) {
         {id:8, 
          title: "formPane",
          region: "bottom",
-         style: "height: 30%; background-color:#efefef;",
+         style: "height: 40%; background-color:#efefef;",
          splitter: "true"
         }).placeAt(ep);
 
@@ -271,14 +271,9 @@ Browser.prototype.createTrackList2 = function(parent, params) {
         {id:9, 
          title: "trackPane",
          region: "top",
-         style: "height: 70%; background-color: #efefef; border-style: none none solid none; border-color: #818181",
+         style: "height: 60%; background-color: #efefef; border-style: solid none none none; border-color: #818181",
          splitter: "true"
         }).placeAt(ep);
-
-
-
-
-
     
 
     //////////// start creating trackListDiv ///////////////////////////////////////
@@ -372,6 +367,17 @@ Browser.prototype.createTrackList2 = function(parent, params) {
     track_manager_form.id = "track_manager_form";
     track_manager_form.method = "post";
     track_manager_form.enctype = "multipart/form-data";
+    track_manager_form.innerHTML = '<h3>BAM</h3>' +
+                                   '<div id="bam_controls">' + 
+                                   '<p id="bamfile">File</p>' + 
+                                   '<p id="bamhistogram">Histogram Data (opt)</p>' +
+                                   '<p id="bamlinking"><input type="checkbox" name="bam_linking" value="1" />Display Links</p>' +
+                                   '</div>' +
+                                   '<h3>Region</h3>'+
+                                   '<div id="region_controls">' +
+                                   '<p id="regionfile">File</p.' +
+                                   '</div>';
+
 
     form_pane.domNode.appendChild( track_manager_form );
 
@@ -379,39 +385,44 @@ Browser.prototype.createTrackList2 = function(parent, params) {
     bam_input.type = "file";
     bam_input.name = "bam_filename";
     bam_input.style.cssText = "border-top: 10px;";
-    track_manager_form.appendChild( bam_input );
+    dojo.byId("bamfile").appendChild( bam_input );
+
+    var bam_histogram = document.createElement("input");
+    bam_histogram.type = "file";
+    bam_histogram.name = "bam_histogram_filename";
+    dojo.byId("bamhistogram").appendChild( bam_histogram );
+
+//    var bam_linking = new dijit.form.CheckBox(
+//        {name: "bam_linking",
+//         value: "1",
+//         checked: false,
+//        }
+//    ).placeAt( dojo.byId("") );
 
     var bam_upload = new dijit.form.Button(
         {name: "bam_upload", 
          label: "Upload BAM", 
-         style: "margin-bottom: 15px;",
+         style: "margin-top: -10px;",
          onClick: uploadBAM
-        }).placeAt( track_manager_form );
+        }).placeAt( dojo.byId("bam_controls") );
 
-    var bam_linking = new dijit.form.CheckBox(
-        {name: "bam_linking",
-         value: "1",
-         checked: false,
-        }
-    ).placeAt( track_manager_form );
-
-    var bam_linking_label = document.createElement("label");
-    bam_linking_label.innerHTML = "Link Read Pairs";
-    dojo.attr(bam_linking_label,'for', bam_linking.name);
-    track_manager_form.appendChild( bam_linking_label );
+    
+    //var bam_linking_label = document.createElement("label");
+    //bam_linking_label.innerHTML = "Link Read Pairs";
+    //dojo.attr(bam_linking_label,'for', bam_linking.name);
+    //track_manager_form.appendChild( bam_linking_label );
     
     var input_regionfile = document.createElement("input");
     input_regionfile.type = "file";
     input_regionfile.name = "region_filename";
-    track_manager_form.appendChild( input_regionfile );
+    dojo.byId("regionfile").appendChild( input_regionfile );
 
     var upload_regionfile = new dijit.form.Button(
         {id: "upload_regionfile", 
          label: "Upload Region", 
-         style: "margin-bottom: 15px;",
+         style: "margin-top: -10px;",
          onClick: function() {uploadRegion(brwsr)}
-        }).placeAt( track_manager_form );
-    
+        }).placeAt( dojo.byId("region_controls") );
 
     var trashcan_div = document.createElement("div");
     trashcan_div.id = "trashcan_div";

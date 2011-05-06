@@ -26,30 +26,51 @@ use GlobalConfig;
 my $cgi = CGI::new();
 my $bam_filename = $cgi->param('bam_filename');
 my $bam_linking = defined $cgi->param('bam_linking');
+my $bam_histogram_filename = $cgi->param("bam_histogram_filename");
 #if( not defined $bam_filename or $bam_filename eq '' ) {
 #    print "not definennenenene\n";
 #    $bam_filename = "evidence.illumina.c1.400.1M.5.bam";
 #}
 
 print $cgi->header;
+#place a json response inside here"
 print "<html><body><textarea>\n";
 
-open OUTPUT, '>', $upload_dir . "/" . "bam_output.txt" or die $!;
+#moved to GlobalConfig
+open( my $OUTPUT, '>', $upload_dir . "/" . "bam_output.txt" ) or die $!;
 open ERROR,  '>', $upload_dir . "/" . "bam_error.txt"  or die $!;
 STDERR->fdopen( \*ERROR,  'w' ) or die $!;
 
-print OUTPUT "bam_linking: $bam_linking\n";
+if( $DEBUG ) {
+    print $OUTPUT $upload_dir ."/". $bam_filename;
+}
 
-print OUTPUT $upload_dir ."/". $bam_filename;
+###############
+###UPLOADING###
+
 open (OUTFILE, ">", "$upload_dir/$bam_filename") or die "Couldn't open $bam_filename for writing: $!";
 while(<$bam_filename>){
   print OUTFILE $_;
 }
 close OUTFILE;
 
-### / CGI #####
+my $pregen_histograms;
+if( defined $bam_histogram_filename and $bam_histogram_filename ne ''){
+    local $/=undef;
+    open( OUTFILE, '<', "$bam_histogram_filename");
+    my $json_text = <OUTFILE>;
+    close OUTFILE;
+    $pregen_histograms = JSON::decode_json($json_text);
+    print $OUTPUT "json_text: $json_text\n";
+}
 
-print OUTPUT getcwd();
+#if( $DEBUG ){
+#    print $OUTPUT $pregen_histograms->[0]->{"basesPerBin"};
+#}
+
+
+###UPLOADING###
+###############
 
 
 my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $compress, $key);
@@ -120,13 +141,13 @@ $style{clientConfig} = JSON::from_json($clientConfig)
 foreach my $seqInfo (@refSeqs) {
     #hdr is the bam header
     my ($tid, $start, $end) = $hdr->parse_region($seqInfo->{name});
-    print OUTPUT "tid: $tid, start: $start, end: $end\n";
+    print $OUTPUT "tid: $tid, start: $start, end: $end\n";
     
     mkdir("$trackDir/" . $seqInfo->{name})
         unless (-d "$trackDir/" . $seqInfo->{name});
 
     if (defined($tid)) {
-        print OUTPUT "trackDir: $trackDir\n, trackLabel: $trackLabel\n";
+        print $OUTPUT "trackDir: $trackDir\n, trackLabel: $trackLabel\n";
         my $jsonGen = JsonGenerator->new("$trackDir/" . $seqInfo->{name}
                                          . "/" . $trackLabel,
                                          $nclChunk,
@@ -144,7 +165,7 @@ foreach my $seqInfo (@refSeqs) {
         #              sub { $sorter->addSorted(align2array($_[0])) });
 
         if( $bam_linking ) {
-            print OUTPUT "linking\n";
+            print $OUTPUT "linking\n";
             my %paired_info;
             $index->fetch($bam, $tid, $start, $end, sub { a2a( $_[0], $_[1]) }, \%paired_info);
 
@@ -154,7 +175,7 @@ foreach my $seqInfo (@refSeqs) {
             }
         }
         else{
-            print OUTPUT "not linking\n";
+            print $OUTPUT "not linking\n";
             my @tosort;
             $index->fetch( $bam,
                            $tid,
@@ -179,11 +200,11 @@ foreach my $seqInfo (@refSeqs) {
 }
 
 if( $bad_bam ){
-    print OUTPUT "bad bam\n";
+    print $OUTPUT "bad bam\n";
     print '{"status":"ERROR", "message":"This BAM file can\'t be read by Bio::DB::Bam (reporting that there are 0 alignments)"}';
 }
 else{
-    print OUTPUT "good bam\n";
+    print $OUTPUT "good bam\n";
     #add a new entry to trackInfo.js
     #what if we want to group specific tracks to particular reference sequences
 
@@ -196,13 +217,15 @@ else{
                          };
     JsonGenerator::writeTrackEntry( "$data_dir/trackInfo.js", $new_entry_json );
 
-    close OUTPUT;
-    close ERROR;
 
     print '{"status":"OK", "trackData":[';
     print JSON::to_json($new_entry_json, {pretty => 1});
     print ']}';
 }
+
+close $OUTPUT;
+close ERROR;
+
 print "\n</textarea></body></html>";
 
 sub align2array {
@@ -227,12 +250,13 @@ sub a2a {
     my $left = $align->pos+1;
     my $right = $align->calend+1;
     my $strand = ($align->flag & 0x10) >> 4; #$align->strand; #$align->strand ? -1 : 1;
+    $strand = $strand ? -1 : 1;
     my $qname = $align->qname;
 
     #remember the -$hanging_fix on the main $right are so it doesnt poke out from the subfeature
     my $hanging_fix = 20;
     if( ! defined $paired_info->{$qname} ){
-        $paired_info->{$qname} = [$left,$right-$hanging_fix,$strand,[$left,$right,$strand, $strand ? "reverse" : "forward" ]];
+        $paired_info->{$qname} = [$left,$right-$hanging_fix,0,[$left,$right,$strand, $strand ? "reverse" : "forward" ]];
     }
     else {
         my $mates_info = $paired_info->{$qname};

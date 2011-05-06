@@ -156,7 +156,7 @@ while (<region_FH>) {
         @splt = split(/\s+/,$_);
         $start = int($splt[1]);
         $end = int($splt[2]);
-        $sorter->addSorted( [$start,$end,1] );
+        $sorter->addSorted( [$start,$end,0] );
     }
 
     $line_num++;
