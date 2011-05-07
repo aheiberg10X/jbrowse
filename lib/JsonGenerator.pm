@@ -190,7 +190,8 @@ sub new {
         ext            => ($compress ? "jsonz" : "json"),
         refStart       => $refStart,
         refEnd         => $refEnd,
-        count          => 0
+        count          => 0,
+        pregen_histograms => $pregen_histograms
     };
 
     # $featureCount is an optional parameter; if we don't know it,
@@ -204,34 +205,33 @@ sub new {
     # $histBinThresh is the approximate the number of bases per
     # histogram bin at the zoom level where FeatureTrack.js switches
     # to the histogram view by default
-    my $histBinThresh = ($refEnd * $density_estimate * 10) / $featureCount;
+    my $histBinThresh = ($refEnd * $density_estimate * 100) / $featureCount;
     $self->{histBinBases} = $multiples[0];
     foreach my $multiple (@multiples) {
         $self->{histBinBases} = $multiple;
         last if $multiple > $histBinThresh;
     }
+    open( my $OUTPUT, '>', $upload_dir . "/" . "jsongen_output2.txt" ) or die $!;
+    my $temp = $self->{histBinBases};
+    print $OUTPUT "histBinThresh: $histBinThresh\n";
+    print $OUTPUT "histBinBases: $temp\n";
 
     # initialize histogram arrays to all zeroes
     $self->{hists} = [];
     for (my $i = 0; $i <= $#multiples; $i++) {
         my $binBases = $self->{histBinBases} * $multiples[$i];
         $self->{hists}->[$i] = [(0) x ceil($refEnd / $binBases)];
+        my $temp = ceil($refEnd / $binBases);
+
+        print $OUTPUT "zoom level $i has $temp bins\n";
+
         # somewhat arbitrarily cut off the histograms at 100 bins
         last if $binBases * 100 > $refEnd;
     }
 
-    ################
-    ### start me ###
-    if( defined $pregen_histograms ){
-        my $hist_detail_levels = scalar @{$pregen_histograms};
-        if( $DEBUG ){
-            print OUTPUT "hist_detail_levels: $hist_detail_levels\n";
-        }
+    close $OUTPUT;
 
-    }
-    ### end me ###
-    ##############
-
+    
     mkdir($outDir) unless (-d $outDir);
     unlink (glob $outDir . "/hist*");
     unlink (glob $outDir . "/lazyfeatures*");
@@ -275,7 +275,7 @@ sub addFeature {
     $self->{features}->addSorted($feature);
     $self->{count}++;
 
-    if( ! $PREGEN_HISTOGRAMS ){
+    if( ! defined $self->{pregen_histograms} ){
         my $histograms = $self->{hists};
         my $curHist;
         my $start = max(0, min($feature->[$startIndex], $self->{refEnd}));
@@ -310,6 +310,7 @@ sub hasFeatures {
 
 sub generateTrack {
     my ($self) = @_;
+    open( my $OUTPUT, '>', $upload_dir . "/" . "jsongen_output.txt" ) or die $!;
 
     my $ext = $self->{ext};
     my $features = $self->{features};
@@ -324,14 +325,43 @@ sub generateTrack {
     for ($i = 1; $i <= $#multiples; $i++) {
         last if ($self->{histBinBases} * $multiples[$i]) > $histBinThresh;
     }
+    
+    if( $DEBUG ){ 
+        print $OUTPUT "histBinThresh: $histBinThresh\n"; 
+        my $temp = $self->{histBinBases};
+        print $OUTPUT "histBinBases: $temp\n";
+        print $OUTPUT "i: $i\n";
+    }
 
     my @histogramMeta;
+    #############################
+    ### pregen hisogram meta ###
+    if( defined $self->{pregen_histograms} ){
+        my $num_hist_levels = scalar @{$self->{pregen_histograms}};
+        my $num_hists = scalar @{$self->{hists}};
+        print $OUTPUT "numhistlevels: ", $num_hist_levels, "numhists: ", $num_hists, "\n";
+        for( my $i = 0; $i < $num_hist_levels; $i++ ){
+            $self->{hists}->[$num_hists - 1 - $i] = $self->{pregen_histograms}->[$i]->{counts};
+        }
+        #set $i to reflect how many histograms were pre-generated
+        $i = $num_hists - $num_hist_levels + 1 + 1;
+    
+        if( $DEBUG ){ print $OUTPUT "new i is $i\n"; }
+    }
+    ### pregen histogram meta ###
+    #############################
+   
+
     # Generate more zoomed-out histograms so that the client doesn't
     # have to load all of the histogram data when there's a lot of it.
     for (my $j = $i - 1; $j <= $#multiples; $j += 1) {
         my $curHist = $self->{hists}->[$j];
         last unless defined($curHist);
         my $histBases = $self->{histBinBases} * $multiples[$j];
+    
+        if( $DEBUG ){
+            print $OUTPUT "    binBases[$j]: $histBases\n";
+        }
 
         my $chunks = chunkArray($curHist, $histChunkSize);
         for (my $i = 0; $i <= $#{$chunks}; $i++) {
@@ -399,6 +429,8 @@ sub generateTrack {
               $trackData,
               {pretty => 0, max_depth => MAX_JSON_DEPTH},
               $self->{compress});
+
+    close $OUTPUT;
 }
 
 sub arrayStats {

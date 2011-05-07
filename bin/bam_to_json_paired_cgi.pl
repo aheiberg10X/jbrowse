@@ -57,11 +57,15 @@ close OUTFILE;
 my $pregen_histograms;
 if( defined $bam_histogram_filename and $bam_histogram_filename ne ''){
     local $/=undef;
-    open( OUTFILE, '<', "$bam_histogram_filename");
-    my $json_text = <OUTFILE>;
+    my $json_text = <$bam_histogram_filename>;
+    
+    #delete whitespace
+    $json_text =~ s/\s+/ /g;
+    #delete what's leading up to the start of the object (i.e ' histogram = ')
+    $json_text =~ s/^.+= //;
+    
     close OUTFILE;
     $pregen_histograms = JSON::decode_json($json_text);
-    print $OUTPUT "json_text: $json_text\n";
 }
 
 #if( $DEBUG ){
@@ -73,7 +77,7 @@ if( defined $bam_histogram_filename and $bam_histogram_filename ne ''){
 ###############
 
 
-my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $compress, $key);
+my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $compress, $key, $featureCount);
 
 my $defaultClass = "transcript";
 my $defaultSubfeatureClasses = {"forward","forward-strand",
@@ -151,11 +155,16 @@ foreach my $seqInfo (@refSeqs) {
         my $jsonGen = JsonGenerator->new("$trackDir/" . $seqInfo->{name}
                                          . "/" . $trackLabel,
                                          $nclChunk,
-                                         $compress, $trackLabel,
+                                         $compress, 
+                                         $trackLabel,
                                          $seqInfo->{name},
                                          $seqInfo->{start},
                                          $seqInfo->{end},
-                                         \%style, \@bamHeaders, \@subfeatureHeaders);
+                                         \%style, 
+                                         \@bamHeaders, 
+                                         \@subfeatureHeaders,
+                                         $featureCount,
+                                         $pregen_histograms);
 
         my $sorter = NCLSorter->new(sub { $jsonGen->addFeature($_[0]) },
                                     $startIndex, $endIndex);
@@ -165,7 +174,7 @@ foreach my $seqInfo (@refSeqs) {
         #              sub { $sorter->addSorted(align2array($_[0])) });
 
         if( $bam_linking ) {
-            print $OUTPUT "linking\n";
+            print $OUTPUT "fo sho linking\n";
             my %paired_info;
             $index->fetch($bam, $tid, $start, $end, sub { a2a( $_[0], $_[1]) }, \%paired_info);
 
