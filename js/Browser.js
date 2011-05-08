@@ -48,6 +48,11 @@ var Browser = function(params) {
     this.names = new LazyTrie(dataRoot + "/names/lazy-",
 			      dataRoot + "/names/root.json");
     this.tracks = [];
+    console.log(trackData);
+    for( track in trackData ){
+        console.log(trackData[track]);
+        this.tracks.push(trackData[track]["key"]);
+    }
     var brwsr = this;
     brwsr.isInitialized = false;
     dojo.addOnLoad(
@@ -138,11 +143,11 @@ var Browser = function(params) {
 
             //set up track list
             //var trackListDiv = brwsr.createTrackList(brwsr.container, params);
-            brwsr.createTrackList2( containerWidget, params );
+            brwsr.createTrackList2( brwsr, containerWidget, params );
 
             containerWidget.startup();
 
-	    brwsr.isInitialized = true;
+            brwsr.isInitialized = true;
 
             //set initial location
             var oldLocMap = dojo.fromJson(dojo.cookie(brwsr.container.id + "-location")) || {};
@@ -165,16 +170,17 @@ var Browser = function(params) {
                                         * 0.6) | 0)));
             }
 
-	    //if someone calls methods on this browser object
-	    //before it's fully initialized, then we defer
-	    //those functions until now
-	    for (var i = 0; i < brwsr.deferredFunctions.length; i++)
-		brwsr.deferredFunctions[i]();
-	    brwsr.deferredFunctions = [];
-        });
+        //if someone calls methods on this browser object
+        //before it's fully initialized, then we defer
+        //those functions until now
+        for (var i = 0; i < brwsr.deferredFunctions.length; i++)
+        brwsr.deferredFunctions[i]();
+        brwsr.deferredFunctions = [];
+        }
+    );
 };
 
-Browser.prototype.createTrackList2 = function(parent, params) {
+Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     var deleteSubmit = function(brwsr) {
 
@@ -185,6 +191,12 @@ Browser.prototype.createTrackList2 = function(parent, params) {
         brwsr.trash_drop.forInItems(function(obj, id, map) {
             tracks_in_trash.push(obj.data.key);
             ids_to_trash.push(id);
+
+            //current tracklist bookkeeping
+            var ix = brwsr.tracks.indexOf(obj.data.key);
+            if( ix != -1 ){
+                brwsr.tracks.splice(ix,1);
+            }
         });
         
         var args = {chrom: current_chrom,
@@ -214,22 +226,56 @@ Browser.prototype.createTrackList2 = function(parent, params) {
         dojo.byId("track_manager_status").innerHTML = "posted"
     };
 
-    var uploadBAM = function() {
-        dojo.io.iframe.send({
-            url: "../bin/bam_to_json_paired_cgi.pl",
-            method: "post",
-            handleAs: "json",
-            form: dojo.byId("track_manager_form"),
-            load: function(data,ioArgs) {
-                if( data['status'] == "ERROR" ) {
-                    alert(data['message']);
-                }
-                else{
-                    brwsr.trackListWidget.insertNodes(false,data['trackData']);
-                    dojo.byId("track_manager_status").innerHTML = "bam posted";
-                }
+    var trackkeyFromFilename = function( path ){
+        //UNIX only right now
+        var splt = path.split('\\');
+        var filename = splt[splt.length-1].split('.');
+        var name = filename.slice(0, filename.length-1).join('.');
+        return name;
+    }
+
+    //0 : OK
+    //1 : malformed name
+    //2 : duplicate name
+    var hasNameConflict = function(name) {
+        if( name == '' ){ return 1; }
+        else{
+            for( trackkey in brwsr.tracks ){
+                console.log(brwsr.tracks[trackkey]);
+                if( name == brwsr.tracks[trackkey] ){
+                    return 2;
+                 }
             }
-        });
+        }
+        return 0;
+        //compared to ?? (other tracks)
+    }
+
+    var uploadBAM = function() {
+        var name = trackkeyFromFilename( dojo.byId("bam_filename").value );
+        var conflict = hasNameConflict( name );
+        if( conflict ){
+            if( conflict == 1 ){ alert("Filename is empty.") }
+            else if( conflict == 2 ){ alert("There is already a track with that name.") }            
+        }
+        else{
+            brwsr.tracks.push(name);
+            dojo.io.iframe.send({
+                url: "../bin/bam_to_json_paired_cgi.pl",
+                method: "post",
+                handleAs: "json",
+                form: dojo.byId("track_manager_form"),
+                load: function(data,ioArgs) {
+                    if( data['status'] == "ERROR" ) {
+                        alert(data['message']);
+                    }
+                    else{
+                        brwsr.trackListWidget.insertNodes(false,data['trackData']);
+                        dojo.byId("track_manager_status").innerHTML = "bam posted";
+                    }
+                }
+            });
+        }
     };
 
     var uploadRegion = function(brwsr) {
@@ -371,7 +417,7 @@ Browser.prototype.createTrackList2 = function(parent, params) {
                                    '<div id="bam_controls">' + 
                                    '<p id="bamfile">File</p>' + 
                                    '<p id="bamhistogram">Histogram Data (opt)</p>' +
-                                   '<p id="bamlinking"><input type="checkbox" name="bam_linking" value="1" />Display Links</p>' +
+                                   '<p id="bamlinking"><input type="checkbox" name="bam_linking" value="1" checked=true/>Display Links</p>' +
                                    '</div>' +
                                    '<h3>Region</h3>'+
                                    '<div id="region_controls">' +
@@ -383,6 +429,7 @@ Browser.prototype.createTrackList2 = function(parent, params) {
 
     var bam_input = document.createElement("input");
     bam_input.type = "file";
+    bam_input.id = "bam_filename";
     bam_input.name = "bam_filename";
     bam_input.style.cssText = "border-top: 10px;";
     dojo.byId("bamfile").appendChild( bam_input );
@@ -512,8 +559,10 @@ Browser.prototype.createTrackList = function(parent, params) {
        dojo.byId("track_manager_status").innerHTML = "posted"
     };
 
+
     var uploadBAM = function() {
-            dojo.io.iframe.send({
+
+        dojo.io.iframe.send({
             url: "../bin/bam_to_json_paired_cgi.pl",
             method: "post",
             handleAs: "text",
@@ -526,7 +575,7 @@ Browser.prototype.createTrackList = function(parent, params) {
     };
 
     var uploadRegion = function() {
-            dojo.io.iframe.send({
+        dojo.io.iframe.send({
             url: "../bin/region_to_json.pl",
             method: "post",
             handleAs: "text",
