@@ -35,7 +35,7 @@ FeatureTrack.prototype = new Track("");
 
 FeatureTrack.prototype.loadSuccess = function(trackInfo) {
     var my_subfeat_scale = 1; //was 80, makes subfeatures display even when zoomed out
-    var my_hist_scale = 1; // was 4
+    var my_hist_scale = .25; // was 4
     var startTime = new Date().getTime();
     this.count = trackInfo.featureCount;
     this.fields = {};
@@ -291,9 +291,9 @@ FeatureTrack.prototype.transfer = function(sourceBlock, destBlock, scale,
 };
 
 FeatureTrack.prototype.fillFeatures = function(blockIndex, block,
-                                               leftBlock, rightBlock,
-                                               leftBase, rightBase, scale,
-                                               containerStart, containerEnd) {
+                                        leftBlock, rightBlock,
+                                        leftBase, rightBase, scale,
+                                        containerStart, containerEnd) {
     //arguments:
     //block: div to be filled with info
     //leftBlock: div to the left of the block to be filled

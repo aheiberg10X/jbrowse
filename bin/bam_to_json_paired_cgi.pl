@@ -36,7 +36,6 @@ print $cgi->header;
 #place a json response inside here"
 print "<html><body><textarea>\n";
 
-#moved to GlobalConfig
 open( my $OUTPUT, '>', $upload_dir . "/" . "bam_output.txt" ) or die $!;
 open ERROR,  '>', $upload_dir . "/" . "bam_error.txt"  or die $!;
 STDERR->fdopen( \*ERROR,  'w' ) or die $!;
@@ -67,11 +66,6 @@ if( defined $bam_histogram_filename and $bam_histogram_filename ne ''){
     close OUTFILE;
     $pregen_histograms = JSON::decode_json($json_text);
 }
-
-#if( $DEBUG ){
-#    print $OUTPUT $pregen_histograms->[0]->{"basesPerBin"};
-#}
-
 
 ###UPLOADING###
 ###############
@@ -203,6 +197,7 @@ foreach my $seqInfo (@refSeqs) {
             $jsonGen->generateTrack();
             1;
         } or do {
+            print $OUTPUT $@;
             $bad_bam = 1;
         }
     }

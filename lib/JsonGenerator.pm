@@ -216,19 +216,21 @@ sub new {
     print $OUTPUT "histBinThresh: $histBinThresh\n";
     print $OUTPUT "histBinBases: $temp\n";
 
-    # initialize histogram arrays to all zeroes
     $self->{hists} = [];
-    for (my $i = 0; $i <= $#multiples; $i++) {
-        my $binBases = $self->{histBinBases} * $multiples[$i];
-        $self->{hists}->[$i] = [(0) x ceil($refEnd / $binBases)];
-        my $temp = ceil($refEnd / $binBases);
+    if( ! defined $pregen_histograms ){
+        # initialize histogram arrays to all zeroes
+        for (my $i = 0; $i <= $#multiples; $i++) {
+            my $binBases = $self->{histBinBases} * $multiples[$i];
+            $self->{hists}->[$i] = [(0) x ceil($refEnd / $binBases)];
+            my $temp = ceil($refEnd / $binBases);
 
-        print $OUTPUT "zoom level $i has $temp bins\n";
+            print $OUTPUT "zoom level $i has $temp bins\n";
 
-        # somewhat arbitrarily cut off the histograms at 100 bins
-        last if $binBases * 100 > $refEnd;
+            # somewhat arbitrarily cut off the histograms at 100 bins
+            last if $binBases * 100 > $refEnd;
+        }
     }
-
+    #else do nothing, wait until generateTrack to pull in pregen data
     close $OUTPUT;
 
     
@@ -337,15 +339,21 @@ sub generateTrack {
     #############################
     ### pregen hisogram meta ###
     if( defined $self->{pregen_histograms} ){
-        my $num_hist_levels = scalar @{$self->{pregen_histograms}};
-        my $num_hists = scalar @{$self->{hists}};
-        print $OUTPUT "numhistlevels: ", $num_hist_levels, "numhists: ", $num_hists, "\n";
-        for( my $i = 0; $i < $num_hist_levels; $i++ ){
-            $self->{hists}->[$num_hists - 1 - $i] = $self->{pregen_histograms}->[$i]->{counts};
+        my @sorted = sort { $a->{basesPerBin} <=> $b->{basesPerBin} } @{$self->{pregen_histograms}};
+        $self->{pregen_histograms} = \@sorted;
+        print $OUTPUT "sorted it\n";
+        my $num_pregen_hists = scalar @{$self->{pregen_histograms}};
+        #my $num_hists = scalar @{$self->{hists}};
+        print $OUTPUT "numhistlevels: $num_pregen_hists\n";
+
+        #they are order in descending order (bpPerBin), want to insert then in ascending
+        #$self->{pregen_histograms} = reverse($self->{pregen_histograms});
+        for( my $k = 0; $k < $num_pregen_hists; $k++ ){
+            $self->{hists}->[$k] = $self->{pregen_histograms}->[$k]->{counts};
         }
+
+        $i = 1; #($#multiples + 1) - $num_pregen_hists + 1;
         #set $i to reflect how many histograms were pre-generated
-        $i = $num_hists - $num_hist_levels + 1 + 1;
-    
         if( $DEBUG ){ print $OUTPUT "new i is $i\n"; }
     }
     ### pregen histogram meta ###
@@ -357,7 +365,14 @@ sub generateTrack {
     for (my $j = $i - 1; $j <= $#multiples; $j += 1) {
         my $curHist = $self->{hists}->[$j];
         last unless defined($curHist);
-        my $histBases = $self->{histBinBases} * $multiples[$j];
+
+        my $histBases;
+        if( ! defined $self->{pregen_histograms} ){
+            $histBases = $self->{histBinBases} * $multiples[$j];
+        }
+        else{
+            $histBases = $self->{pregen_histograms}->[$j]->{basesPerBin};
+        }
     
         if( $DEBUG ){
             print $OUTPUT "    binBases[$j]: $histBases\n";
@@ -384,7 +399,13 @@ sub generateTrack {
     my @histStats;
     for (my $j = $i - 1; $j <= $#multiples; $j++) {
         last unless defined($self->{hists}->[$j]);
-        my $binBases = $self->{histBinBases} * $multiples[$j];
+        my $binBases;
+        if( ! defined $self->{pregen_histograms} ){
+            $binBases = $self->{histBinBases} * $multiples[$j];
+        }
+        else{
+            $binBases = $self->{pregen_histograms}->[$j]->{basesPerBin};
+        }
         push @histStats, {'bases' => $binBases,
                           arrayStats($self->{hists}->[$j])};
     }

@@ -118,7 +118,8 @@ while (<region_FH>) {
 
         my @splt = split(/\s+/,$_);
 	print OUTPUT "splt: ", @splt;
-        if( $splt[0] ne ">chrom" ){
+        if( $splt[0] =~ m/^chr/i ){
+        #if( $splt[0] ne ">chrom" ){
             $error = 1;
             last;
         }

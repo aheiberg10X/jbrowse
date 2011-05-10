@@ -259,7 +259,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             else if( conflict == 2 ){ alert("There is already a track with that name.") }            
         }
         else{
-            brwsr.tracks.push(name);
             dojo.io.iframe.send({
                 url: "../bin/bam_to_json_paired_cgi.pl",
                 method: "post",
@@ -272,6 +271,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                     else{
                         brwsr.trackListWidget.insertNodes(false,data['trackData']);
                         dojo.byId("track_manager_status").innerHTML = "bam posted";
+                        brwsr.tracks.push(name);
                     }
                 }
             });
