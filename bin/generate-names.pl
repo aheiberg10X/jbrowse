@@ -5,7 +5,7 @@ use warnings;
 
 use FindBin qw($Bin);
 use File::Spec::Functions;
-use lib (catdir($Bin, updir(), "lib"), "/usr/local/lib/perl5", "/usr/local/lib/perl5/site_perl");
+use lib (catdir($Bin, updir(), "lib"), "/usr/local/lib/perl5", "/usr/local/lib/perl5/site_perl", "/usr/local/lib/perl5/vendor_perl");
 
 use Getopt::Long;
 use IO::File;
