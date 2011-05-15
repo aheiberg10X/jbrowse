@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#/usr/bin/perl
 
 use strict;
 use warnings;
@@ -6,7 +6,7 @@ use warnings;
 use CGI qw(:standard);
 
 use FindBin qw($Bin);
-use lib "$Bin/../lib";
+use lib ("$Bin/../lib", "/usr/local/lib/perl5:/usr/local/lib/perl5/site_perl");
 
 use Getopt::Long;
 use JsonGenerator;
@@ -41,6 +41,7 @@ open ERROR,  '>', $upload_dir . "/" . "bam_error.txt"  or die $!;
 STDERR->fdopen( \*ERROR,  'w' ) or die $!;
 
 if( $DEBUG ) {
+    print $OUTPUT "we getting the auto-histogram file?: $bam_histogram_filename\n";
     print $OUTPUT $upload_dir ."/". $bam_filename;
 }
 
