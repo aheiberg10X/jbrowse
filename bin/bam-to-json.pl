@@ -84,6 +84,7 @@ if ($cssClass eq $defaultClass) {
 
 foreach my $seqInfo (@refSeqs) {
     my ($tid, $start, $end) = $hdr->parse_region($seqInfo->{name});
+    #print "start: $start, end: $end\n";
     mkdir("$trackDir/" . $seqInfo->{name})
         unless (-d "$trackDir/" . $seqInfo->{name});
 
