@@ -211,10 +211,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 //remove track object
                 brwsr.trash_drop.selectAll();
                 brwsr.trash_drop.deleteSelectedNodes();
-                
-                //for( id in ids_to_trash) {
-                //    brwsr.trash_drop.delItem(id);
-                //}
                 dojo.byId("track_manager_status").innerHTML = "Message posted.";
             },
             error: function(error) {
@@ -227,7 +223,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     };
 
     var trackkeyFromFilename = function( path ){
-        //UNIX only right now
+        //handily it will always appear as C:\fakepath\<filename>
         var splt = path.split('\\');
         var filename = splt[splt.length-1].split('.');
         var name = filename.slice(0, filename.length-1).join('.');
@@ -237,6 +233,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     //0 : OK
     //1 : malformed name
     //2 : duplicate name
+    //3 : cannot find histogram file
     var hasNameConflict = function(name) {
         if( name == '' ){ return 1; }
         else{
@@ -252,15 +249,22 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     }
 
     var uploadBAM = function() {
+        var display_linking = dojo.byId("display_linking").value;
+
         var name = trackkeyFromFilename( dojo.byId("bam_filename").value );
         var conflict = hasNameConflict( name );
         if( conflict ){
             if( conflict == 1 ){ alert("Filename is empty.") }
             else if( conflict == 2 ){ alert("There is already a track with that name.") }            
+            else if( conflict == 3 ){ alert("Cannot find the file: INTERPOLATE.histogram") }
         }
         else{
+            var has_histograms = dojo.byId("has_histograms").value;
+            if( has_histograms == "1" ){
+                dojo.byId("bam_histogram_filename").value = name+".histogram";
+            }
             dojo.io.iframe.send({
-                url: "../bin/bam_to_json_paired_cgi.pl",
+                url: "$root_dir/bin/bam_to_json_paired_cgi.pl",
                 method: "post",
                 handleAs: "json",
                 form: dojo.byId("track_manager_form"),
@@ -280,7 +284,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     var uploadRegion = function(brwsr) {
         dojo.io.iframe.send({
-            url: "../bin/region_to_json.pl",
+            url: "$root_dir/bin/region_to_json.pl",
             method: "post",
             handleAs: "json",
             form: dojo.byId("track_manager_form"),
@@ -415,13 +419,16 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     track_manager_form.enctype = "multipart/form-data";
     track_manager_form.innerHTML = '<h3>BAM</h3>' +
                                    '<div id="bam_controls">' + 
-                                   '<p id="bamfile">File</p>' + 
-                                   '<p id="bamhistogram">Histogram Data (opt)</p>' +
-                                   '<p id="bamlinking"><input type="checkbox" name="bam_linking" value="1" checked=true/>Display Links</p>' +
+                                   '<p id="bamfile"></p>' + 
+                                   //'<p id="bamhistogram">Histogram Data (opt)</p>' +
+                                   '<input type="checkbox" name="display_linking" id="display_linking" value="1" checked=true/>Display Links<br/>' +
+                                   '<input type="checkbox" name="has_histograms" id="has_histograms" value="1" checked=true/>Use custom histogram<br/>' +
+//                                   '<p id="regions"><input type="checkbox" name="bam_linking" value="1" checked=true/>Upload region file</p>' +
+
                                    '</div>' +
                                    '<h3>Region</h3>'+
                                    '<div id="region_controls">' +
-                                   '<p id="regionfile">File</p.' +
+                                   '<p id="regionfile">File</p>' +
                                    '</div>';
 
 
@@ -437,7 +444,9 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     var bam_histogram = document.createElement("input");
     bam_histogram.type = "file";
     bam_histogram.name = "bam_histogram_filename";
-    dojo.byId("bamhistogram").appendChild( bam_histogram );
+    bam_histogram.id = "bam_histogram_filename";
+    //bam_histogram.style.cssText = "visibility:hidden; position: absolute; top:0; left:0;";
+    dojo.byId("bamfile").appendChild( bam_histogram );
 
 //    var bam_linking = new dijit.form.CheckBox(
 //        {name: "bam_linking",
@@ -449,7 +458,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     var bam_upload = new dijit.form.Button(
         {name: "bam_upload", 
          label: "Upload BAM", 
-         style: "margin-top: -10px;",
+         style: "margin-top: 0px;",
          onClick: uploadBAM
         }).placeAt( dojo.byId("bam_controls") );
 
@@ -462,14 +471,15 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     var input_regionfile = document.createElement("input");
     input_regionfile.type = "file";
     input_regionfile.name = "region_filename";
-    dojo.byId("regionfile").appendChild( input_regionfile );
+    input_regionfile.style.cssText = "visibility: hidden; position: absolute; top:0; left:0;";
+    dojo.byId("bamfile").appendChild( input_regionfile );
 
     var upload_regionfile = new dijit.form.Button(
-        {id: "upload_regionfile", 
-         label: "Upload Region", 
-         style: "margin-top: -10px;",
-         onClick: function() {uploadRegion(brwsr)}
-        }).placeAt( dojo.byId("region_controls") );
+            {id: "upload_regionfile", 
+             label: "Upload Region", 
+             style: "margin-top: -10px;",
+             onClick: function() {uploadRegion(brwsr)}
+            }).placeAt( dojo.byId("region_controls") );
 
     var trashcan_div = document.createElement("div");
     trashcan_div.id = "trashcan_div";
@@ -542,7 +552,7 @@ Browser.prototype.createTrackList = function(parent, params) {
 
     var deleteSubmit = function() {
        var xhrArgs = {
-         url: "../bin/dostuff.pl",
+         url: "$root_dir/bin/dostuff.pl",
          //postData: {name: "om text"},
          form: dojo.byId("track_manager_form"),
          //content: {key: },
