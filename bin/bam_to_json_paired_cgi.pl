@@ -6,7 +6,7 @@ use warnings;
 use CGI qw(:standard);
 
 use FindBin qw($Bin);
-use lib ("$Bin/../lib", "/usr/local/lib/perl5:/usr/local/lib/perl5/site_perl");
+use lib ("$Bin/../lib", "/usr/local/lib/perl5", "/usr/local/lib/perl5/site_perl");
 
 use Getopt::Long;
 use JsonGenerator;
@@ -168,13 +168,16 @@ foreach my $seqInfo (@refSeqs) {
         #$index->fetch($bam, $tid, $start, $end,
         #              sub { $sorter->addSorted(align2array($_[0])) });
 
+        my (@bookmarks, $cur_left, $cur_right);
         if( $bam_linking ) {
-            print $OUTPUT "fo sho linking\n";
             my %paired_info;
-            $index->fetch($bam, $tid, $start, $end, sub { a2a( $_[0], $_[1]) }, \%paired_info);
+            # $_[0] is the alignment found by fetch
+            # $_[1] is \%paired_info reference
+            $index->fetch($bam, $tid, $start, $end, sub { linking_align2array( $_[0], $_[1]) }, \%paired_info);
 
             my @sorted = sort {$paired_info{$a}[0] <=> $paired_info{$b}[0]} keys %paired_info;
             foreach my $key (@sorted){
+                updateBookmarks( \@bookmarks, \$cur_left, \$cur_right, $paired_info{$key} );
                 $sorter->addSorted( $paired_info{$key} );
             }
         }
@@ -187,8 +190,9 @@ foreach my $seqInfo (@refSeqs) {
                            $end,
                            sub{ align2array($_[0],$_[1])}, \@tosort);
 
-            foreach my $read (sort {$a->[0] <=> $b->[0]} @tosort){
-                $sorter->addSorted( $read );
+            foreach my $alignment (sort {$a->[0] <=> $b->[0]} @tosort){
+                updateBookmarks( \@bookmarks, \$cur_left, \$cur_right, $alignment );
+                $sorter->addSorted( $alignment );
             }
         }
 
@@ -248,7 +252,7 @@ sub align2array {
     push(@$tosort, [$left,$right,$strand]); #[[$left,$right,$strand,$strand ? "reverse" : "forward"]]]);
 }
 
-sub a2a {
+sub linking_align2array {
     my $align = shift;
     my $paired_info = shift;
 
@@ -278,4 +282,24 @@ sub a2a {
         }
         #sanity check for overlap?
     }
+}
+
+sub updateBookmarks {
+    my $bookmarks = shift;
+    my $cur_left = shift;
+    my $cur_right = shift;
+    my $align_array = shift;
+
+    my ($left,$right) = ($align_array->[0], $align_array->[1]);
+    if( $$cur_left <= $left and $left <= $$cur_right ){
+        if( $right > $$cur_right ){ 
+            $$cur_right = $right;
+        }
+    }
+    else {
+        if( $left - $$cur_right > $BOOKMARK_THRESH ){
+            push( @$bookmarks, $left );
+        }
+        ($$cur_left, $$cur_right) = ($left,$right);
+    }    
 }
