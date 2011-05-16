@@ -265,7 +265,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             /*dojo.byId("bam_histogram_filename").value = name+".histogram";*/
             /*}*/
             dojo.io.iframe.send({
-                url: "../bin/bam_to_json_paired_cgi.pl",
+                url: "bin/bam_to_json_paired_cgi.pl",
                 method: "post",
                 handleAs: "json",
                 form: dojo.byId("track_manager_form"),
