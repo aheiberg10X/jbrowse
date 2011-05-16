@@ -1,4 +1,4 @@
-#/usr/bin/perl
+#!/usr/bin/perl
 
 use strict;
 use warnings;
@@ -25,7 +25,7 @@ use GlobalConfig;
 
 my $cgi = CGI::new();
 my $bam_filename = $cgi->param('bam_filename');
-my $bam_linking = defined $cgi->param('bam_linking');
+my $bam_linking = defined $cgi->param('display_linking');
 my $bam_histogram_filename = $cgi->param("bam_histogram_filename");
 #if( not defined $bam_filename or $bam_filename eq '' ) {
 #    print "not definennenenene\n";
@@ -137,6 +137,8 @@ $style{clientConfig} = JSON::from_json($clientConfig)
 #        unless defined($style{clientConfig}->{histScale});
 #}
 
+my @bookmarks;
+my ($cur_left, $cur_right) = (0,0);
 foreach my $seqInfo (@refSeqs) {
     #hdr is the bam header
     my ($tid, $start, $end) = $hdr->parse_region($seqInfo->{name});
@@ -168,8 +170,8 @@ foreach my $seqInfo (@refSeqs) {
         #$index->fetch($bam, $tid, $start, $end,
         #              sub { $sorter->addSorted(align2array($_[0])) });
 
-        my (@bookmarks, $cur_left, $cur_right);
         if( $bam_linking ) {
+            print $OUTPUT "linkingi\n";
             my %paired_info;
             # $_[0] is the alignment found by fetch
             # $_[1] is \%paired_info reference
@@ -207,6 +209,12 @@ foreach my $seqInfo (@refSeqs) {
         }
     }
 }
+
+print $OUTPUT "bookmarks: @bookmarks\n";
+open(F,">","../data/bookmarks.js");
+print F "bookmarks = ";
+print F JSON::encode_json \@bookmarks;
+close(F);
 
 if( $bad_bam ){
     print $OUTPUT "bad bam\n";
