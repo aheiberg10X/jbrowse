@@ -11,7 +11,7 @@ sub new {
     my $self = { 'topList' => [],
                  'startIndex' => $start,
                  'endIndex' => $end,
-		 'sublistIndex' => $sublistIndex,
+        		 'sublistIndex' => $sublistIndex,
                  'lazyIndex' => $lazyIndex,
                  'measure' => $measure,
                  'output' => $output,
