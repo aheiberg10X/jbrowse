@@ -285,7 +285,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     var uploadRegion = function(brwsr) {
         dojo.io.iframe.send({
-            url: "$root_dir/bin/region_to_json.pl",
+            url: "bin/region_to_json.pl",
             method: "post",
             handleAs: "json",
             form: dojo.byId("track_manager_form"),
