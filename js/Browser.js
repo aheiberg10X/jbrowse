@@ -278,7 +278,15 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                         dojo.byId("track_manager_status").innerHTML = "bam posted";
                         brwsr.tracks.push(name);
                     }
+                },
+                error: function(response, ioArgs){
+                    alert("aksdfhlkasdjfklsdf");
+                    debug.dir(response);
+
+                    // return the response for succeeding callbacks
+                    //           return response;
                 }
+
             });
         }
     };
