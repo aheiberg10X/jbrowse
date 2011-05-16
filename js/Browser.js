@@ -280,7 +280,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                     }
                 },
                 error: function(response, ioArgs){
-                    alert("aksdfhlkasdjfklsdf");
+                    alert(response);
                     debug.dir(response);
 
                     // return the response for succeeding callbacks
