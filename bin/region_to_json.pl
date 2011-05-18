@@ -201,7 +201,8 @@ else{
                           'type' => "FeatureTrack",
                          };
 
-    print OUTPUT "newentry: " . JSON::encode_json($new_entry_json) . "\n"; 
+    print OUTPUT "label: $trackLabel, key: $key, trackRel: $trackRel, ext: $ext\n";
+    #print OUTPUT "newentry: " . JSON::encode_json($new_entry_json) . "\n"; 
     print OUTPUT "after encoding\n";
     JsonGenerator::writeTrackEntry(
                                    "$data_dir/trackInfo.js",
