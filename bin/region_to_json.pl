@@ -206,6 +206,8 @@ else{
                                    $new_entry_json
                                   );
 
+    print OUTPUT "after new entry written\n";
+
     print '{"status":"OK", "trackData" : [';
     print JSON::to_json($new_entry_json, {pretty => 1});
     print ']}';
