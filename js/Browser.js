@@ -428,11 +428,10 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     track_manager_form.enctype = "multipart/form-data";
     track_manager_form.innerHTML = '<h3>BAM</h3>' +
                                    '<div id="bam_controls">' + 
-                                   '<p id="bamfile"></p>' + 
-                                   //'<p id="bamhistogram">Histogram Data (opt)</p>' +
+                                   '<p id="bamfile">BAM File</p>' + 
+                                   '<p id="bamhistogram">Histogram Data (opt)</p>' +
                                    '<input type="checkbox" name="display_linking" id="display_linking" value="1" checked=true/>Display Links<br/>' +
                                    //'<input type="checkbox" name="has_histograms" id="has_histograms" value="1" checked=true/>Use custom histogram<br/>' +
-//                                   '<p id="regions"><input type="checkbox" name="bam_linking" value="1" checked=true/>Upload region file</p>' +
 
                                    '</div>' +
                                    '<h3>Region</h3>'+
@@ -455,7 +454,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     bam_histogram.name = "bam_histogram_filename";
     bam_histogram.id = "bam_histogram_filename";
     //bam_histogram.style.cssText = "visibility:hidden; position: absolute; top:0; left:0;";
-    dojo.byId("bamfile").appendChild( bam_histogram );
+    dojo.byId("bamhistogram").appendChild( bam_histogram );
 
 //    var bam_linking = new dijit.form.CheckBox(
 //        {name: "bam_linking",
@@ -480,8 +479,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     var input_regionfile = document.createElement("input");
     input_regionfile.type = "file";
     input_regionfile.name = "region_filename";
-    input_regionfile.style.cssText = "visibility: hidden; position: absolute; top:0; left:0;";
-    dojo.byId("bamfile").appendChild( input_regionfile );
+    //input_regionfile.style.cssText = "visibility: hidden; position: absolute; top:0; left:0;";
+    dojo.byId("regionfile").appendChild( input_regionfile );
 
     var upload_regionfile = new dijit.form.Button(
             {id: "upload_regionfile", 
