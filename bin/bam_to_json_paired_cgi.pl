@@ -266,22 +266,21 @@ sub linking_align2array {
 
     my $left = $align->pos+1;
     my $right = $align->calend+1;
+
     my $strand = ($align->flag & 0x10) >> 4; #$align->strand; #$align->strand ? -1 : 1;
+    my $this_style = $strand ? "reverse" : "forward";
     $strand = $strand ? -1 : 1;
+
     my $qname = $align->qname;
 
     #remember the -$hanging_fix on the main $right are so it doesnt poke out from the subfeature
     my $hanging_fix = 20;
     if( ! defined $paired_info->{$qname} ){
-        $paired_info->{$qname} = [$left,$right-$hanging_fix,0,[$left,$right,$strand, $strand ? "reverse" : "forward" ]];
+        $paired_info->{$qname} = [$left, $right, $strand, $this_style ];
     }
     else {
         my $mates_info = $paired_info->{$qname};
-        my $this_style;
-
-        $this_style = $strand ? "reverse" : "forward";
-        $mates_info->[3] = $mates_info->[2] ? "reverse" : "forward";
-
+        
         if( $mates_info->[0] < $left ){
             $paired_info->{$qname} = [$mates_info->[0],$right-$hanging_fix,0,[$mates_info,[$left,$right,$strand,$this_style]]];
         }
