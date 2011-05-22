@@ -10,9 +10,16 @@ function FeatureTrack(trackMeta, url, refSeq, browserParams) {
     //                changeCallback: function to call once JSON is loaded
     //                trackPadding: distance in px between tracks
     //                baseUrl: base URL for the URL in trackMeta
+    //                initCallback: would like to do some work here only once after a successful load.
+    //                              unmodified, the code calls changeCallback() after a successful
+    //                              load.  But changeCallback() also gets called after every move/zoom.
+    //                              In initCallback we'll place the code we only want executed once
+    //                              after a successful load. 
 
     Track.call(this, trackMeta.label, trackMeta.key,
                false, browserParams.changeCallback);
+
+    this.initCallback = browserParams.initCallback;
     this.fields = {};
     this.features = new NCList();
     this.refSeq = refSeq;
@@ -34,6 +41,10 @@ function FeatureTrack(trackMeta, url, refSeq, browserParams) {
 FeatureTrack.prototype = new Track("");
 
 FeatureTrack.prototype.loadSuccess = function(trackInfo) {
+
+    this.ia = trackInfo.interestingAreas;
+    
+
     var my_subfeat_scale = 1; //was 80, makes subfeatures display even when zoomed out
     var my_hist_scale = 1; // was 4
     var startTime = new Date().getTime();
@@ -112,6 +123,14 @@ FeatureTrack.prototype.loadSuccess = function(trackInfo) {
     }
 
     this.setLoaded();
+};
+
+//overloading the Track.setLoaded because only FeatureTracks need to pass 
+//the interestingAreas array to register it with Browser.
+FeatureTrack.prototype.setLoaded = function(){
+    var ia = this.ia;
+    this.initCallback( this.key, ia );
+    Track.prototype.setLoaded.call(this);
 };
 
 FeatureTrack.prototype.setViewInfo = function(genomeView, numBlocks,
@@ -606,6 +625,7 @@ FeatureTrack.prototype.renderSubfeature = function(feature, featDiv, subfeature,
 /*
 
 Copyright (c) 2007-2010 The Evolutionary Software Foundation
+
 
 Created by Mitchell Skinner <mitch_skinner@berkeley.edu>
 

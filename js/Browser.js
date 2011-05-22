@@ -37,6 +37,7 @@ var Browser = function(params) {
 
     var refSeqs = params.refSeqs;
     var trackData = params.trackData;
+    var bookmarks;
     var globals = params.globals;
     this.deferredFunctions = [];
     this.dataRoot = params.dataRoot;
@@ -49,9 +50,7 @@ var Browser = function(params) {
     this.names = new LazyTrie(dataRoot + "/names/lazy-",
 			      dataRoot + "/names/root.json");
     this.tracks = [];
-    console.log(trackData);
     for( track in trackData ){
-        console.log(trackData[track]);
         this.tracks.push(trackData[track]["key"]);
     }
     var brwsr = this;
@@ -129,6 +128,9 @@ var Browser = function(params) {
             //gv.setY(0);
             viewElem.view = gv;
 
+            //hook up InterestingAreas
+            brwsr.interestingAreas = new InterestingAreas( brwsr.refSeq.start, brwsr.refSeq.end );
+
             dojo.connect(browserWidget, "resize", function() {
                     gv.sizeInit();
 
@@ -171,14 +173,13 @@ var Browser = function(params) {
                                         * 0.6) | 0)));
             }
 
-        //if someone calls methods on this browser object
-        //before it's fully initialized, then we defer
-        //those functions until now
-        for (var i = 0; i < brwsr.deferredFunctions.length; i++)
-        brwsr.deferredFunctions[i]();
-        brwsr.deferredFunctions = [];
-        }
-    );
+            //if someone calls methods on this browser object
+            //before it's fully initialized, then we defer
+            //those functions until now
+            for (var i = 0; i < brwsr.deferredFunctions.length; i++)
+                brwsr.deferredFunctions[i]();
+            brwsr.deferredFunctions = [];
+        });
 };
 
 Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
@@ -239,7 +240,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         if( name == '' ){ return 1; }
         else{
             for( trackkey in brwsr.tracks ){
-                console.log(brwsr.tracks[trackkey]);
                 if( name == brwsr.tracks[trackkey] ){
                     return 2;
                  }
@@ -260,10 +260,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             else if( conflict == 3 ){ alert("Cannot find the file: INTERPOLATE.histogram") }
         }
         else{
-            /*var has_histograms = dojo.byId("has_histograms").value;*/
-            /*if( has_histograms == "1" ){*/
-            /*dojo.byId("bam_histogram_filename").value = name+".histogram";*/
-            /*}*/
             dojo.io.iframe.send({
                 url: "bin/bam_to_json_paired_cgi.pl",
                 method: "post",
@@ -281,7 +277,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 },
                 error: function(response, ioArgs){
                     alert(response);
-                    debug.dir(response);
 
                     // return the response for succeeding callbacks
                     //           return response;
@@ -311,7 +306,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     var ep = new dojox.layout.ExpandoPane(
         {id: 7,
-	 title: "",
+	     title: "",
          region: "left",
          style: "width: 20%; height: 98%; background-color:#CBCBCB; border-style: none solid none none; border-color: #818181",
          splitter: "true"
@@ -349,6 +344,11 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     var brwsr = this;
 
+    
+    var initCallback = function( trackKey, tracksInterestingAreas ) {
+        brwsr.interestingAreas.addTrack( trackKey, tracksInterestingAreas );
+    };
+
     var changeCallback = function() {
         brwsr.view.showVisibleBlocks(true);
     };
@@ -368,6 +368,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         node.id = dojo.dnd.getUniqueId();
         return {node: node, data: track, type: ["track"]};
     };
+
     this.trackListWidget = new dojo.dnd.Source(trackListDiv,
                                                {creator: trackListCreate,
 						accept: ["track"],
@@ -377,12 +378,15 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         var node;
         if ("avatar" == hint) {
             return trackListCreate(track, hint);
-        } else {
+        } 
+        else {
             var replaceData = {refseq: brwsr.refSeq.name};
             var url = track.url.replace(/\{([^}]+)\}/g, function(match, group) {return replaceData[group];});
             var klass = eval(track.type);
             var newTrack = new klass(track, url, brwsr.refSeq,
                                      {
+                                         //see FeatureTrack ctor for explanation
+                                         initCallback: initCallback,
                                          //calls GenomeView showVisibleBlocks()
                                          changeCallback: changeCallback,
                                          trackPadding: brwsr.view.trackPadding,
@@ -391,6 +395,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                                          seqHeight: brwsr.view.seqHeight
                                      });
             node = brwsr.view.addTrack(newTrack);
+            
         }
         return {node: node, data: track, type: ["track"]};
     };
@@ -936,6 +941,7 @@ Browser.prototype.visibleTracks = function() {
  * @private
  */
 Browser.prototype.onCoarseMove = function(startbp, endbp) {
+    this.interestingAreas.updateViewFrame( startbp, endbp );
     var length = this.view.ref.end - this.view.ref.start;
     var trapLeft = Math.round((((startbp - this.view.ref.start) / length)
                                * this.view.overviewBox.w) + this.view.overviewBox.l);
@@ -997,10 +1003,15 @@ Browser.prototype.createNavBox = function(parent, locLength, params) {
     moveLeft.className = "icon nav";
     moveLeft.style.height = "40px";
     dojo.connect(moveLeft, "click",
-                 function(event) {
-                     dojo.stopEvent(event);
-                     brwsr.view.slide(0.9);
-                 });
+                function(event) {
+                    dojo.stopEvent(event);
+                    brwsr.view.centerAtBase( brwsr.interestingAreas.getNextLeftSite() );
+                }
+            /*function(event) {*/
+            /*dojo.stopEvent(event);*/
+            /*brwsr.view.slide(0.9);*/
+            /*}*/
+                );
     navbox.appendChild(moveLeft);
 
     var moveRight = document.createElement("input");
@@ -1011,9 +1022,14 @@ Browser.prototype.createNavBox = function(parent, locLength, params) {
     moveRight.style.height = "40px";
     dojo.connect(moveRight, "click",
                  function(event) {
-                     dojo.stopEvent(event);
-                     brwsr.view.slide(-0.9);
-                 });
+                    dojo.stopEvent(event);
+                    brwsr.view.centerAtBase( brwsr.interestingAreas.getNextRightSite() );
+                 }
+            /*function(event) {*/
+            /*dojo.stopEvent(event);*/
+            /*brwsr.view.slide(-0.9);*/
+            /*}*/
+                );
     navbox.appendChild(moveRight);
 
     navbox.appendChild(document.createTextNode("\u00a0\u00a0\u00a0\u00a0"));

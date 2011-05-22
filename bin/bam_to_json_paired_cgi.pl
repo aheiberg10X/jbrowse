@@ -149,8 +149,8 @@ foreach my $seqInfo (@refSeqs) {
 
     if (defined($tid)) {
         print $OUTPUT "trackDir: $trackDir\n, trackLabel: $trackLabel\n";
-        my $jsonGen = JsonGenerator->new("$trackDir/" . $seqInfo->{name}
-                                         . "/" . $trackLabel,
+        my $outdir = "$trackDir/" . $seqInfo->{name} . "/" . $trackLabel;
+        my $jsonGen = JsonGenerator->new($outdir,
                                          $nclChunk,
                                          $compress, 
                                          $trackLabel,
@@ -179,7 +179,7 @@ foreach my $seqInfo (@refSeqs) {
 
             my @sorted = sort {$paired_info{$a}[0] <=> $paired_info{$b}[0]} keys %paired_info;
             foreach my $key (@sorted){
-                updateBookmarks( \@bookmarks, \$cur_left, \$cur_right, $paired_info{$key} );
+                updateBookmarks( $jsonGen, \$cur_left, \$cur_right, $paired_info{$key} );
                 $sorter->addSorted( $paired_info{$key} );
             }
         }
@@ -193,7 +193,7 @@ foreach my $seqInfo (@refSeqs) {
                            sub{ align2array($_[0],$_[1])}, \@tosort);
 
             foreach my $alignment (sort {$a->[0] <=> $b->[0]} @tosort){
-                updateBookmarks( \@bookmarks, \$cur_left, \$cur_right, $alignment );
+                updateBookmarks( $jsonGen, \$cur_left, \$cur_right, $alignment );
                 $sorter->addSorted( $alignment );
             }
         }
@@ -210,11 +210,15 @@ foreach my $seqInfo (@refSeqs) {
     }
 }
 
-print $OUTPUT "bookmarks: @bookmarks\n";
-open(F,">","../data/bookmarks.js");
-print F "bookmarks = ";
-print F JSON::encode_json \@bookmarks;
-close(F);
+########################################
+########## bookmarks
+#print $OUTPUT "bookmarks: @bookmarks\n";
+#open(F,">","$outdir/bookmarks.js");
+#print F "bookmarks = ";
+#print F JSON::encode_json \@bookmarks;
+#close(F);
+########### bookmarks
+#######################################3
 
 if( $bad_bam ){
     print $OUTPUT "bad bam\n";
@@ -292,7 +296,7 @@ sub linking_align2array {
 }
 
 sub updateBookmarks {
-    my $bookmarks = shift;
+    my $jsonGen = shift;
     my $cur_left = shift;
     my $cur_right = shift;
     my $align_array = shift;
@@ -305,7 +309,8 @@ sub updateBookmarks {
     }
     else {
         if( $left - $$cur_right > $BOOKMARK_THRESH ){
-            push( @$bookmarks, $left );
+            $jsonGen->addInterestingArea( $left );
+            #push( @$bookmarks, $left );
         }
         ($$cur_left, $$cur_right) = ($left,$right);
     }    

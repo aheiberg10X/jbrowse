@@ -191,7 +191,8 @@ sub new {
         refStart       => $refStart,
         refEnd         => $refEnd,
         count          => 0,
-        pregen_histograms => $pregen_histograms
+        pregen_histograms => $pregen_histograms,
+        interestingAreas => []
     };
 
     # $featureCount is an optional parameter; if we don't know it,
@@ -269,6 +270,12 @@ sub new {
 
     bless $self, $class;
     return $self;
+}
+
+sub addInterestingArea {
+    my ($self, $site) = @_;
+    my $iaref =  $self->{interestingAreas};
+    push( @$iaref, $site );
 }
 
 sub addFeature {
@@ -442,7 +449,9 @@ sub generateTrack {
                      'histogramMeta' =>
                          \@histogramMeta,
                      'histStats' =>
-                         \@histStats
+                         \@histStats,
+                     'interestingAreas' => 
+                         $self->{interestingAreas}
                     };
     $trackData->{urlTemplate} = $self->{style}->{urlTemplate}
       if defined($self->{style}->{urlTemplate});
