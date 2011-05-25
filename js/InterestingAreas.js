@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////
 // IANode
 function IANode( trackKey, site ){
-    this.belongsTo = trackKey;
+    this.trackKey = trackKey;
     this.site = site;
     this.next = null;
     this.prev = null
@@ -13,6 +13,19 @@ IANode.prototype.setNext = function( ianode ){
 };
 IANode.prototype.setNextType = function( ianode ){
     this.nextType = ianode;
+};
+
+IANode.prototype.belongsTo = function( trackKey ){
+    return this.trackKey == trackKey;
+}; 
+
+IANode.prototype.disconnect = function( ianode ){
+    ianode.prev.n
+    r.next = null;
+    r.prev = null;
+    var n = r.nextType;
+    r.nextType = null;
+    r = n;
 };
 
 // IANode
@@ -31,29 +44,19 @@ function InterestingAreas( refstart, refend ){
     this.firstNode = start;
     this.nextRight = end;
     this.nextLeft = start;
-    this.activeTracks = {sysTrackName:0};
-    
-    //testing
+    this.activeTracks = {sysTrackName: start};
+    this.inactiveTracks = {};
+
     //this.addTrackTest();
 
 }
 
-InterestingAreas.prototype.addTrackTest = function(){
-    trackKey = "test_track1";
-    //this is coming from evidence.or.missFR.5
-    ias = [89247786,90617135,97561402];
-    this.addTrack( trackKey, ias );
-    //do some console logging to test this out
-    //
-    this.next = ias[0];
-};
 
 //interestingAreas should be sorted asc
 InterestingAreas.prototype.addTrack = function( trackKey, interestingAreas ){
     if( interestingAreas == null ){
         return;
     }
-    this.activeTracks[trackKey] = 1;
     //create an IANode for each thing
     //point nextType of each to its successor
     interestingAreas.reverse();
@@ -66,6 +69,8 @@ InterestingAreas.prototype.addTrack = function( trackKey, interestingAreas ){
         head.nextType = prevNode;
         prevNode = head;
     }
+    this.activeTracks[trackKey] = head; 
+
     //integrate into big list
     var p1 = this.firstNode;
     var p2 = p1.next;
@@ -82,6 +87,7 @@ InterestingAreas.prototype.addTrack = function( trackKey, interestingAreas ){
 
             //console.log(p1);
             p1 = head;   
+            head = head.nextType;
         }
         else{
             //console.log("outside");
@@ -93,50 +99,82 @@ InterestingAreas.prototype.addTrack = function( trackKey, interestingAreas ){
                 break;
             }
         }
-        head = head.nextType;
     }
     this.updateViewFrame    
     
 };
 
 InterestingAreas.prototype.removeTrack = function( trackKey ){
+    var trackList = (trackKey in this.activeTracks) ? this.activeTracks : this.inactiveTracks;
+    var r = trackList[trackKey];
+    if( r == null ){ return; }
+    var lastNonType = r.prev;
+    while( r != null ){
+        if( ! r.prev.belongsTo(trackKey) && lastNonType != r.prev ){            
+            lastNonType.next = r.prev;
+            r.prev.prev = lastNonType;
+            lastNonType = r.prev;
+        }
+        if( r.nextType == null ){   //have to handle the last node separately
+            lastNonType.next = r.next;
+            r.next.prev = lastNonType;
+        }
+        r = r.nextType;
+    }
+    delete trackList[trackKey];
     return;
 };
 
-InterestingAreas.prototype.isValid = function( ianode ){
-    return (this.activeTracks[ianode.belongsTo] == 1);
+//can generalize these guys with a some kind of toggle class?
+InterestingAreas.prototype.makeActive = function( trackKey ){
+    this.activeTracks[trackKey] = this.inactiveTracks[trackKey];
+    delete this.inactiveTracks[trackKey];
 };
 
+InterestingAreas.prototype.makeInactive = function( trackKey ){
+    this.inactiveTracks[trackKey] = this.inactiveTracks[trackKey];
+    delete this.activeTracks[trackKey];
+};
+
+InterestingAreas.prototype.isActive = function( ianode ){
+    return (ianode.trackKey in this.activeTracks);
+};
+//private, used by updateViewFrame
 InterestingAreas.prototype.getNextValidRight = function(n) {
+    console.log( "starting getNextValidRight" );
     do{
         if( n.next == null ){ break; }
         n = n.next;
     }        
-    while( ! this.isValid(n) );
-
+    while( ! this.isActive(n) );
+    console.log( "ending getNextValidRight" );
     return n;
 };
 
+//private, used by updateViewFrame
 InterestingAreas.prototype.getNextValidLeft = function(n) {
     do{
-        if( n.prev == null ){ return n; }
+        if( n.prev == null ){ break; }
         n = n.prev;
     }
-    while( !this.isValid(n) );
+    while( !this.isActive(n) );
 
     return n;
 };
 
 InterestingAreas.prototype.updateViewFrame = function( left, right ){
+    console.log("starting updateViewFrame");
     //fiind the first node with site >= left
     var n = this.nextRight;
     if( n.site < right ){
+        console.log("n.site < right");
         while( n.site < right ){
             n = this.getNextValidRight(n);
         }
         this.nextRight = n;
     }
     else if( n.site > right ){
+        console.log("n.site > right");
         var last = n;
         while( n.site > right ){
             last = n;
@@ -146,19 +184,22 @@ InterestingAreas.prototype.updateViewFrame = function( left, right ){
     }
 
     var p = this.nextRight.prev;
+
     console.log("Current p", p);
     while( left <= p.site && p.site <= right ){
         if( p.prev == null ){ break; }
         p = p.prev;
-        console.log("prev p:", p);
+        //console.log("prev p:", p);
     }
     this.nextLeft = p;
     
-    console.log("New next right/left");
-    console.log( this.nextRight );
-    console.log( this.nextLeft );
+    //console.log("New next right/left");
+    //console.log( this.nextRight );
+    //console.log( this.nextLeft );
+    console.log( "ending updateViewFrame" );
     return;
 };
+
 
 InterestingAreas.prototype.getNextRightSite = function(){
     return this.nextRight.site;
@@ -170,6 +211,30 @@ InterestingAreas.prototype.getNextLeftSite = function(){
 
 InterestingAreas.prototype.getNextOfType = function( trackKey ){
     return;
+};
+
+////////////// Testing and Debugging //////////////////////
+InterestingAreas.prototype.consoleLogNodes = function(){
+    var n = this.firstNode;
+    while( n != null ){
+        console.log( n );
+        n = n.next;
+    }
+};
+
+
+InterestingAreas.prototype.addTrackTest = function(){
+    trackKey = "test_track1";
+    //this is coming from evidence.or.missFR.5
+    ias1 = [1000000,3000000,5000000];
+    ias2 = [2000000,4000000,6000000];
+    this.addTrack( "track1", ias1 );
+    this.addTrack( "track2", ias2 );
+    this.removeTrack( "track2");
+    //do some console logging to test this out
+    //
+    this.consoleLogNodes();
+    //this.next = ias[0];
 };
 
 //  Interesting Areas

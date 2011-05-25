@@ -243,6 +243,7 @@ else{
     print JSON::to_json($new_entry_json, {pretty => 1});
     print ']}';
 }
+print $OUTPUT "done\n";
 
 close $OUTPUT;
 close ERROR;
@@ -308,7 +309,7 @@ sub updateBookmarks {
         }
     }
     else {
-        if( $left - $$cur_right > $BOOKMARK_THRESH ){
+        if( $left - $$cur_right > $INTERESTING_AREAS_GAP_THRESH ){
             $jsonGen->addInterestingArea( $left );
             #push( @$bookmarks, $left );
         }

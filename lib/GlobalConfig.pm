@@ -5,10 +5,13 @@ use warnings;
 
 use Exporter 'import';
 
-our @EXPORT = qw($root_dir $data_dir $upload_dir $DEBUG $BOOKMARK_THRESH );
+our @EXPORT = qw($root_dir $data_dir $upload_dir $DEBUG $INTERESTING_AREAS_GAP_THRESH );
 use JSON 2;
 
-open(GC, "<", "../lib/GlobalConfig.js") or die $!;
+use Cwd;
+
+
+open(GC, "<", "/home/andrew/school/dnavis/jbrowse/lib/GlobalConfig.js") or die $!;
 local $/=undef;
 my $json_text = <GC>;
     
@@ -28,7 +31,7 @@ our $root_dir = $globals->{root_dir};
 our $data_dir = $root_dir . $globals->{data_dir};
 our $upload_dir = $root_dir . $globals->{upload_dir};
 our $DEBUG = $globals->{DEBUG};
-our $BOOKMARK_THRESH = $globals->{BOOKMARK_THRESH};
+our $INTERESTING_AREAS_GAP_THRESH = $globals->{INTERESTING_AREAS_GAP_THESH};
 
 print DEBUG "$globals\n";
 print DEBUG "rootdir: $root_dir\n";

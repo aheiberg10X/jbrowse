@@ -129,7 +129,8 @@ var Browser = function(params) {
             viewElem.view = gv;
 
             //hook up InterestingAreas
-            brwsr.interestingAreas = new InterestingAreas( brwsr.refSeq.start, brwsr.refSeq.end );
+            console.log( "setting up end to be: " + brwsr.refSeq.end+1 );
+            brwsr.interestingAreas = new InterestingAreas( brwsr.refSeq.start, brwsr.refSeq.end+1 );
 
             dojo.connect(browserWidget, "resize", function() {
                     gv.sizeInit();
@@ -347,6 +348,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     
     var initCallback = function( trackKey, tracksInterestingAreas ) {
         brwsr.interestingAreas.addTrack( trackKey, tracksInterestingAreas );
+        brwsr.navigateTo(brwsr.locationBox.value);
     };
 
     var changeCallback = function() {
@@ -359,11 +361,14 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         node.innerHTML = track.key;
         //in the list, wrap the list item in a container for
         //border drag-insertion-point monkeying
-        if ("avatar" != hint) {
+        if ("avatar" != hint) {  //dropped back into list
             var container = document.createElement("div");
             container.className = "tracklist-container";
             container.appendChild(node);
             node = container;
+            //remove track from IA, 
+            brwsr.interestingAreas.removeTrack( track.key );
+            brwsr.navigateTo(brwsr.locationBox.value);
         }
         node.id = dojo.dnd.getUniqueId();
         return {node: node, data: track, type: ["track"]};
