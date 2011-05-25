@@ -180,7 +180,12 @@ InterestingAreas.prototype.updateViewFrame = function( left, right ){
             last = n;
             n = this.getNextValidLeft(n);
         }
-        this.nextRight = last;
+        if( this.isActive(last) ){
+            this.nextRight = last;
+        }
+        else{
+            this.nextRight = this.getNextValidRight(n);
+        }
     }
 
     var p = this.nextRight.prev;
