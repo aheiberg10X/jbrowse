@@ -20,41 +20,43 @@ use IO::Handle;
 use Cwd;
 use GlobalConfig;
 
-
-###CGI STUFF####
+######################################################
+#################### CGI STUFF #######################
 
 my $cgi = CGI::new();
-my $bam_filename = $cgi->param('bam_filename');
-my $bam_linking = defined $cgi->param('display_linking');
-my $bam_histogram_filename = $cgi->param("bam_histogram_filename");
-#if( not defined $bam_filename or $bam_filename eq '' ) {
-#    print "not definennenenene\n";
-#    $bam_filename = "evidence.illumina.c1.400.1M.5.bam";
-#}
+my $bam_filename = $cgi->param('bam_filename');                       #input type=file
+my $bam_linking = defined $cgi->param('display_linking');             
+my $bam_histogram_filename = $cgi->param("bam_histogram_filename");   #input type=file
+#my $refseqName = $cgi->param('refseqName');  #sequence name the reads in $bam_filename pertain to
 
-print $cgi->header;
-#place a json response inside here"
-print "<html><body><textarea>\n";
-
+### DEBUGGING OUTPUT ###
 open( my $OUTPUT, '>', $upload_dir . "/" . "bam_output.txt" ) or die $!;
 open ERROR,  '>', $upload_dir . "/" . "bam_error.txt"  or die $!;
 STDERR->fdopen( \*ERROR,  'w' ) or die $!;
+### DEBUGGING OUTPUT ###
+
+print $OUTPUT "refseqName = $refseqName\n";
 
 if( $DEBUG ) {
     print $OUTPUT "we getting the auto-histogram file?: $bam_histogram_filename\n";
     print $OUTPUT $upload_dir ."/". $bam_filename;
 }
 
-###############
-###UPLOADING###
+print $cgi->header;
+print "<html><body><textarea>\n";  #place a json response inside here"
 
-open (OUTFILE, ">", "$upload_dir/$bam_filename") or die "Couldn't open $bam_filename for writing: $!";
+#########################################################################
+#######################  UPLOADING  #####################################
+
+#write the data to $upload_dir, TODO: is it necessary to write to a file, can't we just save in a variable a la $pregen_histograms below?
+my $bamFile =  "$upload_dir/$bam_filename";
+open (OUTFILE, ">", $bamFile) or die "Couldn't open $bam_filename for writing: $!";
 while(<$bam_filename>){
   print OUTFILE $_;
 }
 close OUTFILE;
 
-my $pregen_histograms;
+my $pregen_histograms;   #user has the option to upload pregenerated historgram data, saving JsonGenerator from having to figure it out
 if( defined $bam_histogram_filename and $bam_histogram_filename ne ''){
     local $/=undef;
     my $json_text = <$bam_histogram_filename>;
@@ -64,12 +66,11 @@ if( defined $bam_histogram_filename and $bam_histogram_filename ne ''){
     #delete what's leading up to the start of the object (i.e ' histogram = ')
     $json_text =~ s/^.+= //;
     
-    close OUTFILE;
     $pregen_histograms = JSON::decode_json($json_text);
 }
 
-###UPLOADING###
-###############
+########################## UPLOADING  ####################################
+##########################################################################
 
 
 my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $compress, $key, $featureCount);
@@ -83,6 +84,7 @@ my $defaultSubfeatureClasses = {"forward","forward-strand",
 $cssClass = $defaultClass;
 $subfeatureClasses = $defaultSubfeatureClasses;
 
+#treat the filename, sans extension, as the key and trackLabel
 my $reversed = reverse $bam_filename;
 my ($extension, $folders) = split(/\./, $reversed, 2);
 $extension = reverse $extension;
@@ -91,7 +93,6 @@ my @folders = split(/\//,$folders);
 $key = $folders[-1];
 $trackLabel = $key;
 
-my $bamFile = $upload_dir . "/" . $bam_filename;
 
 if (!defined($nclChunk)) {
     # default chunk size is 50KiB
@@ -106,7 +107,8 @@ my $trackDir = "$data_dir/$trackRel";
 mkdir($data_dir) unless (-d $data_dir);
 mkdir($trackDir) unless (-d $trackDir);
 
-my @refSeqs = @{JsonGenerator::readJSON("$data_dir/refSeqs.js", [], 1)};
+
+
 
 my $bam = Bio::DB::Bam->open($bamFile);
 my $hdr = $bam->header();
@@ -139,15 +141,29 @@ $style{clientConfig} = JSON::from_json($clientConfig)
 
 my @bookmarks;
 my ($cur_left, $cur_right) = (0,0);
+
+my @refSeqs = @{JsonGenerator::readJSON("$data_dir/refSeqs.js", [], 1)};
+
+#my $seqInfo = -1;
+#foreach my $seq (@refSeqs){
+    #if( $seq->{name} eq $refseqName ){
+        #$seqInfo = $seq;
+        #last;
+    #}
+#}
+#my $no_valid_ref_seq = $seqInfo == -1;
+  
+#if( !$no_valid_ref_seq ){
 foreach my $seqInfo (@refSeqs) {
     #hdr is the bam header
-    my ($tid, $start, $end) = $hdr->parse_region($seqInfo->{name});
-    print $OUTPUT "tid: $tid, start: $start, end: $end\n";
+    my ($tid, $start, $end) = $hdr->parse_region("chr1");#$seqInfo->{name}
     
-    mkdir("$trackDir/" . $seqInfo->{name})
-        unless (-d "$trackDir/" . $seqInfo->{name});
+    print $OUTPUT "(bogus) tid: $tid, start: $start, end: $end\n";
+    
+    mkdir("$trackDir/" . $seqInfo->{name}) unless (-d "$trackDir/" . $seqInfo->{name});
 
-    if (defined($tid)) {
+    print $OUTPUT "FAKING_REFSEQ: $FAKING_REFSEQ\n";
+    if (defined($tid) or $FAKING_REFSEQ ) {
         print $OUTPUT "trackDir: $trackDir\n, trackLabel: $trackLabel\n";
         my $outdir = "$trackDir/" . $seqInfo->{name} . "/" . $trackLabel;
         my $jsonGen = JsonGenerator->new($outdir,
@@ -175,6 +191,7 @@ foreach my $seqInfo (@refSeqs) {
             my %paired_info;
             # $_[0] is the alignment found by fetch
             # $_[1] is \%paired_info reference
+            
             $index->fetch($bam, $tid, $start, $end, sub { linking_align2array( $_[0], $_[1]) }, \%paired_info);
 
             my @sorted = sort {$paired_info{$a}[0] <=> $paired_info{$b}[0]} keys %paired_info;
@@ -224,6 +241,10 @@ if( $bad_bam ){
     print $OUTPUT "bad bam\n";
     print '{"status":"ERROR", "message":"This BAM file can\'t be read by Bio::DB::Bam (reporting that there are 0 alignments)"}';
 }
+#elsif( $no_valid_ref_seq ){
+    #print $OUTPUT "no valid ref seq\n";
+    #print '{"status":"ERROR", "message":"There is no refseq in the system by the name $refseqName."}';
+#}
 else{
     print $OUTPUT "good bam\n";
     #add a new entry to trackInfo.js

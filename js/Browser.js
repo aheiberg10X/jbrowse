@@ -37,7 +37,6 @@ var Browser = function(params) {
 
     var refSeqs = params.refSeqs;
     var trackData = params.trackData;
-    var bookmarks;
     var globals = params.globals;
     this.deferredFunctions = [];
     this.dataRoot = params.dataRoot;
@@ -130,7 +129,7 @@ var Browser = function(params) {
 
             //hook up InterestingAreas
             console.log( "setting up end to be: " + brwsr.refSeq.end+1 );
-            brwsr.interestingAreas = new InterestingAreas( brwsr.refSeq.start, brwsr.refSeq.end+1 );
+            brwsr.interestingAreas = new InterestingAreas( brwsr.refSeq.start, brwsr.refSeq.end+1, params.globals.INTERESTING_AREAS_GAP_THRESH );
 
             dojo.connect(browserWidget, "resize", function() {
                     gv.sizeInit();
@@ -204,6 +203,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         
         var args = {chrom: current_chrom,
                     delete_track: tracks_in_trash};
+
         var url = "../bin/remove_track.py?" + dojo.objectToQuery(args);
 
         var xhrArgs = {
@@ -278,9 +278,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 },
                 error: function(response, ioArgs){
                     alert(response);
-
-                    // return the response for succeeding callbacks
-                    //           return response;
                 }
 
             });
@@ -441,8 +438,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                                    '<p id="bamfile">BAM File</p>' + 
                                    '<p id="bamhistogram">Histogram Data (opt)</p>' +
                                    '<input type="checkbox" name="display_linking" id="display_linking" value="1" checked=true/>Display Links<br/>' +
-                                   //'<input type="checkbox" name="has_histograms" id="has_histograms" value="1" checked=true/>Use custom histogram<br/>' +
-
+                                   //'<input type="hidden" name="refseqName" id="refseqName" value="'+brwsr.refSeq.name+'" />' +
+                                   
                                    '</div>' +
                                    '<h3>Region</h3>'+
                                    '<div id="region_controls">' +
