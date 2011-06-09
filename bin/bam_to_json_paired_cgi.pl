@@ -156,7 +156,7 @@ my @refSeqs = @{JsonGenerator::readJSON("$data_dir/refSeqs.js", [], 1)};
 #if( !$no_valid_ref_seq ){
 foreach my $seqInfo (@refSeqs) {
     #hdr is the bam header
-    my ($tid, $start, $end) = $hdr->parse_region("chr1");#$seqInfo->{name}
+    my ($tid, $start, $end) = $hdr->parse_region($seqInfo->{name});
     
     print $OUTPUT "(bogus) tid: $tid, start: $start, end: $end\n";
     
