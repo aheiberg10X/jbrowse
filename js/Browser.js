@@ -99,7 +99,7 @@ var Browser = function(params) {
             absMaxRender = 300;
             var slider = new dijit.form.VerticalSlider(
                             {name: "vertical",
-                             value: brwsr.maxRender,
+                             value: absMaxRender - brwsr.maxRender,
                              minimum: 0,
                              maximum: absMaxRender,
                              intermediateChanges: false,
