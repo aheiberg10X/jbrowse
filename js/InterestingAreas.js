@@ -34,7 +34,7 @@ IANode.prototype.disconnect = function( ianode ){
 
 ///////////////////////////////////////////////////
 //  Interesting Areas
-function InterestingAreas( refstart, refend ){
+function InterestingAreas( refstart, refend, gap_thresh ){
     var sysTrackName = "systrack";
     var start = new IANode( sysTrackName, refstart );
     var end = new IANode( sysTrackName, refend );
@@ -46,6 +46,7 @@ function InterestingAreas( refstart, refend ){
     this.nextLeft = start;
     this.activeTracks = {sysTrackName: start};
     this.inactiveTracks = {};
+    this.gap_thresh = gap_thresh;
 
     //this.addTrackTest();
 
@@ -76,7 +77,7 @@ InterestingAreas.prototype.addTrack = function( trackKey, interestingAreas ){
     var p2 = p1.next;
     while( head != null ){
         //console.log(p1,p2,head);
-        if(  p1.site <= head.site && head.site <= p2.site ){
+        if(  p1.site+this.gap_thresh <= head.site && head.site <= p2.site+this.gap_thresh ){
             //console.log("in between");
             head.next = p2;
             p2.prev = head;
@@ -168,7 +169,7 @@ InterestingAreas.prototype.updateViewFrame = function( left, right ){
     var n = this.nextRight;
     if( n.site < right ){
         console.log("n.site < right");
-        while( n.site < right ){
+        while( n.site < right && !(n.trackKey == "systrack" && n.site > 0)){
             n = this.getNextValidRight(n);
         }
         this.nextRight = n;
@@ -202,6 +203,7 @@ InterestingAreas.prototype.updateViewFrame = function( left, right ){
     //console.log( this.nextRight );
     //console.log( this.nextLeft );
     console.log( "ending updateViewFrame" );
+    
     return;
 };
 
@@ -219,10 +221,25 @@ InterestingAreas.prototype.getNextOfType = function( trackKey ){
 };
 
 ////////////// Testing and Debugging //////////////////////
-InterestingAreas.prototype.consoleLogNodes = function(){
+InterestingAreas.prototype.logNodes = function(){
     var n = this.firstNode;
     while( n != null ){
         console.log( n );
+        n = n.next;
+    }
+};
+
+InterestingAreas.prototype.logNodesAround = function( node, windowSize ){
+
+    var n = node;
+    for( i=1; i<=windowSize; i++){
+        if( n.prev == null){ break; }
+        n = n.prev;
+    }
+    for( i=1; i<= windowSize*2; i++ ){
+        
+        console.log(n);
+        if( n.next == null ){break;}
         n = n.next;
     }
 };
@@ -238,7 +255,7 @@ InterestingAreas.prototype.addTrackTest = function(){
     this.removeTrack( "track2");
     //do some console logging to test this out
     //
-    this.consoleLogNodes();
+    this.logNodes();
     //this.next = ias[0];
 };
 

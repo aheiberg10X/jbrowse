@@ -33,6 +33,7 @@ var Browser = function(params) {
     dojo.require("dijit.form.CheckBox");
     dojo.require("dojo.io.iframe");
     dojo.require("dojox.layout.ExpandoPane");
+    dojo.require("dijit.form.VerticalSlider");
     // end my stuff
 
     var refSeqs = params.refSeqs;
@@ -81,8 +82,39 @@ var Browser = function(params) {
                 design: "sidebar",
                 gutters: false
             }, brwsr.container);
-            var contentWidget = new dijit.layout.ContentPane({region: "top"}, topPane);
+            var contentWidget = new dijit.layout.ContentPane({region: "top", layoutPriority: "1"}, topPane);
             var browserWidget = new dijit.layout.ContentPane({region: "center"}, viewElem);
+
+            //for depth slider
+            var sliderPane = document.createElement("div");
+            brwsr.container.appendChild( sliderPane );
+            var sliderPaneWidget = new dijit.layout.ContentPane(
+                                        {region: "right",
+                                         style: "width: 20px; padding-top: 15px;",
+                                         layoutPriority: "2"}, sliderPane);
+
+            var sliderDiv = document.createElement("div");
+            sliderPane.appendChild( sliderDiv );
+            brwsr.maxRender = 50;            
+            absMaxRender = 300;
+            var slider = new dijit.form.VerticalSlider(
+                            {name: "vertical",
+                             value: brwsr.maxRender,
+                             minimum: 0,
+                             maximum: absMaxRender,
+                             intermediateChanges: false,
+                             style: "height: 100%;",
+                             onChange: function(value){ 
+                                            brwsr.maxRender = parseInt(value);
+                                            dojo.forEach( brwsr.view.tracks, 
+                                                          function(track){ 
+                                                              track.setMaxRender( absMaxRender-brwsr.maxRender );
+                                                              track.clear(); 
+                                                          } );
+                                            brwsr.view.showVisibleBlocks(true);
+                                        }
+                            },
+                            sliderDiv);
 
             //create location trapezoid
             brwsr.locationTrap = document.createElement("div");
@@ -310,7 +342,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
          splitter: "true"
         }).placeAt(parent);
 
-    var form_pane = new dijit.layout.ContentPane(
+    var form_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
         {id:8, 
          title: "formPane",
          region: "bottom",
@@ -387,6 +419,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             var klass = eval(track.type);
             var newTrack = new klass(track, url, brwsr.refSeq,
                                      {
+                                         maxRender: brwsr.maxRender,
                                          //see FeatureTrack ctor for explanation
                                          initCallback: initCallback,
                                          //calls GenomeView showVisibleBlocks()

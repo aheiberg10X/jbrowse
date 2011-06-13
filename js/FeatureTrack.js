@@ -36,6 +36,8 @@ function FeatureTrack(trackMeta, url, refSeq, browserParams) {
     this.load(this.baseUrl + url);
 
     var thisObj = this;
+
+    this.maxRender = browserParams.maxRender;
 }
 
 FeatureTrack.prototype = new Track("");
@@ -133,6 +135,10 @@ FeatureTrack.prototype.setLoaded = function(){
     Track.prototype.setLoaded.call(this);
 };
 
+FeatureTrack.prototype.setMaxRender = function( maxRender ){
+    this.maxRender = maxRender;
+};
+
 FeatureTrack.prototype.setViewInfo = function(genomeView, numBlocks,
                                               trackDiv, labelDiv,
                                               widthPct, widthPx, scale) {
@@ -142,9 +148,7 @@ FeatureTrack.prototype.setViewInfo = function(genomeView, numBlocks,
     this.setLabel(this.key);
 };
 
-FeatureTrack.prototype.fillHist = function(blockIndex, block,
-                                           leftBase, rightBase,
-                                           stripeWidth) {
+FeatureTrack.prototype.fillHist = function(blockIndex, block,leftBase, rightBase,stripeWidth) {
     // bases in each histogram bin that we're currently rendering
     var bpPerBin = (rightBase - leftBase) / this.numBins;
     var pxPerCount = 2;
@@ -172,7 +176,7 @@ FeatureTrack.prototype.fillHist = function(blockIndex, block,
             if (!(typeof hist[bin] == 'number' && isFinite(hist[bin])))
                 continue;
             binDiv = document.createElement("div");
-	    binDiv.className = track.className + "-hist";;
+            binDiv.className = track.className + "-hist";
             binDiv.style.cssText =
                 "left: " + ((bin / track.numBins) * 100) + "%; "
                 + "height: "
@@ -254,10 +258,10 @@ FeatureTrack.prototype.fillBlock = function(blockIndex, block,
                                             containerStart, containerEnd) {
     //console.log("scale: %d, histScale: %d", scale, this.histScale);
     if (scale < this.histScale) {
-	this.fillHist(blockIndex, block, leftBase, rightBase, stripeWidth,
+	    this.fillHist(blockIndex, block, leftBase, rightBase, stripeWidth,
                       containerStart, containerEnd);
     } else {
-	this.fillFeatures(blockIndex, block, leftBlock, rightBlock,
+	    this.fillFeatures(blockIndex, block, leftBlock, rightBlock,
                           leftBase, rightBase, scale,
                           containerStart, containerEnd);
     }
@@ -303,7 +307,9 @@ FeatureTrack.prototype.transfer = function(sourceBlock, destBlock, scale,
                     this.renderFeature(sourceSlot.feature, overlaps[i].id,
                                    destBlock, scale,
                                    containerStart, containerEnd);
-                destBlock.appendChild(featDiv);
+                if( featDiv != null ){
+                    destBlock.appendChild(featDiv);
+                }
             }
         }
     }
@@ -313,6 +319,10 @@ FeatureTrack.prototype.fillFeatures = function(blockIndex, block,
                                         leftBlock, rightBlock,
                                         leftBase, rightBase, scale,
                                         containerStart, containerEnd) {
+
+    //this.featuresRendered = 0;
+    //
+    //
     //arguments:
     //block: div to be filled with info
     //leftBlock: div to the left of the block to be filled
@@ -358,10 +368,15 @@ FeatureTrack.prototype.fillFeatures = function(blockIndex, block,
             //console.log("this layouter has seen " + uniqueId);
             return;
         }
-        var featDiv =
-            curTrack.renderFeature(feature, uniqueId, block, scale,
-                                   containerStart, containerEnd);
-        block.appendChild(featDiv);
+
+        var featDiv = curTrack.renderFeature(feature, uniqueId, block, scale, containerStart, containerEnd);
+        if( featDiv != null ){
+            block.appendChild(featDiv);
+            return true;
+        }
+        else{
+            return false;
+        }
     };
 
     var startBase = goLeft ? rightBase : leftBase;
@@ -459,113 +474,118 @@ FeatureTrack.prototype.renderFeature = function(feature, uniqueId, block, scale,
                                           featureEnd,
                                           levelHeight);
 
-    var featDiv;
-    var featUrl = this.featureUrl(feature);
-    if (featUrl) {
-        featDiv = document.createElement("a");
-        featDiv.href = featUrl;
-        featDiv.target = "_new";
-    } else {
-        featDiv = document.createElement("div");
-        featDiv.onclick = this.onFeatureClick;
+    if( top > (this.glyphHeight + 2) * this.maxRender ){
+        return null;
     }
-    featDiv.feature = feature;
-    featDiv.layoutEnd = featureEnd;
+    else{
+        var featDiv;
+        var featUrl = this.featureUrl(feature);
+        if (featUrl) {
+            featDiv = document.createElement("a");
+            featDiv.href = featUrl;
+            featDiv.target = "_new";
+        } else {
+            featDiv = document.createElement("div");
+            featDiv.onclick = this.onFeatureClick;
+        }
+        featDiv.feature = feature;
+        featDiv.layoutEnd = featureEnd;
 
-    block.featureNodes[uniqueId] = featDiv;
+        block.featureNodes[uniqueId] = featDiv;
 
-    switch (feature[fields["strand"]]) {
-    case 1:
-        featDiv.className = "plus-" + this.className; break;
-    case 0:
-    case null:
-    case undefined:
-        featDiv.className = this.className; break;
-    case -1:
-        featDiv.className = "minus-" + this.className; break;
-    }
-
-    if ((fields["phase"] !== undefined) && (feature[fields["phase"]] !== null))
-        featDiv.className = featDiv.className + feature[fields["phase"]];
-
-    // Since some browsers don't deal well with the situation where
-    // the feature goes way, way offscreen, we truncate the feature
-    // to exist betwen containerStart and containerEnd.
-    // To make sure the truncated end of the feature never gets shown,
-    // we'll destroy and re-create the feature (with updated truncated
-    // boundaries) in the transfer method.
-    var displayStart = Math.max(feature[fields["start"]],
-                                containerStart);
-    var displayEnd = Math.min(feature[fields["end"]],
-                              containerEnd);
-    var blockWidth = block.endBase - block.startBase;
-    featDiv.style.cssText =
-        "left:" + (100 * (displayStart - block.startBase) / blockWidth) + "%;"
-        + "top:" + top + "px;"
-        + " width:" + (100 * ((displayEnd - displayStart) / blockWidth)) + "%;"
-        + (this.featureCss ? this.featureCss : "");
-
-    if (this.featureCallback) this.featureCallback(feature, fields, featDiv);
-
-    if (this.arrowheadClass) {
-        var ah = document.createElement("div");
         switch (feature[fields["strand"]]) {
         case 1:
-            ah.className = "plus-" + this.arrowheadClass;
-            ah.style.cssText = "left: 100%; top: 0px;";
-            featDiv.appendChild(ah);
-            break;
+            featDiv.className = "plus-" + this.className; break;
+        case 0:
+        case null:
+        case undefined:
+            featDiv.className = this.className; break;
         case -1:
-            ah.className = "minus-" + this.arrowheadClass;
-            ah.style.cssText =
-                "left: " + (-this.minusArrowWidth) + "px; top: 0px;";
-            featDiv.appendChild(ah);
-            break;
-        }
-    }
-
-    if ((scale > this.labelScale)
-        && fields["name"]
-        && feature[fields["name"]]) {
-
-        var labelDiv;
-        if (featUrl) {
-            labelDiv = document.createElement("a");
-            labelDiv.href = featUrl;
-            labelDiv.target = featDiv.target;
-        } else {
-            labelDiv = document.createElement("div");
-	    labelDiv.onclick = this.onFeatureClick;
+            featDiv.className = "minus-" + this.className; break;
         }
 
-        labelDiv.className = "feature-label";
-        labelDiv.appendChild(document.createTextNode(feature[fields["name"]]));
-        labelDiv.style.cssText =
-            "left: "
-            + (100 * (feature[fields["start"]] - block.startBase) / blockWidth)
-            + "%; "
-            + "top: " + (top + this.glyphHeight) + "px;";
-	featDiv.label = labelDiv;
-        labelDiv.feature = feature;
-        block.appendChild(labelDiv);
-    }
+        if ((fields["phase"] !== undefined) && (feature[fields["phase"]] !== null))
+            featDiv.className = featDiv.className + feature[fields["phase"]];
 
-    if (fields["subfeatures"]
-        && (scale > this.subfeatureScale)
-        && feature[fields["subfeatures"]]
-        && feature[fields["subfeatures"]].length > 0) {
+        // Since some browsers don't deal well with the situation where
+        // the feature goes way, way offscreen, we truncate the feature
+        // to exist betwen containerStart and containerEnd.
+        // To make sure the truncated end of the feature never gets shown,
+        // we'll destroy and re-create the feature (with updated truncated
+        // boundaries) in the transfer method.
+        var displayStart = Math.max(feature[fields["start"]],
+                                    containerStart);
+        var displayEnd = Math.min(feature[fields["end"]],
+                                  containerEnd);
+        var blockWidth = block.endBase - block.startBase;
+        featDiv.style.cssText =
+            "left:" + (100 * (displayStart - block.startBase) / blockWidth) + "%;"
+            + "top:" + top + "px;"
+            + " width:" + (100 * ((displayEnd - displayStart) / blockWidth)) + "%;"
+            + (this.featureCss ? this.featureCss : "");
 
-        for (var i = 0; i < feature[fields["subfeatures"]].length; i++) {
-            this.renderSubfeature(feature, featDiv,
-                                  feature[fields["subfeatures"]][i],
-                                  displayStart, displayEnd);
+        if (this.featureCallback) this.featureCallback(feature, fields, featDiv);
+
+        if (this.arrowheadClass) {
+            var ah = document.createElement("div");
+            switch (feature[fields["strand"]]) {
+            case 1:
+                ah.className = "plus-" + this.arrowheadClass;
+                ah.style.cssText = "left: 100%; top: 0px;";
+                featDiv.appendChild(ah);
+                break;
+            case -1:
+                ah.className = "minus-" + this.arrowheadClass;
+                ah.style.cssText =
+                    "left: " + (-this.minusArrowWidth) + "px; top: 0px;";
+                featDiv.appendChild(ah);
+                break;
+            }
         }
-    }
 
-    //ie6 doesn't respect the height style if the div is empty
-    if (Util.is_ie6) featDiv.appendChild(document.createComment());
-    //TODO: handle event-handler-related IE leaks
-    return featDiv;
+        if ((scale > this.labelScale)
+            && fields["name"]
+            && feature[fields["name"]]) {
+
+            var labelDiv;
+            if (featUrl) {
+                labelDiv = document.createElement("a");
+                labelDiv.href = featUrl;
+                labelDiv.target = featDiv.target;
+            } else {
+                labelDiv = document.createElement("div");
+            labelDiv.onclick = this.onFeatureClick;
+            }
+
+            labelDiv.className = "feature-label";
+            labelDiv.appendChild(document.createTextNode(feature[fields["name"]]));
+            labelDiv.style.cssText =
+                "left: "
+                + (100 * (feature[fields["start"]] - block.startBase) / blockWidth)
+                + "%; "
+                + "top: " + (top + this.glyphHeight) + "px;";
+        featDiv.label = labelDiv;
+            labelDiv.feature = feature;
+            block.appendChild(labelDiv);
+        }
+
+        if (fields["subfeatures"]
+            && (scale > this.subfeatureScale)
+            && feature[fields["subfeatures"]]
+            && feature[fields["subfeatures"]].length > 0) {
+
+            for (var i = 0; i < feature[fields["subfeatures"]].length; i++) {
+                this.renderSubfeature(feature, featDiv,
+                                      feature[fields["subfeatures"]][i],
+                                      displayStart, displayEnd);
+            }
+        }
+
+        //ie6 doesn't respect the height style if the div is empty
+        if (Util.is_ie6) featDiv.appendChild(document.createComment());
+        //TODO: handle event-handler-related IE leaks
+        return featDiv;
+    }
 };
 
 FeatureTrack.prototype.featureUrl = function(feature) {

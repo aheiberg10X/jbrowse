@@ -1,4 +1,4 @@
-function Track(name, key, loaded, changeCallback) {
+function Track(name, key, loaded, changeCallback ) {
     this.name = name;
     this.key = key;
     this.loaded = loaded;
@@ -6,6 +6,7 @@ function Track(name, key, loaded, changeCallback) {
     this.height = 0;
     this.shown = true;
     this.empty = false;
+    this.maxRender = 3;
 }
 
 Track.prototype.load = function(url) {
@@ -78,6 +79,9 @@ Track.prototype.initBlocks = function() {
     this._adjustBlanks();
 };
 
+Track.prototype.setMaxRender = function( maxRender ) {
+};
+
 Track.prototype.clear = function() {
     if (this.blocks) {
         for (var i = 0; i < this.numBlocks; i++)
@@ -102,6 +106,9 @@ Track.prototype.endZoom = function(destScale, destBlockBases) {};
 
 Track.prototype.showRange = function(first, last, startBase, bpPerBlock, scale,
                                      containerStart, containerEnd) {
+    
+    //BUT don't want to count features off screen as being rendered
+    //this.featuresRendered = 0;
     if (this.blocks === undefined) return 0;
 
     // this might make more sense in setViewInfo, but the label element
