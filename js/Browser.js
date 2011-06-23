@@ -33,6 +33,7 @@ var Browser = function(params) {
     dojo.require("dijit.form.CheckBox");
     dojo.require("dojo.io.iframe");
     dojo.require("dojox.layout.ExpandoPane");
+    dojo.require("dijit.layout.AccordionContainer");
     dojo.require("dijit.form.VerticalSlider");
     // end my stuff
 
@@ -82,8 +83,18 @@ var Browser = function(params) {
                 design: "sidebar",
                 gutters: false
             }, brwsr.container);
-            var contentWidget = new dijit.layout.ContentPane({region: "top", layoutPriority: "1"}, topPane);
-            var browserWidget = new dijit.layout.ContentPane({region: "center"}, viewElem);
+
+            var brdrclr = "#929292";
+            var contentWidget = new dijit.layout.ContentPane({
+                region: "top", 
+                layoutPriority: "1",
+                style: "border-left: solid "+brdrclr
+            }, topPane);
+
+            var browserWidget = new dijit.layout.ContentPane({
+                region: "center",
+                style: "border-left: solid "+brdrclr 
+            }, viewElem);
 
             //for depth slider
             var sliderPane = document.createElement("div");
@@ -97,6 +108,7 @@ var Browser = function(params) {
             sliderPane.appendChild( sliderDiv );
             brwsr.maxRender = 50;            
             absMaxRender = 300;
+            //remember: want to have slider at the top mean render 0
             var slider = new dijit.form.VerticalSlider(
                             {name: "vertical",
                              value: absMaxRender - brwsr.maxRender,
@@ -334,38 +346,41 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         });
     };
 
-    var ep = new dojox.layout.ExpandoPane(
+    //var ep = new dojox.layout.ExpandoPane(
+    var ep = new dijit.layout.AccordionContainer(
         {id: 7,
-	     title: "",
+	     title: "accordion",
          region: "left",
-         style: "width: 20%; height: 98%; background-color:#CBCBCB; border-style: none solid none none; border-color: #818181",
+         style: "width: 20%; background-color:#0000FF; border-style: none solid none none; border-color: #929292",
          splitter: "true"
         }).placeAt(parent);
 
     var form_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
         {id:8, 
-         title: "formPane",
-         region: "bottom",
-         style: "height: 40%; background-color:#efefef;",
-         splitter: "true"
+         title: "Manage",
+         //region: "bottom",
+         style: "background-color:#efefef;",
+         //splitter: "true"
         }).placeAt(ep);
 
 
     var track_pane = new dijit.layout.ContentPane(
-        {id:9, 
-         title: "trackPane",
-         region: "top",
-         style: "height: 60%; background-color: #efefef; border-style: solid none none none; border-color: #818181",
-         splitter: "true"
+        {id:"9", 
+         title: "View",
+         //region: "top",
+         style: "background-color: #efefef; border-style: none solid none none; border-color: #929292",
+         //splitter: "true",
+         selected: "true"
         }).placeAt(ep);
+
     
 
     //////////// start creating trackListDiv ///////////////////////////////////////
     var trackListDiv = document.createElement("div");
     trackListDiv.id = "tracksAvail";
     trackListDiv.className = "container handles";
-    trackListDiv.style.cssText =
-        "width: 100%; height: 100%; overflow-x: hidden; overflow-y: auto;";
+    //trackListDiv.style.cssText =
+      //  "width: 90%; height: 90%; overflow-x: hidden; overflow-y: auto;";
     trackListDiv.innerHTML =
         "Available Tracks:<br/>(Drag <img src=\""
         + (params.browserRoot ? params.browserRoot : "")
@@ -393,6 +408,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         if ("avatar" != hint) {  //dropped back into list
             var container = document.createElement("div");
             container.className = "tracklist-container";
+            container.style.cssText = "width: 200px;";
             container.appendChild(node);
             node = container;
             //remove track from IA, 
