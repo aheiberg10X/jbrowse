@@ -80,7 +80,7 @@ var Browser = function(params) {
 
             var containerWidget = new dijit.layout.BorderContainer({
                 liveSplitters: false,
-                design: "sidebar",
+                design: "headline",
                 gutters: false
             }, brwsr.container);
 
@@ -173,7 +173,7 @@ var Browser = function(params) {
 
             //hook up InterestingAreas
             console.log( "setting up end to be: " + brwsr.refSeq.end+1 );
-            brwsr.interestingAreas = new InterestingAreas( brwsr.refSeq.start, brwsr.refSeq.end+1, params.globals.INTERESTING_AREAS_GAP_THRESH );
+            brwsr.interestingAreas = new InterestingAreas( brwsr.refSeq.start, brwsr.refSeq.end+1 );
 
             dojo.connect(browserWidget, "resize", function() {
                     gv.sizeInit();
@@ -351,8 +351,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         {id: 7,
 	     title: "accordion",
          region: "left",
-         style: "width: 20%; background-color:#0000FF; border-style: none solid none none; border-color: #929292",
-         splitter: "true"
+         style: "width: 15%; background-color:#0000FF; border-style: none solid none none; border-color: #929292",
+         splitter: "false"
         }).placeAt(parent);
 
     var form_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
@@ -364,7 +364,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         }).placeAt(ep);
 
 
-    var track_pane = new dijit.layout.ContentPane(
+   //var track_pane = new dijit.layout.ContentPane(
+   var track_pane = new dijit.layout.BorderContainer(
         {id:"9", 
          title: "View",
          //region: "top",
@@ -376,19 +377,17 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     
 
     //////////// start creating trackListDiv ///////////////////////////////////////
-    var trackListDiv = document.createElement("div");
-    trackListDiv.id = "tracksAvail";
-    trackListDiv.className = "container handles";
-    //trackListDiv.style.cssText =
-      //  "width: 90%; height: 90%; overflow-x: hidden; overflow-y: auto;";
-    trackListDiv.innerHTML =
-        "Available Tracks:<br/>(Drag <img src=\""
-        + (params.browserRoot ? params.browserRoot : "")
-        + "img/right_arrow.png\"/> to view)<br/><br/>";
-    //leftPane.appendChild(trackListDiv);
-
+   var trackListDiv = document.createElement("div");
+   trackListDiv.id = "tracksAvail";
+   trackListDiv.className = "container handles";
+   //trackListDiv.style.cssText =
+   //  "width: 90%; height: 90%; overflow-x: hidden; overflow-y: auto;";
+   trackListDiv.innerHTML =
+       "Available Tracks:<br/>(Drag <img src=\""
+       + (params.browserRoot ? params.browserRoot : "")
+       + "img/right_arrow.png\"/> to view)<br/><br/>";
+   trackListDiv.style.cssText = "background-color: #FF0000; ";
     var brwsr = this;
-
     
     var initCallback = function( trackKey, tracksInterestingAreas ) {
         brwsr.interestingAreas.addTrack( trackKey, tracksInterestingAreas );
@@ -408,9 +407,10 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         if ("avatar" != hint) {  //dropped back into list
             var container = document.createElement("div");
             container.className = "tracklist-container";
-            container.style.cssText = "width: 200px;";
+            container.style.cssText = "width: 90%;";
             container.appendChild(node);
             node = container;
+            //trackListDiv.style.cssText
             //remove track from IA, 
             brwsr.interestingAreas.removeTrack( track.key );
             brwsr.navigateTo(brwsr.locationBox.value);
@@ -421,8 +421,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     this.trackListWidget = new dojo.dnd.Source(trackListDiv,
                                                {creator: trackListCreate,
-						accept: ["track"],
-						withHandles: false});
+						accept: ["track"]/*,
+						withHandles: false*/});
 
     var trackCreate = function(track, hint) {
         var node;
@@ -476,7 +476,49 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     /////////////////// end creating trackListDiv //////////////////////////////
 
-    track_pane.domNode.appendChild(trackListDiv);
+
+
+    
+    var tracklist_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
+        {id:15, 
+         title: "Tracks",
+         region: "top",
+         style: "background-color:#efefef;",
+         layoutPriority: "0"
+         //splitter: "true"
+        }, trackListDiv).placeAt(track_pane);
+
+    var trashcan_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
+        {id:14, 
+         title: "Trash Can",
+         region: "top",
+         style: "background-color:#efefef;",
+         layoutPriority: "1"
+         //splitter: "true"
+        }).placeAt(track_pane);
+
+
+    var trashcan_div = document.createElement("div");
+    trashcan_div.id = "trashcan_div";
+    trashcan_div.style.cssText = "background-color: #FF00FF; text-align: center;";
+    trashcan_div.innerHTML = "trash drop";
+
+
+    //tracklist_pane.domNode.appendChild( trackListDiv);
+    trashcan_pane.domNode.appendChild( trashcan_div );
+
+    this.trash_drop = new dojo.dnd.Source(trashcan_div, 
+                                          {creator: trackListCreate,
+                                           accept:["track"]/*, 
+                                           withHandles:"false"*/
+                                          });
+
+    var button = new dijit.form.Button({id: "delete_button", 
+                                        label: "Delete Tracks",
+                                        style: "align-text: right;",
+                                        onClick: function(){ deleteSubmit(brwsr) }
+                                       }).placeAt( trashcan_pane.domNode );
+
 
     var track_manager_form = document.createElement("form");
     track_manager_form.id = "track_manager_form";
@@ -545,24 +587,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
              onClick: function() {uploadRegion(brwsr)}
             }).placeAt( dojo.byId("region_controls") );
 
-    var trashcan_div = document.createElement("div");
-    trashcan_div.id = "trashcan_div";
-    trashcan_div.style.cssText = "background-color: #FF00FF; text-align: center";
-    trashcan_div.innerHTML = "trash drop";
-    form_pane.domNode.appendChild( trashcan_div );
-
-    this.trash_drop = new dojo.dnd.Source(trashcan_div, 
-                                          {creator: trackListCreate,
-                                           accept:["track"]/*, 
-                                           withHandles:"false"*/
-                                          });
-
-    var button = new dijit.form.Button({id: "delete_button", 
-                                        label: "Delete Tracks",
-                                        style: "align-text: right;",
-                                        onClick: function(){ deleteSubmit(brwsr) }
-                                       }).placeAt( form_pane.domNode );
-
+    
     var track_manager_status = document.createElement("div");
     track_manager_status.id = "track_manager_status";
     track_manager_status.innerHTML = "status";
@@ -1047,17 +1072,26 @@ Browser.prototype.createNavBox = function(parent, locLength, params) {
         navbox.appendChild(this.link);
     }
 
+    var getNewCenterClosure = function(arrow_direction){
+        var callback = function(event){
+            dojo.stopEvent(event);   
+            var new_center = (arrow_direction=="left") ? 
+                             brwsr.interestingAreas.getNextLeftSite( brwsr.view.minVisible(), brwsr.view.maxVisible() ) : 
+                             brwsr.interestingAreas.getNextRightSite( brwsr.view.minVisible(), brwsr.view.maxVisible() );
+            if( new_center >= 0 ){
+                brwsr.view.centerAtBase( new_center );
+            }
+        }
+        return callback;
+    }
+
     var moveLeft = document.createElement("input");
     moveLeft.type = "image";
     moveLeft.src = browserRoot + "img/slide-left.png";
     moveLeft.id = "moveLeft";
     moveLeft.className = "icon nav";
     moveLeft.style.height = "40px";
-    dojo.connect(moveLeft, "click",
-                function(event) {
-                    dojo.stopEvent(event);
-                    brwsr.view.centerAtBase( brwsr.interestingAreas.getNextLeftSite() );
-                }
+    dojo.connect(moveLeft, "click", getNewCenterClosure("left") 
             /*function(event) {*/
             /*dojo.stopEvent(event);*/
             /*brwsr.view.slide(0.9);*/
@@ -1071,11 +1105,7 @@ Browser.prototype.createNavBox = function(parent, locLength, params) {
     moveRight.id="moveRight";
     moveRight.className = "icon nav";
     moveRight.style.height = "40px";
-    dojo.connect(moveRight, "click",
-                 function(event) {
-                    dojo.stopEvent(event);
-                    brwsr.view.centerAtBase( brwsr.interestingAreas.getNextRightSite() );
-                 }
+    dojo.connect(moveRight, "click", getNewCenterClosure("right")
             /*function(event) {*/
             /*dojo.stopEvent(event);*/
             /*brwsr.view.slide(-0.9);*/

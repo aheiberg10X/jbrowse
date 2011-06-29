@@ -35,8 +35,6 @@ open ERROR,  '>', $upload_dir . "/" . "bam_error.txt"  or die $!;
 STDERR->fdopen( \*ERROR,  'w' ) or die $!;
 ### DEBUGGING OUTPUT ###
 
-print $OUTPUT "refseqName = $refseqName\n";
-
 if( $DEBUG ) {
     print $OUTPUT "we getting the auto-histogram file?: $bam_histogram_filename\n";
     print $OUTPUT $upload_dir ."/". $bam_filename;
@@ -155,15 +153,14 @@ my @refSeqs = @{JsonGenerator::readJSON("$data_dir/refSeqs.js", [], 1)};
   
 #if( !$no_valid_ref_seq ){
 foreach my $seqInfo (@refSeqs) {
-    #hdr is the bam header
-    my ($tid, $start, $end) = $hdr->parse_region($seqInfo->{name});
+    #my ($tid, $start, $end) = $hdr->parse_region("chr11");
+    my ($tid,$start,$end) = $hdr->parse_region($seqInfo->{name});
     
     print $OUTPUT "(bogus) tid: $tid, start: $start, end: $end\n";
     
     mkdir("$trackDir/" . $seqInfo->{name}) unless (-d "$trackDir/" . $seqInfo->{name});
 
-    print $OUTPUT "FAKING_REFSEQ: $FAKING_REFSEQ\n";
-    if (defined($tid) or $FAKING_REFSEQ ) {
+    if ( defined($tid) ) {
         print $OUTPUT "trackDir: $trackDir\n, trackLabel: $trackLabel\n";
         my $outdir = "$trackDir/" . $seqInfo->{name} . "/" . $trackLabel;
         my $jsonGen = JsonGenerator->new($outdir,
@@ -317,6 +314,7 @@ sub linking_align2array {
     }
 }
 
+#updating cur_right and cur_left through references
 sub updateBookmarks {
     my $jsonGen = shift;
     my $cur_left = shift;
@@ -330,8 +328,8 @@ sub updateBookmarks {
         }
     }
     else {
-        if( $left - $$cur_right > $INTERESTING_AREAS_GAP_THRESH ){
-            $jsonGen->addInterestingArea( $left );
+        if( $left - $$cur_right > 0 && $$cur_right > 0 ){ #> $INTERESTING_AREAS_GAP_THRESH ){
+            $jsonGen->addInterestingArea( $$cur_left,$$cur_right );
             #push( @$bookmarks, $left );
         }
         ($$cur_left, $$cur_right) = ($left,$right);

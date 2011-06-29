@@ -1,8 +1,12 @@
 ///////////////////////////////////////////////////
 // IANode
-function IANode( trackKey, site ){
+function IANode( trackKey, locs ){
     this.trackKey = trackKey;
-    this.site = site;
+
+    this.leftLoc = locs[0];
+    this.rightLoc = locs[1];
+    //this.leftLoc = locs;
+
     this.next = null;
     this.prev = null
     this.nextType = null;
@@ -34,19 +38,22 @@ IANode.prototype.disconnect = function( ianode ){
 
 ///////////////////////////////////////////////////
 //  Interesting Areas
-function InterestingAreas( refstart, refend, gap_thresh ){
+function InterestingAreas( refstart, refend ){
     var sysTrackName = "systrack";
-    var start = new IANode( sysTrackName, refstart );
-    var end = new IANode( sysTrackName, refend );
+    var start = new IANode( sysTrackName, [refstart,refstart] );
+    var end = new IANode( sysTrackName, [refend,refend] );
     start.next = end;
     end.prev = start;
     start.nextType = end;
+
     this.firstNode = start;
-    this.nextRight = end;
-    this.nextLeft = start;
+    //this.currentNode = start;    
+    this.insideLeftNode = start;
+    this.insideRightNode = end;
+    this.nextLeftNode = start;
+    this.nextRightNode = end;
     this.activeTracks = {sysTrackName: start};
     this.inactiveTracks = {};
-    this.gap_thresh = gap_thresh;
 
     //this.addTrackTest();
 
@@ -77,7 +84,7 @@ InterestingAreas.prototype.addTrack = function( trackKey, interestingAreas ){
     var p2 = p1.next;
     while( head != null ){
         //console.log(p1,p2,head);
-        if(  p1.site+this.gap_thresh <= head.site && head.site <= p2.site+this.gap_thresh ){
+        if(  p1.leftLoc <= head.leftLoc && head.leftLoc <= p2.leftLoc ){
             //console.log("in between");
             head.next = p2;
             p2.prev = head;
@@ -101,7 +108,7 @@ InterestingAreas.prototype.addTrack = function( trackKey, interestingAreas ){
             }
         }
     }
-    this.updateViewFrame    
+    //this.updateViewFrame()    
     
 };
 
@@ -142,13 +149,13 @@ InterestingAreas.prototype.isActive = function( ianode ){
 };
 //private, used by updateViewFrame
 InterestingAreas.prototype.getNextValidRight = function(n) {
-    console.log( "starting getNextValidRight" );
+    //console.log( "starting getNextValidRight" );
     do{
         if( n.next == null ){ break; }
         n = n.next;
     }        
     while( ! this.isActive(n) );
-    console.log( "ending getNextValidRight" );
+    //console.log( "ending getNextValidRight" );
     return n;
 };
 
@@ -164,56 +171,93 @@ InterestingAreas.prototype.getNextValidLeft = function(n) {
 };
 
 InterestingAreas.prototype.updateViewFrame = function( left, right ){
-    console.log("starting updateViewFrame");
-    //fiind the first node with site >= left
-    var n = this.nextRight;
-    if( n.site < right ){
-        console.log("n.site < right");
-        while( n.site < right && !(n.trackKey == "systrack" && n.site > 0)){
+    //set nextRightNode
+    var n = this.nextRightNode;
+    if( n.leftLoc < right ){
+        //console.log("n.leftLoc < right");
+        while( n.leftLoc < right && !(n.trackKey == "systrack" && n.leftLoc > 0)){
             n = this.getNextValidRight(n);
         }
-        this.nextRight = n;
+        this.nextRightNode = n;
+        
     }
-    else if( n.site > right ){
-        console.log("n.site > right");
+    else if( n.leftLoc > right ){
+        //console.log("n.leftLoc > right");
         var last = n;
-        while( n.site > right ){
+        while( n.leftLoc > right ){
             last = n;
             n = this.getNextValidLeft(n);
         }
-        if( this.isActive(last) ){
-            this.nextRight = last;
-        }
-        else{
-            this.nextRight = this.getNextValidRight(n);
-        }
+        
+        //n is in the left,right interval, 
+        this.nextRightNode = this.getNextValidRight(n);
     }
 
-    var p = this.nextRight.prev;
+    //set currentNode
+    //this.currentNode = this.getNextValidLeft(n);
+    this.insideRightNode = this.getNextValidLeft( this.nextRightNode );
 
-    console.log("Current p", p);
-    while( left <= p.site && p.site <= right ){
+    //if( !(left <= this.insideRightNode.leftLoc && this.insideRightNode.leftLoc <= right) ){
+    //this.insideRightNode = null;
+    //}
+
+    //set nextLeftNode
+    var p = this.nextRightNode.prev;
+    while( left <= p.leftLoc && p.leftLoc <= right ){
         if( p.prev == null ){ break; }
         p = p.prev;
-        //console.log("prev p:", p);
     }
-    this.nextLeft = p;
-    
-    //console.log("New next right/left");
-    //console.log( this.nextRight );
-    //console.log( this.nextLeft );
-    console.log( "ending updateViewFrame" );
-    
+    this.nextLeftNode = p;
+    this.insideLeftNode = this.getNextValidRight( this.nextLeftNode );
+    //if( !(left <= this.insideLeftNode.leftLoc && this.insideLeftNode.leftLoc <= right) ){
+    //this.insideLeftNode = null;
+    //}
     return;
 };
 
+//TODO
+//update bam_to_json to generate intervals, not just the left loc
 
-InterestingAreas.prototype.getNextRightSite = function(){
-    return this.nextRight.site;
+
+InterestingAreas.prototype.getNextRightSite = function( viewFrameLeft, viewFrameRight){
+    //if( !(viewFrameLeft <= this.insideRightNode.leftLoc && this.insideRightNode.leftLoc <= viewFrameRight) ){
+    //return this.nextRightNode.leftLoc;
+    //}
+    //else{ 
+    var insideRightNodeRunsOffRight = this.insideRightNode.leftLoc <= viewFrameRight && this.insideRightNode.rightLoc > viewFrameRight;
+    if( this.nextRightNode.trackKey == "systrack" ){
+        return -1; 
+    }
+    else if( !insideRightNodeRunsOffRight ){
+        return this.nextRightNode.leftLoc;
+    }
+    else{
+        return viewFrameRight + (viewFrameRight-viewFrameLeft)/2;
+    }
+    //}
 };
 
-InterestingAreas.prototype.getNextLeftSite = function(){
-    return this.nextLeft.site;
+InterestingAreas.prototype.getNextLeftSite = function( viewFrameLeft, viewFrameRight ){
+    //if( this.insideLeftNode == null ){
+    //return this.nextLeftNode.leftLoc;
+    //}
+    //else{
+    //var insideLeftNodeRunsOffLeft = this.insideLeftNode.rightLoc >= viewFrameLeft && this.insideLeftNode.leftLoc < viewFrameLeft;
+    //var insideRightNodeRunsOffLeft = this.insideRightNode.leftLoc < viewFrameLeft && this.insideRightNode.rightLoc >=  viewFrameLeft;
+    //var insideLeftNodeRunsOffLeft = this.insideLeftNode.leftLoc < viewFrameLeft && this.insideLeftNode.rightLoc >= viewFrameLeft;
+    var nextLeftNodeRunsOffLeft = this.nextLeftNode.leftLoc < viewFrameLeft && this.nextLeftNode.rightLoc >= viewFrameLeft;    
+
+    if( this.nextLeftNode.trackKey == "systrack" ){
+        return -1;
+    }
+    //else if( !(insideRightNodeRunsOffLeft || insideLeftNodeRunsOffLeft) && this.nextLeftNode.trackKey != "systrack"){
+    else if( !nextLeftNodeRunsOffLeft ){
+        return this.nextLeftNode.rightLoc;
+    }
+    else{
+        return viewFrameLeft - (viewFrameRight-viewFrameLeft)/2;    
+    }
+    //}
 };
 
 InterestingAreas.prototype.getNextOfType = function( trackKey ){
