@@ -421,8 +421,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     this.trackListWidget = new dojo.dnd.Source(trackListDiv,
                                                {creator: trackListCreate,
-						accept: ["track"]/*,
-						withHandles: false*/});
+						accept: ["track"],
+						withHandles: false});
 
     var trackCreate = function(track, hint) {
         var node;
