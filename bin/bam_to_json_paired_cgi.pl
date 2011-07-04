@@ -29,6 +29,10 @@ my $bam_linking = defined $cgi->param('display_linking');
 my $bam_histogram_filename = $cgi->param("bam_histogram_filename");   #input type=file
 #my $refseqName = $cgi->param('refseqName');  #sequence name the reads in $bam_filename pertain to
 
+open( DERP, '>', "fuck.txt" );
+print DERP "hi";
+close( DERP );
+
 ### DEBUGGING OUTPUT ###
 open( my $OUTPUT, '>', $upload_dir . "/" . "bam_output.txt" ) or die $!;
 open ERROR,  '>', $upload_dir . "/" . "bam_error.txt"  or die $!;
@@ -142,23 +146,29 @@ my ($cur_left, $cur_right) = (0,0);
 
 my @refSeqs = @{JsonGenerator::readJSON("$data_dir/refSeqs.js", [], 1)};
 
-#my $seqInfo = -1;
-#foreach my $seq (@refSeqs){
-    #if( $seq->{name} eq $refseqName ){
-        #$seqInfo = $seq;
-        #last;
-    #}
-#}
-#my $no_valid_ref_seq = $seqInfo == -1;
-  
-#if( !$no_valid_ref_seq ){
+#chrom name of the track we are trying to display without having a proper refseq for it
+my $refseqName = "chr4";
+#host track is one that we hava  refseq for.  We will put the new data from a chromosome we don't have as if
+#it is on this track
+my $hostTrack = "chr1";
+
 foreach my $seqInfo (@refSeqs) {
-    #my ($tid, $start, $end) = $hdr->parse_region("chr11");
-    my ($tid,$start,$end) = $hdr->parse_region($seqInfo->{name});
+
+    #if we are hosting data, and this seqInfo does not pertain to our host, go to the next $seqInfo
+    if( $hostTrack ne "" && $seqInfo->{name} ne $hostTrack ){
+        next;
+    }
+   
+    print $OUTPUT "host track is: $seqInfo->{name}\n"; 
+    if( $refseqName eq "" ){
+        $refseqName = $seqInfo->{name};
+    }
+    my ($tid,$start,$end) = $hdr->parse_region($refseqName);
     
     print $OUTPUT "(bogus) tid: $tid, start: $start, end: $end\n";
     
-    mkdir("$trackDir/" . $seqInfo->{name}) unless (-d "$trackDir/" . $seqInfo->{name});
+    my $newTrackDir = "$trackDir/$refseqName";
+    mkdir( $newTrackDir ) unless (-d $newTrackDir);
 
     if ( defined($tid) ) {
         print $OUTPUT "trackDir: $trackDir\n, trackLabel: $trackLabel\n";
@@ -205,11 +215,25 @@ foreach my $seqInfo (@refSeqs) {
                            $start,
                            $end,
                            sub{ align2array($_[0],$_[1])}, \@tosort);
-
             foreach my $alignment (sort {$a->[0] <=> $b->[0]} @tosort){
                 updateBookmarks( $jsonGen, \$cur_left, \$cur_right, $alignment );
                 $sorter->addSorted( $alignment );
             }
+            
+        }
+
+        #it could be that there are no gaps in reads, meaning updateBookmarks never adds anything to IAs
+        #if thats the case, add the one giant interval herei
+        my $perlIsGay = $jsonGen->{interestingAreas};
+        print $OUTPUT "$perlIsGay\n";
+        my $countIA =  scalar @{ $perlIsGay };
+        print $OUTPUT "count IA: $countIA \n";
+        if( $countIA == 0 ){
+            print $OUTPUT "no IAs, adding $cur_left, $cur_right\n";
+            $jsonGen->addInterestingArea( $cur_left,$cur_right );
+        }
+        else {
+            print $OUTPUT "what\n";
         }
 
         $sorter->flush();
@@ -238,10 +262,6 @@ if( $bad_bam ){
     print $OUTPUT "bad bam\n";
     print '{"status":"ERROR", "message":"This BAM file can\'t be read by Bio::DB::Bam (reporting that there are 0 alignments)"}';
 }
-#elsif( $no_valid_ref_seq ){
-    #print $OUTPUT "no valid ref seq\n";
-    #print '{"status":"ERROR", "message":"There is no refseq in the system by the name $refseqName."}';
-#}
 else{
     print $OUTPUT "good bam\n";
     #add a new entry to trackInfo.js
@@ -321,6 +341,9 @@ sub updateBookmarks {
     my $cur_right = shift;
     my $align_array = shift;
 
+    #print $OUTPUT "$align_array->[0], $align_array->[1]\n";
+    #print $OUTPUT "curleft: $$cur_left, curright: $$cur_right\n";
+
     my ($left,$right) = ($align_array->[0], $align_array->[1]);
     if( $$cur_left <= $left and $left <= $$cur_right ){
         if( $right > $$cur_right ){ 
@@ -330,8 +353,8 @@ sub updateBookmarks {
     else {
         if( $left - $$cur_right > 0 && $$cur_right > 0 ){ #> $INTERESTING_AREAS_GAP_THRESH ){
             $jsonGen->addInterestingArea( $$cur_left,$$cur_right );
-            #push( @$bookmarks, $left );
         }
         ($$cur_left, $$cur_right) = ($left,$right);
     }    
+    #print $OUTPUT "\n";
 }

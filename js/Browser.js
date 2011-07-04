@@ -217,7 +217,7 @@ var Browser = function(params) {
                                         * 0.6) | 0)));
             }
 
-            //if someone calls methods on this browser object
+            //if someone call/cs methods on this browser object
             //before it's fully initialized, then we defer
             //those functions until now
             for (var i = 0; i < brwsr.deferredFunctions.length; i++)
@@ -227,6 +227,34 @@ var Browser = function(params) {
 };
 
 Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
+    
+    //var ep = new dojox.layout.ExpandoPane(
+    var ep = new dijit.layout.AccordionContainer(
+        {id: "accordion",  //7 
+	     title: "accordion",
+         region: "left",
+         style: "width: 15%; background-color:#0000FF; border-style: none solid none none; border-color: #929292",
+         splitter: "false"
+        }).placeAt(parent);
+
+    var form_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
+        {id: "form_pane", //8
+         title: "Manage",
+         //region: "bottom",
+         style: "background-color:#efefef;",
+         //splitter: "true"
+        }).placeAt(ep);
+
+
+   //var track_pane = new dijit.layout.ContentPane(
+   var track_pane = new dijit.layout.BorderContainer(
+        {id:"track_pane", //9
+         title: "View",
+         //region: "top",
+         style: "background-color: #efefef; border-style: none solid none none; border-color: #929292",
+         //splitter: "true",
+         selected: "true"
+        }).placeAt(ep);
 
     var deleteSubmit = function(brwsr) {
 
@@ -318,6 +346,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                         brwsr.trackListWidget.insertNodes(false,data['trackData']);
                         dojo.byId("track_manager_status").innerHTML = "bam posted";
                         brwsr.tracks.push(name);
+                        ep.selectChild( "track_pane", true);
                     }
                 },
                 error: function(response, ioArgs){
@@ -346,34 +375,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         });
     };
 
-    //var ep = new dojox.layout.ExpandoPane(
-    var ep = new dijit.layout.AccordionContainer(
-        {id: 7,
-	     title: "accordion",
-         region: "left",
-         style: "width: 15%; background-color:#0000FF; border-style: none solid none none; border-color: #929292",
-         splitter: "false"
-        }).placeAt(parent);
-
-    var form_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
-        {id:8, 
-         title: "Manage",
-         //region: "bottom",
-         style: "background-color:#efefef;",
-         //splitter: "true"
-        }).placeAt(ep);
-
-
-   //var track_pane = new dijit.layout.ContentPane(
-   var track_pane = new dijit.layout.BorderContainer(
-        {id:"9", 
-         title: "View",
-         //region: "top",
-         style: "background-color: #efefef; border-style: none solid none none; border-color: #929292",
-         //splitter: "true",
-         selected: "true"
-        }).placeAt(ep);
-
+    
     
 
     //////////// start creating trackListDiv ///////////////////////////////////////
