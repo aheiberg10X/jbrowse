@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import sys
-import json
+import simplejson as json
 import re
 from os import mkdir
 from shutil import rmtree
@@ -43,27 +43,29 @@ def removeTracks( chrom, track_keys_to_remove, delete=False, filename = "../data
 
     if len(retained_tracks) == len(json_tracks) :
         raise Exception("No tracks were removed. Check to make sure the supplied track names are correct")
-    
+
     tifile = open( filename, 'w')
     tifile.write( "%s = \n%s" % (js_var_name, json.dumps( retained_tracks, indent=4 )))
     tifile.close()
 
 def deleteTracks( chrom, track_labels ) :
     for label in track_labels :
-        rmtree( "../data/tracks/%s/%s" % (chrom,label) )
+        rdir = "../data/tracks/%s/%s" % (chrom,label)
+        try :
+            rmtree( rdir )
+        except OSError :
+            print "can't remove %s\n" % rdir
 
 
 if __name__ == '__main__' :
-    
-    #print "Content-Type: text/html"     # HTML is following
-    #print                               # blank line, end of headers
-    #print 'sup'
+
+
     fields = cgi.FieldStorage()
     print 'Content-type: text/html\n\n'
-    
+
     if not fields :
-      	chrom = sys.argv[1]
-	to_remove = sys.argv[2:]
+        chrom = sys.argv[1]
+        to_remove = sys.argv[2:]
         removeTracks( chrom, to_remove, delete=True )
     else :
         sys.stderr = open("/home/andrew/school/dnavis/jbrowse/uploads/delete_error.txt",'w')
@@ -72,12 +74,12 @@ if __name__ == '__main__' :
         print fields
         print fields.getvalue("chrom")
         print fields.getlist("delete_track")
-        
-        removeTracks( fields.getvalue("chrom"), fields.getlist("delete_track"), delete=True )
-             
-    #removeTracks( ['Linked Test rEAds'], delete=True );
-    
-    
 
-  
+        removeTracks( fields.getvalue("chrom"), fields.getlist("delete_track"), delete=True )
+
+    #removeTracks( ['Linked Test rEAds'], delete=True );
+
+
+
+
 
