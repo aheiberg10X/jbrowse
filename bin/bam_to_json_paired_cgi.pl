@@ -146,11 +146,13 @@ my ($cur_left, $cur_right) = (0,0);
 
 my @refSeqs = @{JsonGenerator::readJSON("$data_dir/refSeqs.js", [], 1)};
 
+
+#leave both blank for normal operation
 #chrom name of the track we are trying to display without having a proper refseq for it
-my $refseqName = "chr4";
+my $refseqName = "";
 #host track is one that we hava  refseq for.  We will put the new data from a chromosome we don't have as if
 #it is on this track
-my $hostTrack = "chr1";
+my $hostTrack = "";
 
 foreach my $seqInfo (@refSeqs) {
 
