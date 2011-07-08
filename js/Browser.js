@@ -310,10 +310,14 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     //2 : duplicate name
     //3 : cannot find histogram file
     var hasNameConflict = function(name) {
-        if( name == '' ){ return 1; }
+        if( name == '' ){ 
+            alert("Filename is empty");
+            return 1; 
+        }
         else{
             for( trackkey in brwsr.tracks ){
                 if( name == brwsr.tracks[trackkey] ){
+                    alert("There is already a track with that name");
                     return 2;
                  }
             }
@@ -324,15 +328,10 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     var uploadBAM = function() {
         var display_linking = dojo.byId("display_linking").value;
-
+        //TODO: should pass 'name' to form, rather than deducing the trackname anew in each language
         var name = trackkeyFromFilename( dojo.byId("bam_filename").value );
-        var conflict = hasNameConflict( name );
-        if( conflict ){
-            if( conflict == 1 ){ alert("Filename is empty.") }
-            else if( conflict == 2 ){ alert("There is already a track with that name.") }            
-            else if( conflict == 3 ){ alert("Cannot find the file: INTERPOLATE.histogram") }
-        }
-        else{
+        var isConflict = hasNameConflict( name );
+        if( !isConflict ){
             dojo.io.iframe.send({
                 url: "bin/bam_to_json_paired_cgi.pl",
                 method: "post",
@@ -358,48 +357,45 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     };
 
     var uploadRegion = function(brwsr) {
-        dojo.io.iframe.send({
-            url: "bin/region_to_json.pl",
-            method: "post",
-            handleAs: "json",
-            form: dojo.byId("track_manager_form"),
-            load: function(data) {
-                if( data['status'] == "ERROR" ) {
-                    alert(data['message']);
+        //TODO: should pass 'name' to form, rather than deducing the trackname anew in each language
+        var name = trackkeyFromFilename("region_filename");
+        var isConflict = hasNameConflict(name);
+        if( !isConflict ){
+            dojo.io.iframe.send({
+                url: "bin/region_to_json.pl",
+                method: "post",
+                handleAs: "json",
+                form: dojo.byId("track_manager_form"),
+                load: function(data) {
+                    if( data['status'] == "ERROR" ) {
+                        alert(data['message']);
+                    }
+                    else{
+                        brwsr.trackListWidget.insertNodes(false, data['trackData']);                        
+                        dojo.byId("track_manager_status").innerHTML = "region posted";
+                    }
                 }
-                else{
-                    brwsr.trackListWidget.insertNodes(false, data['trackData']);                        
-                    dojo.byId("track_manager_status").innerHTML = "region posted";
-                }
-            }
-        });
+            });
+        }
     };
 
     
     
 
     //////////// start creating trackListDiv ///////////////////////////////////////
-   var trackListDiv = document.createElement("div");
-   trackListDiv.id = "tracksAvail";
-   trackListDiv.className = "container handles";
-   //trackListDiv.style.cssText =
-   //  "width: 90%; height: 90%; overflow-x: hidden; overflow-y: auto;";
-   trackListDiv.innerHTML =
-       "Available Tracks:<br/>(Drag <img src=\""
-       + (params.browserRoot ? params.browserRoot : "")
-       + "img/right_arrow.png\"/> to view)<br/><br/>";
-   trackListDiv.style.cssText = "background-color: #FF0000; ";
+    var trackListDiv = document.createElement("div");
+    trackListDiv.id = "tracksAvail";
+    trackListDiv.className = "container handles";
+    //trackListDiv.style.cssText =
+    //  "width: 90%; height: 90%; overflow-x: hidden; overflow-y: auto;";
+    trackListDiv.innerHTML =
+        "Available Tracks:<br/>(Drag <img src=\""
+        + (params.browserRoot ? params.browserRoot : "")
+        + "img/right_arrow.png\"/> to view)<br/><br/>";
+    trackListDiv.style.cssText = "background-color: #FF0000; ";
+
     var brwsr = this;
     
-    var initCallback = function( trackKey, tracksInterestingAreas ) {
-        brwsr.interestingAreas.addTrack( trackKey, tracksInterestingAreas );
-        brwsr.navigateTo(brwsr.locationBox.value);
-    };
-
-    var changeCallback = function() {
-        brwsr.view.showVisibleBlocks(true);
-    };
-
     var trackListCreate = function(track, hint) {
         var node = document.createElement("div");
         node.className = "tracklist-label";
@@ -412,8 +408,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             container.style.cssText = "width: 90%;";
             container.appendChild(node);
             node = container;
-            //trackListDiv.style.cssText
-            //remove track from IA, 
             brwsr.interestingAreas.removeTrack( track.key );
             brwsr.navigateTo(brwsr.locationBox.value);
         }
@@ -425,6 +419,14 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                                                {creator: trackListCreate,
 						accept: ["track"],
 						withHandles: false});
+    
+    var initCallback = function( trackKey, tracksInterestingAreas ) {
+        brwsr.interestingAreas.addTrack( trackKey, tracksInterestingAreas );
+        brwsr.navigateTo(brwsr.locationBox.value);
+    };
+    var changeCallback = function() {
+        brwsr.view.showVisibleBlocks(true);
+    };
 
     var trackCreate = function(track, hint) {
         var node;
@@ -476,11 +478,11 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         this.showTracks(params.defaultTracks);
     }
 
-    /////////////////// end creating trackListDiv //////////////////////////////
+   
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    //            Build Up trackListDiv
+    /////////////////////////////////////////////////////////////////////////////////////////////////// 
 
-
-
-    
     var tracklist_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
         {id:15, 
          title: "Tracks",
@@ -522,6 +524,10 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                                        }).placeAt( trashcan_pane.domNode );
 
 
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //           Build form 
+    /////////////////////////////////////////////////////////////////////////////////////////
+
     var track_manager_form = document.createElement("form");
     track_manager_form.id = "track_manager_form";
     track_manager_form.method = "post";
@@ -556,13 +562,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     //bam_histogram.style.cssText = "visibility:hidden; position: absolute; top:0; left:0;";
     dojo.byId("bamhistogram").appendChild( bam_histogram );
 
-//    var bam_linking = new dijit.form.CheckBox(
-//        {name: "bam_linking",
-//         value: "1",
-//         checked: false,
-//        }
-//    ).placeAt( dojo.byId("") );
-
     var bam_upload = new dijit.form.Button(
         {name: "bam_upload", 
          label: "Upload BAM", 
@@ -570,12 +569,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
          onClick: uploadBAM
         }).placeAt( dojo.byId("bam_controls") );
 
-    
-    //var bam_linking_label = document.createElement("label");
-    //bam_linking_label.innerHTML = "Link Read Pairs";
-    //dojo.attr(bam_linking_label,'for', bam_linking.name);
-    //track_manager_form.appendChild( bam_linking_label );
-    
     var input_regionfile = document.createElement("input");
     input_regionfile.type = "file";
     input_regionfile.name = "region_filename";
@@ -594,7 +587,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     track_manager_status.id = "track_manager_status";
     track_manager_status.innerHTML = "status";
     form_pane.domNode.appendChild( track_manager_status );
-    
             
 };
 

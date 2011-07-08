@@ -29,10 +29,6 @@ my $bam_linking = defined $cgi->param('display_linking');
 my $bam_histogram_filename = $cgi->param("bam_histogram_filename");   #input type=file
 #my $refseqName = $cgi->param('refseqName');  #sequence name the reads in $bam_filename pertain to
 
-open( DERP, '>', "fuck.txt" );
-print DERP "hi";
-close( DERP );
-
 ### DEBUGGING OUTPUT ###
 open( my $OUTPUT, '>', $upload_dir . "/" . "bam_output.txt" ) or die $!;
 open ERROR,  '>', $upload_dir . "/" . "bam_error.txt"  or die $!;
@@ -44,6 +40,7 @@ if( $DEBUG ) {
     print $OUTPUT $upload_dir ."/". $bam_filename;
 }
 
+print $OUTPUT "printing headres\n";
 print $cgi->header;
 print "<html><body><textarea>\n";  #place a json response inside here"
 
@@ -51,12 +48,14 @@ print "<html><body><textarea>\n";  #place a json response inside here"
 #######################  UPLOADING  #####################################
 
 #write the data to $upload_dir, TODO: is it necessary to write to a file, can't we just save in a variable a la $pregen_histograms below?
+#print $OUTPUT "writing upload file\n";
 my $bamFile =  "$upload_dir/$bam_filename";
 open (OUTFILE, ">", $bamFile) or die "Couldn't open $bam_filename for writing: $!";
 while(<$bam_filename>){
   print OUTFILE $_;
 }
 close OUTFILE;
+print $OUTPUT "done writing upload file\n";
 
 my $pregen_histograms;   #user has the option to upload pregenerated historgram data, saving JsonGenerator from having to figure it out
 if( defined $bam_histogram_filename and $bam_histogram_filename ne ''){
@@ -94,7 +93,7 @@ $folders = reverse $folders;
 my @folders = split(/\//,$folders);
 $key = $folders[-1];
 $trackLabel = $key;
-
+print $OUTPUT "after deducing filename\n";
 
 if (!defined($nclChunk)) {
     # default chunk size is 50KiB
@@ -109,12 +108,14 @@ my $trackDir = "$data_dir/$trackRel";
 mkdir($data_dir) unless (-d $data_dir);
 mkdir($trackDir) unless (-d $trackDir);
 
-
-
-
-my $bam = Bio::DB::Bam->open($bamFile);
-my $hdr = $bam->header();
+#my $bam = 7;
+#my $hdr = 7;
 my $index = Bio::DB::Bam->index($bamFile, 1);
+print $OUTPUT "can't make the fucking index?\n";
+my $bam = Bio::DB::Bam->open($bamFile);
+print $OUTPUT "opening upload file\n";
+my $hdr = $bam->header();
+print $OUTPUT "after header\n";
 #catch divide by 0 errors
 my $bad_bam = 0;
 
@@ -198,9 +199,9 @@ foreach my $seqInfo (@refSeqs) {
         if( $bam_linking ) {
             print $OUTPUT "linkingi\n";
             my %paired_info;
+
             # $_[0] is the alignment found by fetch
             # $_[1] is \%paired_info reference
-            
             $index->fetch($bam, $tid, $start, $end, sub { linking_align2array( $_[0], $_[1]) }, \%paired_info);
 
             my @sorted = sort {$paired_info{$a}[0] <=> $paired_info{$b}[0]} keys %paired_info;
@@ -221,7 +222,6 @@ foreach my $seqInfo (@refSeqs) {
                 updateBookmarks( $jsonGen, \$cur_left, \$cur_right, $alignment );
                 $sorter->addSorted( $alignment );
             }
-            
         }
 
         #it could be that there are no gaps in reads, meaning updateBookmarks never adds anything to IAs
@@ -249,16 +249,6 @@ foreach my $seqInfo (@refSeqs) {
         }
     }
 }
-
-########################################
-########## bookmarks
-#print $OUTPUT "bookmarks: @bookmarks\n";
-#open(F,">","$outdir/bookmarks.js");
-#print F "bookmarks = ";
-#print F JSON::encode_json \@bookmarks;
-#close(F);
-########### bookmarks
-#######################################3
 
 if( $bad_bam ){
     print $OUTPUT "bad bam\n";
