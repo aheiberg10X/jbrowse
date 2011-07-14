@@ -495,7 +495,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     var trashcan_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
         {id:14, 
          title: "Trash Can",
-         region: "top",
+         region: "bottom",
          style: "background-color:#efefef;",
          layoutPriority: "1"
          //splitter: "true"

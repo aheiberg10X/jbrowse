@@ -20,6 +20,7 @@ use IO::Handle;
 use Cwd;
 use GlobalConfig;
 
+
 ######################################################
 #################### CGI STUFF #######################
 
@@ -204,6 +205,9 @@ foreach my $seqInfo (@refSeqs) {
             # $_[1] is \%paired_info reference
             $index->fetch($bam, $tid, $start, $end, sub { linking_align2array( $_[0], $_[1]) }, \%paired_info);
 
+            #reading in an ersatz $paired_info for sandboxing with lazy loading of vertical data
+            %paired_info = readInJsonFile( "../data/sandbox_intervals.js" );
+            
             my @sorted = sort {$paired_info{$a}[0] <=> $paired_info{$b}[0]} keys %paired_info;
             foreach my $key (@sorted){
                 updateBookmarks( $jsonGen, \$cur_left, \$cur_right, $paired_info{$key} );
@@ -302,6 +306,7 @@ sub linking_align2array {
     my $left = $align->pos+1;
     my $right = $align->calend+1;
 
+    #16th bit is the strand bit. 1 means reverse, -1 means forward
     my $strand = ($align->flag & 0x10) >> 4; #$align->strand; #$align->strand ? -1 : 1;
     my $this_style = $strand ? "reverse" : "forward";
     $strand = $strand ? -1 : 1;
@@ -350,3 +355,18 @@ sub updateBookmarks {
     }    
     #print $OUTPUT "\n";
 }
+
+sub readInJsonFile {
+    my $filename = shift;
+    open( DERP, "<", $filename );
+    local $/=undef;
+    my $json_text = <DERP>;
+    
+    #delete whitespace
+    $json_text =~ s/\s+/ /g;
+    #delete what's leading up to the start of the object (i.e ' histogram = ')
+    $json_text =~ s/^.+= //;
+    
+    return JSON::decode_json($json_text);
+}
+

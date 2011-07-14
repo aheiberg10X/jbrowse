@@ -274,8 +274,8 @@ function GenomeView(elem, stripeWidth, refseq, zoomLevel) {
             view.scrollContainer.style.top = -view.y + "px";
         };
     } else {
-	view.x = view.elem.scrollLeft;
-	view.y = view.elem.scrollTop;
+    	view.x = view.elem.scrollLeft;
+    	view.y = view.elem.scrollTop;
         view.getX = function() {
 	    return view.x;
 	};
@@ -323,7 +323,7 @@ function GenomeView(elem, stripeWidth, refseq, zoomLevel) {
 
             view.updateTrackLabels(view.x);
             view.updatePosLabels(view.y);
-	    view.showFine();
+	        view.showFine();
 
             view.elem.scrollLeft = view.x;
             view.elem.scrollTop = view.y;
@@ -337,10 +337,10 @@ function GenomeView(elem, stripeWidth, refseq, zoomLevel) {
         view.elem.style.cursor = "url(\"openhand.cur\"), move";
         document.body.style.cursor = "default";
         dojo.stopEvent(event);
-	view.showCoarse();
+        view.showCoarse();
 
         view.scrollUpdate();
-	view.showVisibleBlocks(true);
+        view.showVisibleBlocks(true);
     };
 
     var htmlNode = document.body.parentNode;
@@ -354,10 +354,10 @@ function GenomeView(elem, stripeWidth, refseq, zoomLevel) {
     };
 
     view.dragMove = function(event) {
-	view.setPosition({
-		x: view.winStartPos.x - (event.clientX - view.dragStartPos.x),
-		y: view.winStartPos.y - (event.clientY - view.dragStartPos.y)
-            });
+        view.setPosition({
+            x: view.winStartPos.x - (event.clientX - view.dragStartPos.x),
+            y: view.winStartPos.y - (event.clientY - view.dragStartPos.y)
+        });
         dojo.stopEvent(event);
     };
 
@@ -371,23 +371,23 @@ function GenomeView(elem, stripeWidth, refseq, zoomLevel) {
                 view.animation.stop();
             }
         }
-	if (Util.isRightButton(event)) return;
+        if (Util.isRightButton(event)) return;
         dojo.stopEvent(event);
-	if (event.shiftKey || event.ctrlKey) return;
-	view.dragEventHandles =
-	    [
-	     dojo.connect(document.body, "mouseup", view.dragEnd),
-	     dojo.connect(document.body, "mousemove", view.dragMove),
-	     dojo.connect(document.body, "mouseout", view.checkDragOut)
-	     ];
+        if (event.shiftKey || event.ctrlKey) return;
+        view.dragEventHandles =
+            [
+             dojo.connect(document.body, "mouseup", view.dragEnd),
+             dojo.connect(document.body, "mousemove", view.dragMove),
+             dojo.connect(document.body, "mouseout", view.checkDragOut)
+             ];
 
-	view.dragging = true;
-	view.dragStartPos = {x: event.clientX,
-			     y: event.clientY};
-	view.winStartPos = view.getPosition();
+        view.dragging = true;
+        view.dragStartPos = {x: event.clientX,
+                     y: event.clientY};
+        view.winStartPos = view.getPosition();
 
-	document.body.style.cursor = "url(\"closedhand.cur\"), move";
-	view.elem.style.cursor = "url(\"closedhand.cur\"), move";
+        document.body.style.cursor = "url(\"closedhand.cur\"), move";
+        view.elem.style.cursor = "url(\"closedhand.cur\"), move";
     };
 
     dojo.connect(view.elem, "mousedown", view.mouseDown);
@@ -405,9 +405,9 @@ function GenomeView(elem, stripeWidth, refseq, zoomLevel) {
 	});
 
     view.afterSlide = function() {
-	view.showCoarse();
+    	view.showCoarse();
         view.scrollUpdate();
-	view.showVisibleBlocks(true);
+	    view.showVisibleBlocks(true);
     };
 
     view.zoomCallback = function() { view.zoomUpdate(); };

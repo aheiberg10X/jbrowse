@@ -89,7 +89,12 @@ NCList.prototype.binarySearch = function(arr, item, itemIndex) {
 };
 
 NCList.prototype.iterHelper = function(arr, from, to, fun, finish,
-                                       inc, searchIndex, testIndex, path) {
+                                       inc, searchIndex, testIndex, path, maxRender) {
+
+    if( maxRender <= 0 ){ 
+        return; 
+    }
+    var keepIterating = true;
     var len = arr.length;
     var i = this.binarySearch(arr, from, searchIndex);
     while ((i < len)
@@ -109,7 +114,7 @@ NCList.prototype.iterHelper = function(arr, from, to, fun, finish,
                             return function(o) {
                                 ncl.iterHelper(o, from, to, fun, finish, inc,
                                                searchIndex, testIndex,
-                                               path.concat(parentIndex));
+                                               path.concat(parentIndex), maxRender);
                                 finish.dec();
                             };
                         }(i)
@@ -133,15 +138,14 @@ NCList.prototype.iterHelper = function(arr, from, to, fun, finish,
                                 arr[i][this.lazyIndex].chunk
                             ),
                         handleAs: "json",
-                        load: function(lazyFeat, lazyObj,
-                                       sublistIndex, parentIndex) {
+                        load: function(lazyFeat, lazyObj, sublistIndex, parentIndex) {
                             return function(o) {
                                 lazyObj.state = "loaded";
                                 lazyFeat[sublistIndex] = o;
                                 ncl.iterHelper(o, from, to,
                                                fun, finish, inc,
                                                searchIndex, testIndex,
-                                               path.concat(parentIndex));
+                                               path.concat(parentIndex), maxRender);
                                 for (var c = 0;
                                      c < lazyObj.callbacks.length;
                                      c++)
@@ -156,17 +160,18 @@ NCList.prototype.iterHelper = function(arr, from, to, fun, finish,
             }
         } else {
             fun(arr[i], path.concat(i));
+            keepIterating = true;
         }
 
-        if (arr[i][this.sublistIndex])
+        if (arr[i][this.sublistIndex] && keepIterating)
             this.iterHelper(arr[i][this.sublistIndex], from, to,
                             fun, finish, inc, searchIndex, testIndex,
-                            path.concat(i));
+                            path.concat(i), maxRender-1);
         i += inc;
     }
 };
 
-NCList.prototype.iterate = function(from, to, fun, postFun) {
+NCList.prototype.iterate = function(from, to, fun, postFun, maxRender) {
     // calls the given function once for each of the
     // intervals that overlap the given interval
     //if from <= to, iterates left-to-right, otherwise iterates right-to-left
@@ -179,7 +184,7 @@ NCList.prototype.iterate = function(from, to, fun, postFun) {
     var testIndex = (from > to) ? 1 : 0;
     var finish = new Finisher(postFun);
     this.iterHelper(this.topList, from, to, fun, finish,
-                    inc, searchIndex, testIndex, []);
+                    inc, searchIndex, testIndex, [], maxRender);
     finish.finish();
 };
 

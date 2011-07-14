@@ -130,8 +130,7 @@ FeatureTrack.prototype.loadSuccess = function(trackInfo) {
 //overloading the Track.setLoaded because only FeatureTracks need to pass 
 //the interestingAreas array to register it with Browser.
 FeatureTrack.prototype.setLoaded = function(){
-    var ia = this.ia;
-    this.initCallback( this.key, ia );
+    this.initCallback( this.key, this.ia );
     Track.prototype.setLoaded.call(this);
 };
 
@@ -366,7 +365,8 @@ FeatureTrack.prototype.fillFeatures = function(blockIndex, block,
         //console.log("ID " + uniqueId + (layouter.hasSeen(uniqueId) ? " (seen)" : " (new)"));
         if (layouter.hasSeen(uniqueId)) {
             //console.log("this layouter has seen " + uniqueId);
-            return;
+            //return;
+            return true;
         }
 
         var featDiv = curTrack.renderFeature(feature, uniqueId, block, scale, containerStart, containerEnd);
@@ -388,7 +388,7 @@ FeatureTrack.prototype.fillFeatures = function(blockIndex, block,
                               block.style.backgroundColor = "";
                               curTrack.heightUpdate(layouter.totalHeight,
                                                     blockIndex);
-                          });
+                          }, this.maxRender);
 };
 
 FeatureTrack.prototype.measureStyles = function() {

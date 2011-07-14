@@ -273,9 +273,9 @@ sub new {
 }
 
 sub addInterestingArea {
-    my ($self, $site) = @_;
+    my ($self, $leftLoc, $rightLoc) = @_;
     my $iaref =  $self->{interestingAreas};
-    push( @$iaref, $site );
+    push( @$iaref, [$leftLoc,$rightLoc] );
 }
 
 sub addFeature {
@@ -319,7 +319,7 @@ sub hasFeatures {
 
 sub generateTrack {
     my ($self) = @_;
-    open( my $OUTPUT, '>', $upload_dir . "/" . "jsongen_output.txt" ) or die $!;
+    open( my $OUTPUT, '>', $upload_dir . "/" . "generateTrack_output.txt" ) or die $!;
 
     my $ext = $self->{ext};
     my $features = $self->{features};
@@ -328,6 +328,7 @@ sub generateTrack {
     # approximate the number of bases per histogram bin at the zoom level where
     # FeatureTrack.js switches to histogram view, by default
     my $histBinThresh = ($self->{refEnd} * $density_estimate * 10) / $self->{count};
+    print $OUTPUT  "what";
 
     # find multiple of base hist bin size that's just over $histBinThresh
     my $i;
@@ -353,8 +354,6 @@ sub generateTrack {
         #my $num_hists = scalar @{$self->{hists}};
         print $OUTPUT "numhistlevels: $num_pregen_hists\n";
 
-        #they are order in descending order (bpPerBin), want to insert then in ascending
-        #$self->{pregen_histograms} = reverse($self->{pregen_histograms});
         for( my $k = 0; $k < $num_pregen_hists; $k++ ){
             $self->{hists}->[$k] = $self->{pregen_histograms}->[$k]->{counts};
         }
@@ -415,6 +414,10 @@ sub generateTrack {
         }
         push @histStats, {'bases' => $binBases,
                           arrayStats($self->{hists}->[$j])};
+    }
+
+    if( $DEBUG ) {
+        print $OUTPUT "hi there";
     }
 
     my $trackData = {

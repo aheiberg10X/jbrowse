@@ -6,7 +6,6 @@ function Track(name, key, loaded, changeCallback ) {
     this.height = 0;
     this.shown = true;
     this.empty = false;
-    this.maxRender = 3;
 }
 
 Track.prototype.load = function(url) {

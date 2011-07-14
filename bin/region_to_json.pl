@@ -17,7 +17,7 @@ use Bio::DB::Sam;
 use Bio::DB::Bam::AlignWrapper;
 
 use IO::Handle;
-
+use bam_to_json_paired_cgi;
 use GlobalConfig;
 
 my $using_CGI = 1;
@@ -26,9 +26,6 @@ if ($using_CGI) {
 
     my $cgi = CGI::new();
     $region_filename = $cgi->param('region_filename');
-    if( not defined $region_filename ){
-	$region_filename = "regions.illumina.c1.400.1M.5.txt";
-    }
     print $cgi->header;
     print "<html><body><textarea>\n";
 
@@ -114,10 +111,10 @@ while (<region_FH>) {
     #process headers
     if ($line_num == 1){
         $_ =~ s/\s+$//;  #rtrim
-	print OUTPUT "trimmed |$_|\n";
+        print OUTPUT "trimmed |$_|\n";
 
         my @splt = split(/\s+/,$_);
-	print OUTPUT "splt: ", @splt;
+        print OUTPUT "splt: ", @splt;
         if( $splt[0] =~ m/^chr/i ){
         #if( $splt[0] ne ">chrom" ){
             $error = 1;
@@ -158,6 +155,7 @@ while (<region_FH>) {
         $start = int($splt[1]);
         $end = int($splt[2]);
         $sorter->addSorted( [$start,$end,0] );
+        #TODO: updateBookmarks here
     }
 
     $line_num++;
