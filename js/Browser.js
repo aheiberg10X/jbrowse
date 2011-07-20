@@ -35,6 +35,7 @@ var Browser = function(params) {
     dojo.require("dojox.layout.ExpandoPane");
     dojo.require("dijit.layout.AccordionContainer");
     dojo.require("dijit.form.VerticalSlider");
+    dojo.require("dijit.Tree");
     // end my stuff
 
     var refSeqs = params.refSeqs;
@@ -380,8 +381,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     };
 
     
-    
-
     //////////// start creating trackListDiv ///////////////////////////////////////
     var trackListDiv = document.createElement("div");
     trackListDiv.id = "tracksAvail";
@@ -484,7 +483,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     /////////////////////////////////////////////////////////////////////////////////////////////////// 
 
     var tracklist_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
-        {id:15, 
+        {id:"tracklist_pane", 
          title: "Tracks",
          region: "top",
          style: "background-color:#efefef;",
@@ -492,8 +491,15 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
          //splitter: "true"
         }, trackListDiv).placeAt(track_pane);
 
+    var query_pane = new dijit.layout.ContentPane( 
+        {id : "query_pane",
+         title : "Query",
+         region : "center",
+         style : "background-color: #ff0000"},
+        track_pane);
+
     var trashcan_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
-        {id:14, 
+        {id: "trashcan_pane", 
          title: "Trash Can",
          region: "bottom",
          style: "background-color:#efefef;",
