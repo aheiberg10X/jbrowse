@@ -495,8 +495,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         {id : "query_pane",
          title : "Query",
          region : "center",
-         style : "background-color: #ff0000"},
-        track_pane);
+         style : "background-color: #efefef"
+        }).placeAt(track_pane);
 
     var trashcan_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
         {id: "trashcan_pane", 
@@ -506,6 +506,19 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
          layoutPriority: "1"
          //splitter: "true"
         }).placeAt(track_pane);
+
+    var query_box = new dijit.form.TextBox(
+                        {id : "query_box",
+                         style: "height: 12em; width: 90%"}).placeAt( query_pane.domNode );
+
+    var query_button = new dijit.form.Button({id: "query_button", 
+                                        label: "Query Tracks",
+                                        style: "align-text: right;",
+                                        onClick: function(){ alert("placeholder") }
+                                       }).placeAt( query_pane.domNode );
+
+    //query_pane.domNode.appendChild( query_box.domNode );
+                         
 
 
     var trashcan_div = document.createElement("div");
@@ -523,7 +536,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                                            withHandles:"false"*/
                                           });
 
-    var button = new dijit.form.Button({id: "delete_button", 
+    var delete_button = new dijit.form.Button({id: "delete_button", 
                                         label: "Delete Tracks",
                                         style: "align-text: right;",
                                         onClick: function(){ deleteSubmit(brwsr) }
