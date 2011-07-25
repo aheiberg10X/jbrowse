@@ -507,18 +507,55 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
          //splitter: "true"
         }).placeAt(track_pane);
 
+
+    var query_div = document.createElement("div");
+    query_div.id = "query_div";
+    query_pane.domNode.appendChild( query_div );
+ 
     var query_box = new dijit.form.TextBox(
                         {id : "query_box",
-                         style: "height: 12em; width: 90%"}).placeAt( query_pane.domNode );
+                         name: "query_box",
+                         style: "height: 12em; width: 90%"}
+                    ).placeAt( query_div );
 
-    var query_button = new dijit.form.Button({id: "query_button", 
-                                        label: "Query Tracks",
-                                        style: "align-text: right;",
-                                        onClick: function(){ alert("placeholder") }
-                                       }).placeAt( query_pane.domNode );
+    var query_bam = new dijit.form.TextBox(
+                        {id: "query_bam",
+                         name: "query_bam",
+                         value: "/home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.bam",
+                         type: "hidden"}
+                    ).placeAt( query_div );
+    
+    var runQuery = function(){
+        var xhrArgs = {
+            url: "bin/sample.py",
+            form: dojo.byId("query_form"),
+            handleAs: "json",
+            load: function(data,ioargs){
+                alert(data);
+            },
+            error: function(error) {
+                alert(error);
+            }
+        }
+        //Call the asynchronous xhrPost
+        var deferred = dojo.xhrPost(xhrArgs);
 
-    //query_pane.domNode.appendChild( query_box.domNode );
-                         
+    };
+
+    var query_button = new dijit.form.Button(
+                            {id: "query_button", 
+                             label: "Query Tracks",
+                             style: "align-text: right;",
+                             onClick: runQuery  }
+                       ).placeAt( query_div );
+ 
+    var query_form = new dijit.form.Form(
+                         {id: "query_form",
+                          encType : "multipart/form-data"},
+                     query_div )
+
+        
+                        
 
 
     var trashcan_div = document.createElement("div");
