@@ -1,0 +1,59 @@
+\begin{thebibliography}{1}
+
+\bibitem{bhatia2010}
+G.~Bhatia, V.~Bansal, O.~Harismendy, N.~J. Schork, E.~J. Topol, K.~Frazer, and
+  V.~Bafna.
+\newblock {{A} covering method for detecting genetic associations between rare
+  variants and common phenotypes}.
+\newblock {\em PLoS Comput. Biol.}, 6:e1000954, 2010.
+
+\bibitem{brinza2010}
+D.~Brinza, M.~Schultz, G.~Tesler, and V.~Bafna.
+\newblock {{R}{A}{P}{I}{D} detection of gene-gene interactions in genome-wide
+  association studies}.
+\newblock {\em Bioinformatics}, 26:2856--2862, Nov 2010.
+
+\bibitem{Dost2010}
+B.~Dost, C.~Wu, A.~Su, and V.~Bafna.
+\newblock {{T}{C}{L}{U}{S}{T}: {A} {F}ast {M}ethod for {C}lustering
+  {G}enome-{S}cale {E}xpression {D}ata}.
+\newblock {\em IEEE/ACM Trans Comput Biol Bioinform}, Apr 2010.
+
+\bibitem{Harismendy2010}
+O.~Harismendy, G.~Bhatia, N.G. Rahim, V.~Bansal, M.~Nakano, X.~Scott, M.~Wang,
+  C.~Dib, E.~Turlotte, N.~Heintzman, S.~Murray, J.-F. Deleuze, J.C. Sipe,
+  B.~Ren, V.~Bafna, E.~J. Topol, and K.~A. Frazer.
+\newblock {Deciphering the genetic basis of common diseases by integrated
+  functional annotation of common and rare variants}.
+\newblock {\em Genome Biology}, 11:I8, October 2010.
+
+\bibitem{conf:kozanitis2010}
+C.~Kozanitis, C.~Saunders, S.~Kriglyak, V.~Bafna, and G.~Varghese.
+\newblock {Compressing genomic sequence fragments using SlimGene}.
+\newblock In {\em Proceedings of the Annual International Conference on
+  Computational Molecular Biology ({RECOMB})}, pages 310--424, 2010.
+\newblock (Accepted for publication in Jnl. of Computational Biology).
+
+\bibitem{Levy2007}
+S.~Levy, G.~Sutton, P.C. Ng, L.~Feuk, A.L. Halpern, B.P. Walenz, N.~Axelrod,
+  J.~Huang, E.F. Kirkness, G.~Denisov, Y.~Lin, J.R. MacDonald, A.W. Pang,
+  M.~Shago, T.B. Stockwell, A.~Tsiamouri, V.~Bafna, V.~Bansal, S.A. Kravitz,
+  D.A. Busam, K.Y. Beeson, T.C. McIntosh, K.A. Remington, J.F. Abril, J.~Gill,
+  J.~Borman, Y.H. Rogers, M.E. Frazier, S.W. Scherer, R.L. Strausberg, and J.C.
+  Venter.
+\newblock {{T}he diploid genome sequence of an individual human}.
+\newblock {\em PLoS Biol.}, 5:e254, Sep 2007.
+
+\bibitem{Lo2011}
+Christine Lo, Ali Bashir, Vikas Bansal, and Vineet Bafna.
+\newblock Strobe sequence design for haplotype assembly.
+\newblock {\em BMC Bioinformatics}, 12(Suppl 1):S24, 2011.
+
+\bibitem{Zhou2011}
+D.~Zhou, N.~Udpa, M.~Gersten, D.~Visk, A.~Bashir, J.~Xue, K.~Frazer,
+  J.~Posakony, S.~Subramaniam, V.~Bafna, and G.~Haddad.
+\newblock {{E}xperimental selection of hypoxia-tolerant {D}rosophila
+  melanogaster: {M}ajor role for {N}otch activation}.
+\newblock PNAS (ePUB 2011).
+
+\end{thebibliography}

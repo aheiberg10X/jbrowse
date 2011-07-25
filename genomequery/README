@@ -1,0 +1,14 @@
+to make go:
+
+change the path of samtools in the various make files
+
+go to indexing/ dir, feed: locate_mates <bamfile> > bamfile.mates
+then: index_mates bamfile.mates <bamfile> output
+output goes to .sh
+
+create the dst/ dir in biosql/ so the output has somewhere to go
+
+add #!/bin/bash to run_biosql.sh
+also added parameters so the BAM file in code_generator.py doesn't have to be hardcoded
+
+in run_biosql.sh, must: 'cd ../genomequery/biosql_compiler/biosql

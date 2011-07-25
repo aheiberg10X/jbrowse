@@ -1,0 +1,21 @@
+if [ $# -ne 1 ] ; then
+	echo 'usage: ./run_biosql.sh <biosql_code>'
+	exit 
+fi
+
+input_sql=$1
+interm_code="bytecode.txt"
+products_dir="dst"
+front_end_dir="front_end"
+back_end_dir="back_end"
+
+low_level_calls="low_level.sh"
+
+$front_end_dir/biosql < $input_sql > $interm_code
+
+python code_generator.py $interm_code $products_dir $front_end_dir $back_end_dir> $low_level_calls
+
+chmod +x $low_level_calls
+
+./$low_level_calls
+

@@ -1,0 +1,6 @@
+cp H1isvalid.c back_end/isvalid.c
+make
+back_end/all_tools mates indexing/indexed/evidence.dist.1000.1M.5.bam indexing/indexed/evidence.dist.1000.1M.5.bam.mates.indx 250000000 chr1 3 dst/in dst/H1 0
+cp outisvalid.c back_end/isvalid.c
+make
+back_end/all_tools mates indexing/indexed/evidence.dist.1000.1M.5.bam indexing/indexed/evidence.dist.1000.1M.5.bam.mates.indx 250000000 chr1 4 dst/H1 dst/out 12
