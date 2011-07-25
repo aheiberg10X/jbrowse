@@ -1,0 +1,46 @@
+query_bam: /home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.bam
+out: 1
+2
+python code_generator.py bytecode.txt dst front_end back_end /home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.bam /home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.bam.mates.indx > low_level.sh
+3: low_level_calls: low_level.sh
+4
+wdir=`pwd`;\
+	list='front_end back_end'; \
+	for subdir in $list; do echo $subdir; cd $subdir; make || exit 1; cd $wdir; done;
+front_end
+make[1]: Entering directory `/home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/front_end'
+make[1]: `biosql' is up to date.
+make[1]: Leaving directory `/home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/front_end'
+back_end
+make[1]: Entering directory `/home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/back_end'
+gcc -pg -O3 -c -D_FILE_OFFSET_BITS=64 -I/home/andrew/school/dnavis/samtools-0.1.16   -c -o isvalid.o isvalid.c
+gcc -pg -O3 all_tools.o defs.o interval_abstraction.o isvalid.o isvalid_single.o mates.o single_reads.o -o all_tools -lm -lz -L/home/andrew/school/dnavis/samtools-0.1.16 -lbam
+make[1]: Leaving directory `/home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/back_end'
+valid ttl_valid: 15912 ttl_mts: 7956
+out_valid file: 21cd010
+out_interval_file: dst/H1.intrvl
+min clones: 0
+wdir=`pwd`;\
+	list='front_end back_end'; \
+	for subdir in $list; do echo $subdir; cd $subdir; make || exit 1; cd $wdir; done;
+front_end
+make[1]: Entering directory `/home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/front_end'
+make[1]: `biosql' is up to date.
+make[1]: Leaving directory `/home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/front_end'
+back_end
+make[1]: Entering directory `/home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/back_end'
+gcc -pg -O3 -c -D_FILE_OFFSET_BITS=64 -I/home/andrew/school/dnavis/samtools-0.1.16   -c -o isvalid.o isvalid.c
+gcc -pg -O3 all_tools.o defs.o interval_abstraction.o isvalid.o isvalid_single.o mates.o single_reads.o -o all_tools -lm -lz -L/home/andrew/school/dnavis/samtools-0.1.16 -lbam
+make[1]: Leaving directory `/home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/back_end'
+valid ttl_valid: 15912 ttl_mts: 7956
+out_valid file: 0
+out_interval_file: (null)
+min clones: 12
+in evidence: (null) in_regions: (null)
+out_m_evidence dst/out.ev.bit out_m_regions: 1c7c070
+out_regions: dst/out.regs.txt
+5
+ 
+
+err: Compilation completed without errors
+
