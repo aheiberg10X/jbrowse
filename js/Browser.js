@@ -487,7 +487,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
          title: "Tracks",
          region: "top",
          style: "background-color:#efefef;",
-         layoutPriority: "0"
+         layoutPriority: "1"
          //splitter: "true"
         }, trackListDiv).placeAt(track_pane);
 
@@ -495,6 +495,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         {id : "query_pane",
          title : "Query",
          region : "center",
+         layoutPriority: "0",
          style : "background-color: #efefef"
         }).placeAt(track_pane);
 
@@ -503,7 +504,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
          title: "Trash Can",
          region: "bottom",
          style: "background-color:#efefef;",
-         layoutPriority: "1"
+         layoutPriority: "2"
          //splitter: "true"
         }).placeAt(track_pane);
 
@@ -531,7 +532,12 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             form: dojo.byId("query_form"),
             handleAs: "json",
             load: function(data,ioargs){
-                alert(data);
+                if( data["status"] == "ok" ){
+                    alert("all's well, but where is the generated BAM?");
+                }
+                else{
+                    alert( data["message"] );
+                }
             },
             error: function(error) {
                 alert(error);
