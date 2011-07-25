@@ -4,6 +4,7 @@ import cgi
 import simplejson as json
 import os
 import sys
+import re
 print 'Content-type: text/json\n\n'
 
 
@@ -11,7 +12,21 @@ fields = cgi.FieldStorage()
 query = fields.getvalue("query_box")
 query_bam = fields.getvalue("query_bam")
 
-root = os.environ["GQ_ROOT"]
+# make this a function, doubtless will be using again
+def fileToJson( filename ) :
+    novar = re.compile(r'.*=(.*)', re.M | re.DOTALL)
+    fin = open( filename )
+    t = fin.read()
+    m = novar.match( t )
+    if not m : raise Exception("json file doesn't have a variable assignment")
+    jtext = m.group(1)
+    jconfig = json.loads( jtext )
+    fin.close()
+    return jconfig
+
+jconfig = fileToJson( "../lib/GlobalConfig.js" )
+root = jconfig["root_dir"]
+
 sys.stderr = open("%s/bin/debugging/sample_error.txt" % root,'w')
 sys.stdout = open("%s/bin/debugging/sample_output.txt" % root,'w')
 print "query_bam: %s" % query_bam
