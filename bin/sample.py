@@ -11,15 +11,16 @@ fields = cgi.FieldStorage()
 query = fields.getvalue("query_box")
 query_bam = fields.getvalue("query_bam")
 
-sys.stderr = open("/home/andrew/school/dnavis/jbrowse/bin/debugging/sample_error.txt",'w')
-sys.stdout = open("/home/andrew/school/dnavis/jbrowse/bin/debugging/sample_output.txt",'w')
+root = os.environ["GQ_ROOT"]
+sys.stderr = open("%s/bin/debugging/sample_error.txt" % root,'w')
+sys.stdout = open("%s/bin/debugging/sample_output.txt" % root,'w')
 print "query_bam: %s" % query_bam
 
 if not os.path.isfile( query_bam ) :
     print json.dumps( {"status":"error",
                        "message":"%s is not a valid file" % query_bam} )
 else :
-    uq = "/home/andrew/school/dnavis/jbrowse/bin/debugging/user_query.txt"
+    uq = "%s/bin/debugging/user_query.txt" % root
     fuq = open( uq, 'wb')
     fuq.write( query)
     fuq.close()
@@ -30,7 +31,7 @@ else :
                  #stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
     # obvi don't use the shit query you are typing in that also has not indx...
-    uq = "/home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/query.txt"
+    uq = "%s/genomequery/biosql_compiler/query.txt" % root
     pop = Popen(["../genomequery/biosql_compiler/biosql/run_biosql.sh", \
                  uq, \
                  query_bam, \
