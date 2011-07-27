@@ -51,8 +51,8 @@ def deleteTracks( chrom, track_labels ) :
         rdir = "../data/tracks/%s/%s" % (chrom,label)
         try :
             rmtree( rdir )
-        except OSError as ose :
-            print "can't remove %s. %s\n" % (rdir,ose)
+        except OSError :
+            print "can't remove %s\n" % rdir
 
 
 if __name__ == '__main__' :
