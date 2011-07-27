@@ -8,7 +8,7 @@ import cgitb
 import utils
 cgitb.enable()
 
-jconfig = fileToJson( "../lib/GlobalConfig.js" )
+jconfig = utils.fileToJson( "../lib/GlobalConfig.js" )
 root_dir = jconfig["root_dir"]
 
 output = "%s/bin/debugging" % root_dir
