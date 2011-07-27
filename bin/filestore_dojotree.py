@@ -76,7 +76,7 @@ def makeItem( path ) :
 
 printToServer( "Content-type: text/json\n\n" )
 
-root = "/home/andrew/school/dnavis/jbrowse/data/tracks"
+projects_root = "%s/data/tracks" % root_dir
 
 sys.stderr = ferr
 sys.stdout = fout
@@ -87,7 +87,7 @@ if 'path' in dparams :
     print 'handel path:', dparams['path'][0]
     handlePath( dparams['path'][0] )
 else :
-    handleQuery( root )
+    handleQuery( projects_root )
 
 fout.close()
 ferr.close()
