@@ -149,15 +149,16 @@ my ($cur_left, $cur_right) = (0,0);
 
 my @refSeqs = @{JsonGenerator::readJSON("$data_dir/refSeqs.js", [], 1)};
 
-
+print $OUTPUT "host_chrom: $host_chrom\n";
 my ($refseq_start,$refseq_end,$refseq_name) = 0,0,"";
 foreach my $seqInfo (@refSeqs) {
-    if( $refseq_name ne $host_chrom ){
+    if( $seqInfo->{name} ne $host_chrom ){
         next;
     }
     else{
         $refseq_start = $seqInfo->{start};
         $refseq_end = $seqInfo->{end};
+        $refseq_name = $host_chrom;
         last;
     }
 }

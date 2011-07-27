@@ -51,8 +51,8 @@ def deleteTracks( chrom, track_labels ) :
         rdir = "../data/tracks/%s/%s" % (chrom,label)
         try :
             rmtree( rdir )
-        except OSError :
-            print "can't remove %s\n" % rdir
+        except OSError as ose :
+            print "can't remove %s. %s\n" % (rdir,ose)
 
 
 if __name__ == '__main__' :
@@ -70,11 +70,12 @@ if __name__ == '__main__' :
         sys.stderr = open("%s/uploads/delete_error.txt" % root_dir,'w')
         sys.stdout = open("%s/uploads/delete_output.txt" % root_dir,'w')
         print "iuoasdhvoweovnwie"
+        fields = cgi.parse()
         print fields
-        print fields.getvalue("chrom")
-        print fields.getlist("delete_track")
+        print fields["chrom"][0]
+        print fields["delete_track"]
 
-        removeTracks( fields.getvalue("chrom"), fields.getlist("delete_track"), delete=True )
+        removeTracks( fields["chrom"][0], fields["delete_track"], delete=True )
 
     #removeTracks( ['Linked Test rEAds'], delete=True );
 
