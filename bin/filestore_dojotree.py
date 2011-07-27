@@ -8,7 +8,10 @@ import cgitb
 import utils
 cgitb.enable()
 
-output = "/home/andrew/school/dnavis/jbrowse/bin/debugging"
+jconfig = fileToJson( "../lib/GlobalConfig.js" )
+root_dir = jconfig["root_dir"]
+
+output = "%s/bin/debugging" % root_dir
 fout = open("%s/filestore_out.txt" % output,'w')
 ferr = open("%s/filestore_err.txt" % output,'w')
 
