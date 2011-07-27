@@ -6,7 +6,7 @@ use warnings;
 use CGI qw(:standard);
 
 use FindBin qw($Bin);
-use lib ("$Bin/../lib", "/usr/local/lib/perl5", "/usr/local/lib/perl5/site_perl");
+use lib ("$Bin/../lib", "/usr/local/lib/perl5", "/usr/local/lib/perl5/site_perl","/home/aheiberg/perl5/lib/perl5/");
 
 use Getopt::Long;
 use JsonGenerator;
@@ -28,7 +28,8 @@ my $cgi = CGI::new();
 my $bam_filename = $cgi->param('bam_filename');                       #input type=file
 my $bam_linking = defined $cgi->param('display_linking');             
 my $bam_histogram_filename = $cgi->param("bam_histogram_filename");   #input type=file
-#my $refseqName = $cgi->param('refseqName');  #sequence name the reads in $bam_filename pertain to
+my $host_chrom = $cgi->param("host_chrom");
+#my $refseq_name = $cgi->param('refseq_name');  #sequence name the reads in $bam_filename pertain to
 
 ### DEBUGGING OUTPUT ###
 open( my $OUTPUT, '>', $upload_dir . "/" . "bam_output.txt" ) or die $!;
@@ -149,108 +150,111 @@ my ($cur_left, $cur_right) = (0,0);
 my @refSeqs = @{JsonGenerator::readJSON("$data_dir/refSeqs.js", [], 1)};
 
 
-#leave both blank for normal operation
-#chrom name of the track we are trying to display without having a proper refseq for it
-my $refseqName = "";
-#host track is one that we hava  refseq for.  We will put the new data from a chromosome we don't have as if
-#it is on this track
-my $hostTrack = "";
-
+my ($refseq_start,$refseq_end,$refseq_name) = 0,0,"";
 foreach my $seqInfo (@refSeqs) {
-
-    #if we are hosting data, and this seqInfo does not pertain to our host, go to the next $seqInfo
-    if( $hostTrack ne "" && $seqInfo->{name} ne $hostTrack ){
+    if( $refseq_name ne $host_chrom ){
         next;
     }
-   
-    print $OUTPUT "host track is: $seqInfo->{name}\n"; 
-    if( $refseqName eq "" ){
-        $refseqName = $seqInfo->{name};
+    else{
+        $refseq_start = $seqInfo->{start};
+        $refseq_end = $seqInfo->{end};
+        last;
     }
-    my ($tid,$start,$end) = $hdr->parse_region($refseqName);
-    
-    print $OUTPUT "(bogus) tid: $tid, start: $start, end: $end\n";
-    
-    my $newTrackDir = "$trackDir/$refseqName";
-    mkdir( $newTrackDir ) unless (-d $newTrackDir);
+}
+if( $refseq_name eq "" ){
+    my $a = 1;
+    #badbad
+}
+   
+print $OUTPUT "refseq_name: $refseq_name\n";
+my ($tid,$start,$end) = $hdr->parse_region($refseq_name);
 
-    if ( defined($tid) ) {
-        print $OUTPUT "trackDir: $trackDir\n, trackLabel: $trackLabel\n";
-        my $outdir = "$trackDir/" . $seqInfo->{name} . "/" . $trackLabel;
-        my $jsonGen = JsonGenerator->new($outdir,
-                                         $nclChunk,
-                                         $compress, 
-                                         $trackLabel,
-                                         $seqInfo->{name},
-                                         $seqInfo->{start},
-                                         $seqInfo->{end},
-                                         \%style, 
-                                         \@bamHeaders, 
-                                         \@subfeatureHeaders,
-                                         $featureCount,
-                                         $pregen_histograms);
+print $OUTPUT "(bogus) tid: $tid, start: $start, end: $end\n";
 
-        my $sorter = NCLSorter->new(sub { $jsonGen->addFeature($_[0]) },
-                                    $startIndex, $endIndex);
+my $newTrackDir = "$trackDir/$refseq_name";
+mkdir( $newTrackDir ) unless (-d $newTrackDir);
 
-        #the default
-        #$index->fetch($bam, $tid, $start, $end,
-        #              sub { $sorter->addSorted(align2array($_[0])) });
+if ( defined($tid) ) {
+    print $OUTPUT "trackDir: $trackDir\n, trackLabel: $trackLabel\n";
+    my $outdir = "$trackDir/" . $refseq_name . "/" . $trackLabel;
+    my $jsonGen = JsonGenerator->new($outdir,
+                                     $nclChunk,
+                                     $compress, 
+                                     $trackLabel,
+                                     $refseq_name,
+                                     $refseq_start,
+                                     $refseq_end,
+                                     \%style, 
+                                     \@bamHeaders, 
+                                     \@subfeatureHeaders,
+                                     $featureCount,
+                                     $pregen_histograms);
 
-        if( $bam_linking ) {
-            print $OUTPUT "linkingi\n";
-            my %paired_info;
+    my $sorter = NCLSorter->new(sub { $jsonGen->addFeature($_[0]) },
+                                $startIndex, $endIndex);
 
-            # $_[0] is the alignment found by fetch
-            # $_[1] is \%paired_info reference
-            $index->fetch($bam, $tid, $start, $end, sub { linking_align2array( $_[0], $_[1]) }, \%paired_info);
+    #the default
+    #$index->fetch($bam, $tid, $start, $end,
+    #              sub { $sorter->addSorted(align2array($_[0])) });
 
-            #reading in an ersatz $paired_info for sandboxing with lazy loading of vertical data
-            %paired_info = readInJsonFile( "../data/sandbox_intervals.js" );
-            
-            my @sorted = sort {$paired_info{$a}[0] <=> $paired_info{$b}[0]} keys %paired_info;
-            foreach my $key (@sorted){
-                updateBookmarks( $jsonGen, \$cur_left, \$cur_right, $paired_info{$key} );
-                $sorter->addSorted( $paired_info{$key} );
-            }
+    if( $bam_linking ) {
+        print $OUTPUT "linkingi\n";
+        my %paired_info;
+
+        # $_[0] is the alignment found by fetch
+        # $_[1] is \%paired_info reference
+        $index->fetch($bam, $tid, $start, $end, sub { linking_align2array( $_[0], $_[1]) }, \%paired_info);
+
+        #reading in an ersatz $paired_info for sandboxing with lazy loading of vertical data
+        #%paired_info = readInJsonFile( "../data/sandbox_intervals.js" );
+        
+        my @sorted = sort {$paired_info{$a}[0] <=> $paired_info{$b}[0]} 
+                     keys %paired_info;
+        foreach my $key (@sorted){
+            updateBookmarks( $jsonGen,
+                             \$cur_left, 
+                             \$cur_right, 
+                             $paired_info{$key} );
+            $sorter->addSorted( $paired_info{$key} );
         }
-        else{
-            print $OUTPUT "not linking\n";
-            my @tosort;
-            $index->fetch( $bam,
-                           $tid,
-                           $start,
-                           $end,
-                           sub{ align2array($_[0],$_[1])}, \@tosort);
-            foreach my $alignment (sort {$a->[0] <=> $b->[0]} @tosort){
-                updateBookmarks( $jsonGen, \$cur_left, \$cur_right, $alignment );
-                $sorter->addSorted( $alignment );
-            }
-        }
+    }
+    else{
+        print $OUTPUT "not linking\n";
+        my @tosort;
+        $index->fetch( $bam,
+                       $tid,
+                       $start,
+                       $end,
+                       sub{ align2array($_[0],$_[1])}, \@tosort);
 
-        #it could be that there are no gaps in reads, meaning updateBookmarks never adds anything to IAs
-        #if thats the case, add the one giant interval herei
-        my $perlIsGay = $jsonGen->{interestingAreas};
-        print $OUTPUT "$perlIsGay\n";
-        my $countIA =  scalar @{ $perlIsGay };
-        print $OUTPUT "count IA: $countIA \n";
-        if( $countIA == 0 ){
-            print $OUTPUT "no IAs, adding $cur_left, $cur_right\n";
-            $jsonGen->addInterestingArea( $cur_left,$cur_right );
+        foreach my $alignment (sort {$a->[0] <=> $b->[0]} @tosort){
+            updateBookmarks( $jsonGen, \$cur_left, \$cur_right, $alignment );
+            $sorter->addSorted( $alignment );
         }
-        else {
-            print $OUTPUT "what\n";
-        }
+    }
 
-        $sorter->flush();
-        #catching error, i.e not finding alignments in BAM file and consequently dividing by 0
-        eval {
-            $jsonGen->generateTrack();
-            1;
-        } or do {
-            print $OUTPUT $@;
-            $bad_bam = 1;
-        }
+    #it could be that there are no gaps in reads, meaning updateBookmarks never adds anything to IAs
+    #if thats the case, add the one giant interval herei
+    my $perlIsGay = $jsonGen->{interestingAreas};
+    print $OUTPUT "$perlIsGay\n";
+    my $countIA =  scalar @{ $perlIsGay };
+    print $OUTPUT "count IA: $countIA \n";
+    if( $countIA == 0 ){
+        print $OUTPUT "no IAs, adding $cur_left, $cur_right\n";
+        $jsonGen->addInterestingArea( $cur_left,$cur_right );
+    }
+    else {
+        print $OUTPUT "what\n";
+    }
+
+    $sorter->flush();
+    #catching error, i.e not finding alignments in BAM file and consequently dividing by 0
+    eval {
+        $jsonGen->generateTrack();
+        1;
+    } or do {
+        print $OUTPUT $@;
+        $bad_bam = 1;
     }
 }
 

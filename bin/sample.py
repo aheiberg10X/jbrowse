@@ -5,24 +5,14 @@ import simplejson as json
 import os
 import sys
 import re
+
+from utils import fileToJson
 print 'Content-type: text/json\n\n'
 
 
 fields = cgi.FieldStorage()
 query = fields.getvalue("query_box")
 query_bam = fields.getvalue("query_bam")
-
-# make this a function, doubtless will be using again
-def fileToJson( filename ) :
-    novar = re.compile(r'.*=(.*)', re.M | re.DOTALL)
-    fin = open( filename )
-    t = fin.read()
-    m = novar.match( t )
-    if not m : raise Exception("json file doesn't have a variable assignment")
-    jtext = m.group(1)
-    jconfig = json.loads( jtext )
-    fin.close()
-    return jconfig
 
 jconfig = fileToJson( "../lib/GlobalConfig.js" )
 root = jconfig["root_dir"]
@@ -46,14 +36,16 @@ else :
                  #stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
     # obvi don't use the shit query you are typing in that also has not indx...
-    uq = "%s/genomequery/biosql_compiler/query.txt" % root
+    uq = "%s/genomequery/biosql_compiler/query_amended.txt" % root
     pop = Popen(["../genomequery/biosql_compiler/biosql/run_biosql.sh", \
                  uq, \
                  query_bam, \
                  "%s.mates.indx" % query_bam ], \
                 stdin=PIPE, stdout=PIPE, stderr=PIPE)
     (out, err) = pop.communicate()
+    
     print "out: %s \n\nerr: %s" % (out,err)
+    #check err for any error messages
 
     sys.stdout = sys.__stdout__
     print json.dumps( {"status":"ok",

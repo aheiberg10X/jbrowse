@@ -522,7 +522,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     var query_bam = new dijit.form.TextBox(
                         {id: "query_bam",
                          name: "query_bam",
-                         value: "/home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.bam",
+                         value: "/home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.sorted.bam",
                          type: "hidden"}
                     ).placeAt( query_div );
     
@@ -599,7 +599,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                                    '<p id="bamfile">BAM File</p>' + 
                                    '<p id="bamhistogram">Histogram Data (opt)</p>' +
                                    '<input type="checkbox" name="display_linking" id="display_linking" value="1" checked=true/>Display Links<br/>' +
-                                   //'<input type="hidden" name="refseqName" id="refseqName" value="'+brwsr.refSeq.name+'" />' +
+                                   '<input type="hidden" name="host_chrom" id="host_chrom" value="'+brwsr.refSeq.name+'" />' +
                                    
                                    '</div>' +
                                    '<h3>Region</h3>'+

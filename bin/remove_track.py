@@ -4,12 +4,10 @@ import simplejson as json
 import re
 from os import mkdir
 from shutil import rmtree
-
 import cgi
 import cgitb
 
-import sys
-
+from utils import fileToJson
 #cgitb.enable()
 
 def removeTracks( chrom, track_keys_to_remove, delete=False, filename = "../data/trackInfo.js" ) :
@@ -58,7 +56,8 @@ def deleteTracks( chrom, track_labels ) :
 
 
 if __name__ == '__main__' :
-
+    jglobals = fileToJson( "../lib/GlobalConfig.js" )
+    root_dir = jglobals['root_dir']
 
     fields = cgi.FieldStorage()
     print 'Content-type: text/html\n\n'
@@ -68,8 +67,8 @@ if __name__ == '__main__' :
         to_remove = sys.argv[2:]
         removeTracks( chrom, to_remove, delete=True )
     else :
-        sys.stderr = open("/home/andrew/school/dnavis/jbrowse/uploads/delete_error.txt",'w')
-        sys.stdout = open("/home/andrew/school/dnavis/jbrowse/uploads/delete_output.txt",'w')
+        sys.stderr = open("%s/uploads/delete_error.txt" % root_dir,'w')
+        sys.stdout = open("%s/uploads/delete_output.txt" % root_dir,'w')
         print "iuoasdhvoweovnwie"
         print fields
         print fields.getvalue("chrom")
