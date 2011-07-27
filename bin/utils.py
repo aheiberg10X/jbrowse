@@ -13,4 +13,17 @@ def fileToJson( filename ) :
     fin.close()
     return jconfig
 
-
+#supply to sorted( key= ) to sort lists in correct chrom order
+#if doesn't start with 'chr' no changes to alphanumeric sort order are made
+def chromKeyer( chrom ) :
+    first,value = chrom[:3], chrom[3:]
+    if first.lower() == 'chr' :
+        if value.lower() == 'x' : return 31
+        elif value.lower() == 'y' : return 32
+        else :
+            try :
+                return int(value)
+            except ValueError :
+                return chrom
+    else :
+        return chrom

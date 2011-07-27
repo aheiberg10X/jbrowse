@@ -36,6 +36,9 @@ var Browser = function(params) {
     dojo.require("dijit.layout.AccordionContainer");
     dojo.require("dijit.form.VerticalSlider");
     dojo.require("dijit.Tree");
+    dojo.require("dijit.tree.dndSource");
+    dojo.require("dijit.tree.TreeStoreModel");
+    dojo.require("dojox.data.FileStore");
     // end my stuff
 
     var refSeqs = params.refSeqs;
@@ -257,6 +260,12 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
          selected: "true"
         }).placeAt(ep);
 
+   var sandbox_pane = new dijit.layout.ContentPane(
+           {id:"sandbox_pane",
+            title: "Sandbox",
+            style: "background-color: #efefef; border-style: none solid none none; border-color: #929292"
+           }).placeAt(ep);
+
     var deleteSubmit = function(brwsr) {
 
         //brwsr.chromList.options[brwsr.chromList.selectedIndex].value;
@@ -359,24 +368,25 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     var uploadRegion = function(brwsr) {
         //TODO: should pass 'name' to form, rather than deducing the trackname anew in each language
-        var name = trackkeyFromFilename("region_filename");
+        var name = trackkeyFromFilename( dojo.byId("region_filename").value );
         var isConflict = hasNameConflict(name);
         if( !isConflict ){
-            dojo.io.iframe.send({
-                url: "bin/region_to_json.pl",
-                method: "post",
-                handleAs: "json",
-                form: dojo.byId("track_manager_form"),
-                load: function(data) {
-                    if( data['status'] == "ERROR" ) {
-                        alert(data['message']);
-                    }
-                    else{
-                        brwsr.trackListWidget.insertNodes(false, data['trackData']);                        
-                        dojo.byId("track_manager_status").innerHTML = "region posted";
-                    }
-                }
-            });
+            alert( "not working right now due to chromosome switch" );
+            //dojo.io.iframe.send({
+            //url: "bin/region_to_json.pl",
+            //method: "post",
+            //handleAs: "json",
+            //form: dojo.byId("track_manager_form"),
+            //load: function(data) {
+            //if( data['status'] == "ERROR" ) {
+            //alert(data['message']);
+            //}
+            //else{
+            //brwsr.trackListWidget.insertNodes(false, data['trackData']);                        
+            //dojo.byId("track_manager_status").innerHTML = "region posted";
+            //}
+            //}
+            //});
         }
     };
 
@@ -633,6 +643,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     var input_regionfile = document.createElement("input");
     input_regionfile.type = "file";
+    input_regionfile.id = "region_filename";
     input_regionfile.name = "region_filename";
     //input_regionfile.style.cssText = "visibility: hidden; position: absolute; top:0; left:0;";
     dojo.byId("regionfile").appendChild( input_regionfile );
@@ -649,6 +660,36 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     track_manager_status.id = "track_manager_status";
     track_manager_status.innerHTML = "status";
     form_pane.domNode.appendChild( track_manager_status );
+
+
+    /////////////////
+    //Sandbox
+
+    var sandbox_div = document.createElement("div");
+    sandbox_div.id = "sandbox_div";
+    //sandbox_div.class = " claro ";
+    sandbox_pane.domNode.appendChild( sandbox_div );
+
+    var fs = new dojox.data.FileStore( 
+                {"id" : "fs",
+                 "url" : "../bin/filestore_dojotree.py",
+                 "pathAsQueryParam" : "true"}
+             );
+    
+    var model = new dijit.tree.ForestStoreModel(
+                     {"id" : "model",
+                      "store" : fs,
+                    "rootId" : "projects",
+                    "rootLabel" : "projects" }
+                    );       
+    
+    var tree = new dijit.Tree(
+            {"id" : "tree",
+             "model" : model,
+             "dndController" : "dijit.tree.dndSource"}
+        ).placeAt( sandbox_div ); 
+    
+
             
 };
 
