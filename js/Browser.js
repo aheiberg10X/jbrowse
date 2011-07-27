@@ -672,7 +672,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     var fs = new dojox.data.FileStore( 
                 {"id" : "fs",
-                 "url" : "../bin/filestore_dojotree.py",
+                 "url" : "bin/filestore_dojotree.py",
                  "pathAsQueryParam" : "true"}
              );
     
