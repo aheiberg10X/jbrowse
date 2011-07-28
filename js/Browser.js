@@ -237,7 +237,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         {id: "accordion",  //7 
 	     title: "accordion",
          region: "left",
-         style: "width: 15%; background-color:#0000FF; border-style: none solid none none; border-color: #929292",
+         style: "width: 20%; background-color:#0000FF; border-style: none solid none none; border-color: #929292",
          splitter: "false"
         }).placeAt(parent);
 
@@ -260,8 +260,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
          selected: "true"
         }).placeAt(ep);
 
-   var sandbox_pane = new dijit.layout.ContentPane(
-           {id:"sandbox_pane",
+   var sandbox_bc = new dijit.layout.BorderContainer(
+           {id:"sandbox_bc",
             title: "Sandbox",
             style: "background-color: #efefef; border-style: none solid none none; border-color: #929292"
            }).placeAt(ep);
@@ -664,33 +664,114 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     /////////////////
     //Sandbox
+    var sandbox_tree_pane = dijit.layout.ContentPane(
+            {id : "sandbox_tree_pane",
+             region : "top",
+             style : "background-color: #efefef"}
+        ).placeAt( sandbox_bc.domNode );
 
-    var sandbox_div = document.createElement("div");
-    sandbox_div.id = "sandbox_div";
-    //sandbox_div.class = " claro ";
-    sandbox_pane.domNode.appendChild( sandbox_div );
-
-    var fs = new dojox.data.FileStore( 
-                {"id" : "fs",
-                 "url" : "bin/filestore_dojotree.py",
-                 "pathAsQueryParam" : "true"}
+    var store = new dojox.data.FileStore( 
+                {id : "store",
+                 url : "bin/filestore_dojotree.py",
+                 pathAsQueryParam : "true"}     
              );
     
     var model = new dijit.tree.ForestStoreModel(
-                     {"id" : "model",
-                      "store" : fs,
-                    "rootId" : "projects",
-                    "rootLabel" : "projects" }
+                     {id : "model",
+                      store : store,
+                      rootId : "projects",
+                      rootLabel : "projects" }
                     );       
     
     var tree = new dijit.Tree(
-            {"id" : "tree",
-             "model" : model,
-             "dndController" : "dijit.tree.dndSource"}
-        ).placeAt( sandbox_div ); 
-    
+            {id : "tree",
+             model : model,
+             //"dndController" : "dijit.tree.dndSource"
+             onClick :
+         
+                function(item){ 
+                    var buttons = [view_query_button, 
+                                   delete_button, 
+                                   visualize_button];
+                    var toggler = function( disable ){
+                                      return function(thing, i){
+                                          thing.set("disabled",disable);
+                                      };
+                                  } 
+                    if( store.getValue( item,'directory' ) ){
+                        dojo.forEach( buttons, toggler(true) );
+                    }
+                    else{
+                        dojo.forEach( buttons, toggler(false) );
+                    }
 
+                }
+            }).placeAt( sandbox_tree_pane.domNode ); 
+ 
+    var sandbox_button_pane = dijit.layout.ContentPane(
+            {id : "sandbox_button_pane",
+             region : "bottom",
+             style : "background-color: #efefef; height: 10%;"}
+        ).placeAt( sandbox_bc.domNode );
+
+    var delete_button = new dijit.form.Button(
+        {id: "delete_button2", 
+         label: "Delete", 
+         style: "margin-top: 0px;",
+         onClick: function(){ alert( "will call delete" ); }
+        }).placeAt( sandbox_button_pane.domNode );
+   
+    function moveNode(nodeId, sourceContainer, targetContainer) {
+            var node = dojo.byId(nodeId);
+            // Save the data
+            var saveData = sourceContainer.map[nodeId].data;
+            //
+            // Do the move
+            sourceContainer.parent.removeChild(node);
+            targetContainer.parent.appendChild(node);
             
+            // Sync the DOM object → map
+            sourceContainer.sync();
+            targetContainer.sync();
+            
+            // Restore data for recreation of data
+            targetContainer.map[nodeId].data = saveData;
+    }
+
+    var visualize_button = new dijit.form.Button(
+        {id: "visualize_button", 
+         label: "Visualize", 
+         style: "margin-top: 0px;",
+         onClick: function(){ 
+             alert( "somehow have to make jive with GenomeView.updateTrackList()..." );
+             //moveNode( "back_to_bam_25th", trackListDiv, brwsr.view.zoomContainer );
+             /*
+             var track_name = tree.selectedItem.name;
+             var tester = function(item){
+                 return item["key"] == track_name;
+             }
+             var matches = dojo.filter( params.trackData, tester );
+             if( matches.length == 0 ){ alert("crap no matches"); }
+             else if( matches.length == 1 ){
+                trackCreate( matches[0], "hint_that_doesnt_match_avatar" );
+                brwsr.view.tracks.push( matches[0] );
+                brwsr.onVisibleTracksChanged();
+             }
+             else{ alert("crap too many matches"); }
+             */
+         }
+        }).placeAt( sandbox_button_pane.domNode );
+    
+    var view_query_button = new dijit.form.Button(
+        {id: "view_query_button", 
+         label: "View Text", 
+         style: "margin-top: 0px;",
+        //disabled: "true",
+         onClick: function(){ alert( "Generating query goes here." ); }
+        }).placeAt( sandbox_button_pane.domNode );
+
+
+   
 };
 
 

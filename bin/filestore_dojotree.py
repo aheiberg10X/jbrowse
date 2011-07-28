@@ -8,12 +8,7 @@ import cgitb
 import utils
 cgitb.enable()
 
-jconfig = utils.fileToJson( "../lib/GlobalConfig.js" )
-root_dir = jconfig["root_dir"]
-
-output = "%s/bin/debugging" % root_dir
-fout = open("%s/filestore_out.txt" % output,'w')
-ferr = open("%s/filestore_err.txt" % output,'w')
+query_prefix = "query_"
 
 def printToServer( s ) :
     sys.stdout = sys.__stdout__
@@ -27,26 +22,20 @@ def getChildren( path ) :
         if len(splt) == 1 or not splt[1] == 'json' :
             r.append( thing )
     r.sort()
-    print "\n\nGET CHILDREN", r
     return r
 
 def handleQuery( path ) :
-    print 'handale query: %s' % path
     total = 0
     items = []
-    print "what"
     things = os.listdir( path )
-    print "hey"
     things = sorted( things, key=utils.chromKeyer )
-    print "you"
     for thing in things :
         total += 1
         fullpath = "%s/%s" % (path,thing)
         item = makeItem( fullpath )
         if item :
-            print item
             items.append( item )
-    print "asdfasdfasdfasdfadsf"
+
     jresponse = {'total' : total, 'items' : items}
     response = json.dumps( jresponse )
     print response
@@ -56,41 +45,60 @@ def handlePath( path ) :
     item = makeItem( path )
     printToServer( json.dumps( item ) )
 
+def getType( path, folder_name ) :
+    if os.path.isdir( path ) :
+        if folder_name.startswith( query_prefix ) :
+            return "query"
+        else :
+            return "folder"
+    else :
+        return "file"
+
 def makeItem( path ) :
-    print 'making item: %s' % path
     (parent,name) = path.rsplit('/',1)
-    print parent,name
-    is_dir = os.path.isdir(path)
-    if not is_dir :
-        print "not dir"
-        (f,ext) = name.rsplit('.',1)
-        if ext == "json" : return {}
-    item = {'name' : name, \
-            'parentDir' : parent, \
-            'size' : 1234, \
-            'directory' : is_dir, \
-            'path' : path }
+    #is_dir = os.path.isdir(path)
+    typ = getType( path, name )
+    is_dir = typ == 'folder'
+    if typ == 'file' : return {}
+    else :
+        if typ == 'query' :
+            name = name[ len(query_prefix): ]
+        item = {'name' : name, \
+                'parentDir' : parent, \
+                'size' : 1234, \
+                'directory' : is_dir, \
+                'path' : path }
+
     if is_dir :
         item["children"] = getChildren( path )
+
     return item
 
-printToServer( "Content-type: text/json\n\n" )
+if __name__ == '__main__' :
+    jconfig = utils.fileToJson( "../lib/GlobalConfig.js" )
+    root_dir = jconfig["root_dir"]
 
-projects_root = "%s/data/tracks" % root_dir
+    output = "%s/bin/debugging" % root_dir
+    fout = open("%s/filestore_out.txt" % output,'w')
+    ferr = open("%s/filestore_err.txt" % output,'w')
 
-sys.stderr = ferr
-sys.stdout = fout
+    printToServer( "Content-type: text/json\n\n" )
 
-dparams = cgi.parse()
-print dparams
-if 'path' in dparams :
-    print 'handel path:', dparams['path'][0]
-    handlePath( dparams['path'][0] )
-else :
-    handleQuery( projects_root )
+    projects_root = "%s/data/tracks" % root_dir
 
-fout.close()
-ferr.close()
+    sys.stderr = ferr
+    sys.stdout = fout
+
+    dparams = cgi.parse()
+    print dparams
+    if 'path' in dparams :
+        print 'handel path:', dparams['path'][0]
+        handlePath( dparams['path'][0] )
+    else :
+        handleQuery( projects_root )
+
+    fout.close()
+    ferr.close()
 
 #print os.environ['REQUEST_URI']
 #keys = ["query","queryOptions","start","count"]
