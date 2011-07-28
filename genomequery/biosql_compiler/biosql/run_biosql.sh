@@ -17,15 +17,15 @@ back_end_dir="back_end"
 
 low_level_calls="low_level.sh"
 
-echo '1'
+echo '\n1'
 $front_end_dir/biosql < $input_sql > $interm_code
-echo '2'
+echo '\n2'
 
 echo "python code_generator.py $interm_code $products_dir $front_end_dir $back_end_dir $bam_file $indx_file > $low_level_calls"
 
 python code_generator.py $interm_code $products_dir $front_end_dir $back_end_dir $bam_file $indx_file > $low_level_calls
-echo "3: low_level_calls: $low_level_calls"
+echo "\n3: low_level_calls: $low_level_calls"
 chmod +x $low_level_calls
-echo '4'
+echo '\n4'
 ./$low_level_calls
-echo '5'
+echo '\n5'

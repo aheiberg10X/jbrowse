@@ -19,13 +19,13 @@ index_mates
 K 25
 svn:wc:ra_dav:version-url
 V 74
-/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/indexing/index_mates
+/svn/!svn/ver/6229/genomequery/biosql_compiler/biosql/indexing/index_mates
 END
 locate_mates
 K 25
 svn:wc:ra_dav:version-url
 V 75
-/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/indexing/locate_mates
+/svn/!svn/ver/6229/genomequery/biosql_compiler/biosql/indexing/locate_mates
 END
 index_mates.c
 K 25
@@ -49,7 +49,7 @@ gmon.out
 K 25
 svn:wc:ra_dav:version-url
 V 71
-/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/indexing/gmon.out
+/svn/!svn/ver/6229/genomequery/biosql_compiler/biosql/indexing/gmon.out
 END
 defs.h
 K 25
@@ -61,5 +61,5 @@ makefile
 K 25
 svn:wc:ra_dav:version-url
 V 71
-/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/indexing/makefile
+/svn/!svn/ver/6229/genomequery/biosql_compiler/biosql/indexing/makefile
 END

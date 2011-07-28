@@ -172,7 +172,7 @@ def parse_commands(lines):
 
 
 def main(argv=sys.argv):
-    output = open("code_gen.output",'wb')
+    #output = open("code_gen.output",'wb')
     if len(argv)!=7:
         ioerror("usage: python code_generator.py <bytecode_file> <products_dir> <front_end_dir> <back_end_dir>")
     byte_code_file=argv[1]
@@ -226,7 +226,7 @@ def main(argv=sys.argv):
         print "make"
         print cmd_string
     f.close()
-    output.close()
+    #output.close()
 
 if __name__=="__main__":
     main()

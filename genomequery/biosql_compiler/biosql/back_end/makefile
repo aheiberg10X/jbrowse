@@ -1,7 +1,7 @@
 SAMLOC=/home/andrew/school/dnavis/samtools-0.1.16
 SAMPRFX=-I$(SAMLOC)
 SAMSFX=-lm -lz -L$(SAMLOC) -lbam
-CC=gcc -pg -O3
+CC=gcc -pg #-O1 optimizer doesn't print BAM?!
 CFLAGS=-c -D_FILE_OFFSET_BITS=64 $(SAMPRFX)
 OBJS=all_tools.o \
 	defs.o \

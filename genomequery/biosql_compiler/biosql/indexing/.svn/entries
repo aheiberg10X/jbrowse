@@ -96,15 +96,15 @@ ckozanit
 
 index_mates
 file
+6229
 
 
 
-
-2011-07-21T23:19:49.654568Z
-a2abf6b11cab0ed9cfaa5e69024c6dea
-2011-07-19T07:51:29.018545Z
-6158
-ckozanit
+2011-07-21T23:38:30.164568Z
+12ffd4d968d8860f41dea0c6b50c8749
+2011-07-28T01:21:51.384587Z
+6229
+aheiberg
 has-props
 
 
@@ -126,19 +126,19 @@ has-props
 
 
 
-298324
+440900
 
 locate_mates
 file
+6229
 
 
 
-
-2011-07-21T23:19:49.654568Z
-47b922a6dba597fab66394a430190ce1
-2011-07-19T07:51:29.018545Z
-6158
-ckozanit
+2011-07-21T23:38:30.014568Z
+932a89df8a06c1f590e666fbb39d699d
+2011-07-28T01:21:51.384587Z
+6229
+aheiberg
 has-props
 
 
@@ -160,7 +160,10 @@ has-props
 
 
 
-298322
+440898
+
+indexed
+dir
 
 index_mates.c
 file
@@ -266,15 +269,15 @@ ckozanit
 
 gmon.out
 file
+6229
 
 
 
-
-2011-07-21T23:19:49.654568Z
-de4e548f020a4b317c0ba06f0180b04a
-2011-07-19T07:51:29.018545Z
-6158
-ckozanit
+2011-07-21T23:45:12.964568Z
+1eb81738650b83132db99402c45f4bd6
+2011-07-28T01:21:51.384587Z
+6229
+aheiberg
 has-props
 
 
@@ -296,7 +299,7 @@ has-props
 
 
 
-33977
+43628
 
 defs.h
 file
@@ -334,20 +337,15 @@ ckozanit
 
 makefile
 file
+6229
 
 
 
-
-2011-07-21T23:19:49.654568Z
-8da87641fbe9b810efae87cf04748703
-2011-07-19T07:51:29.018545Z
-6158
-ckozanit
-
-
-
-
-
+2011-07-21T23:38:27.054568Z
+7b7a45b13d8dc01b7663e75ffaa0eeae
+2011-07-28T01:21:51.384587Z
+6229
+aheiberg
 
 
 
@@ -364,5 +362,10 @@ ckozanit
 
 
 
-593
+
+
+
+
+
+596
 

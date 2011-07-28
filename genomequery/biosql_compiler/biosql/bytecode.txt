@@ -1,12 +1,22 @@
 Compilation completed without errors
 1. Input = READS 
-2. t0 = mate_loc - location 
-3. t1 = t0 > 1000 
-4. t2 = location - mate_loc 
-5. t3 = t2 > 1000 
-6. t4 = t1 || t3 
-7. return_arg : strength_vector 
-8. result_table : H1 
-9. Input = H1 
-10. t5 = countvec < 12 
-11. return_arg : * 
+2. t0 = location >= 0 
+3. t1 = mate_loc >= 0 
+4. t2 = t0 && t1 
+5. t3 = mate_loc - location 
+6. t4 = t3 > 1000 
+7. t5 = mate_loc - location 
+8. t6 = t5 < 2000000 
+9. t7 = t4 && t6 
+10. t8 = location - mate_loc 
+11. t9 = t8 > 1000 
+12. t10 = location - mate_loc 
+13. t11 = t10 < 2000000 
+14. t12 = t9 && t11 
+15. t13 = t7 || t12 
+16. t14 = t2 && t13 
+17. return_arg : strength_vector 
+18. result_table : H1 
+19. Input = H1 
+20. t15 = countvec > 12 
+21. return_arg : * 
