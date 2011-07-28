@@ -667,7 +667,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     var sandbox_tree_pane = dijit.layout.ContentPane(
             {id : "sandbox_tree_pane",
              region : "top",
-             style : "background-color: #efefef"}
+             style : "background-color: #efefef; height: 90%;"}
         ).placeAt( sandbox_bc.domNode );
 
     var store = new dojox.data.FileStore( 
