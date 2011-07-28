@@ -532,7 +532,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     var query_bam = new dijit.form.TextBox(
                         {id: "query_bam",
                          name: "query_bam",
-                         value: "/home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.sorted.bam",
+                         value: globals.root_dir + "/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.sorted.bam",
                          type: "hidden"}
                     ).placeAt( query_div );
     
