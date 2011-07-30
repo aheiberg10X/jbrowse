@@ -688,16 +688,31 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
              model : model,
              //"dndController" : "dijit.tree.dndSource"
              onClick :
-         
                 function(item){ 
-                    var buttons = [view_query_button, 
-                                   delete_button, 
-                                   visualize_button];
                     var toggler = function( disable ){
-                                      return function(thing, i){
+                                      return function(thing,i){
                                           thing.set("disabled",disable);
                                       };
                                   } 
+                    var track_name = store.getValue(item, 'name');
+                    var filterer = function( track ){ 
+                                    return track.key == track_name;
+                                   };
+                    var f = dojo.filter( brwsr.view.tracks, filterer );
+                    var isVisualized = f.length == 1;
+                    //var isVisualized = dojo.indexOf( brwsr.view.tracks, store.getValue(item, 'name') ) != -1;
+                    if( isVisualized ){
+                        visualize_button.set('label', 'Recall');
+                        visualize_button.onClick = 
+                            function(){ recall(track_name); }; 
+                    }
+                    else{
+                        visualize_button.set('label', 'Visualize');
+                        visualize_button.onClick = 
+                            function(){ visualize(track_name); };
+                    }   
+                    var buttons = [view_query_button, delete_button,
+                                   visualize_button];
                     if( store.getValue( item,'directory' ) ){
                         dojo.forEach( buttons, toggler(true) );
                     }
@@ -721,47 +736,40 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
          onClick: function(){ alert( "will call delete" ); }
         }).placeAt( sandbox_button_pane.domNode );
    
-    function moveNode(nodeId, sourceContainer, targetContainer) {
-            var node = dojo.byId(nodeId);
-            // Save the data
-            var saveData = sourceContainer.map[nodeId].data;
-            //
-            // Do the move
-            sourceContainer.parent.removeChild(node);
-            targetContainer.parent.appendChild(node);
-            
-            // Sync the DOM object → map
-            sourceContainer.sync();
-            targetContainer.sync();
-            
-            // Restore data for recreation of data
-            targetContainer.map[nodeId].data = saveData;
-    }
-
+    
     var visualize_button = new dijit.form.Button(
         {id: "visualize_button", 
          label: "Visualize", 
-         style: "margin-top: 0px;",
-         onClick: function(){ 
-             alert( "somehow have to make jive with GenomeView.updateTrackList()..." );
-             //moveNode( "back_to_bam_25th", trackListDiv, brwsr.view.zoomContainer );
-             /*
-             var track_name = tree.selectedItem.name;
-             var tester = function(item){
-                 return item["key"] == track_name;
-             }
-             var matches = dojo.filter( params.trackData, tester );
-             if( matches.length == 0 ){ alert("crap no matches"); }
-             else if( matches.length == 1 ){
-                trackCreate( matches[0], "hint_that_doesnt_match_avatar" );
-                brwsr.view.tracks.push( matches[0] );
-                brwsr.onVisibleTracksChanged();
-             }
-             else{ alert("crap too many matches"); }
-             */
-         }
+         style: "margin-top: 0px;"
         }).placeAt( sandbox_button_pane.domNode );
     
+    var visualize = function(track_name){
+        var tester = function(item){
+            return item["key"] == track_name;
+        }
+        var matches = dojo.filter( params.trackData, tester );
+        if( matches.length == 0 ){ alert("crap no matches"); }
+        else if( matches.length == 1 ){
+           brwsr.viewDndWidget.insertNodes( false, [matches[0]] );
+           brwsr.onVisibleTracksChanged();
+        }
+        else{ alert("crap too many matches"); }
+        visualize_button.set('label','Recall');
+        visualize_button.onClick = function(){ recall(tree.selectedItem.name); };
+
+    };
+
+    var recall = function(track_name){
+        brwsr.view.zoomContainer.removeChild( 
+            dojo.byId( 'track_'+track_name )
+         );
+        brwsr.onVisibleTracksChanged();
+        visualize_button.set('label','Visualize');
+        visualize_button.onClick = 
+            function(){ visualize(tree.selectedItem.name); };
+
+    };
+
     var view_query_button = new dijit.form.Button(
         {id: "view_query_button", 
          label: "View Text", 
@@ -1159,17 +1167,18 @@ Browser.prototype.showTracks = function(trackNameList) {
     for (var n = 0; n < trackNames.length; n++) {
         this.trackListWidget.forInItems(function(obj, id, map) {
                 if (trackNames[n] == obj.data.label) {
+                    
                     brwsr.viewDndWidget.insertNodes(false, [obj.data]);
                     removeFromList.push(id);
                 }
             });
     }
-    var movedNode;
-    for (var i = 0; i < removeFromList.length; i++) {
-        this.trackListWidget.delItem(removeFromList[i]);
-        movedNode = dojo.byId(removeFromList[i]);
-        movedNode.parentNode.removeChild(movedNode);
-    }
+    //var movedNode;
+    //for (var i = 0; i < removeFromList.length; i++) {
+    //this.trackListWidget.delItem(removeFromList[i]);
+    //movedNode = dojo.byId(removeFromList[i]);
+    //movedNode.parentNode.removeChild(movedNode);
+    //}
     this.onVisibleTracksChanged();
 };
 
