@@ -1066,6 +1066,13 @@ GenomeView.prototype.trackIterate = function(callback) {
         callback(this.tracks[i], this);
 };
 
+GenomeView.prototype.isVisualized = function( track_name ) {
+     var filterer = function( track ){ 
+                        return track.key == track_name;
+                    };
+     var f = dojo.filter( this.tracks, filterer );
+     return f.length == 1;
+};
 /* this function must be called whenever tracks in the GenomeView
  * are added, removed, or reordered
  */
@@ -1073,12 +1080,13 @@ GenomeView.prototype.updateTrackList = function() {
     var tracks = [];
     // after a track has been dragged, the DOM is the only place
     // that knows the new ordering
+    
     var containerChild = this.zoomContainer.firstChild;
     do {
         // this test excludes UI tracks, whose divs don't have a track property
         if (containerChild.track) tracks.push(containerChild.track);
     } while ((containerChild = containerChild.nextSibling));
-    this.tracks = tracks;
+    this.tracks = tracks;  
 
     var newIndices = {};
     var newHeights = new Array(this.tracks.length);
