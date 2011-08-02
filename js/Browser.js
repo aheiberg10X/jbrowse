@@ -564,17 +564,31 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     query_div.id = "query_div";
     query_pane.domNode.appendChild( query_div );
 
+    var query_name_p = document.createElement("p");
+    query_name_p.id = "query_name_p";
+    query_name_p.innerHTML = "Name<br />";
+    query_div.appendChild( query_name_p );
+
     var query_name = new dijit.form.TextBox(
                         {id: "query_name",
                          label: "Query Name",
                          name: "query_name"}
-                     ).placeAt( query_div )
+                     ).placeAt( query_name_p );
+
+    var query_box_p = document.createElement("p");
+    query_box_p.id = "query_box_p";
+    query_box_p.innerHTML = "Query<br />";
+    query_div.appendChild( query_box_p );
 
     var query_box = new dijit.form.TextBox(
                         {id : "query_box",
                          name: "query_box",
                          style: "height: 12em; width: 90%"}
-                    ).placeAt( query_div );
+                    ).placeAt( query_box_p );
+
+    var download_div = document.createElement("div");
+    download_div.id = "download_div";
+    query_div.appendChild( download_div );
 
     var query_bam = new dijit.form.TextBox(
                         {id: "query_bam",
@@ -590,7 +604,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                          type: "hidden"}
                      ).placeAt( query_div );        
     
-    var runQuery = function(){
+    var runQuery = function( callback ){
         var query_name = dojo.byId("query_name").value;
         if( dojo.byId("query_box").value == "" ){
             alert("You must enter a valid query");
@@ -608,12 +622,17 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 handleAs: "json",
                 load: function(data,ioargs){
                     if( data["status"] == "ok" ){
+                        //refresh track data
                         dojo.xhrGet({
                             url: "data/trackInfo.js",
                             handleAs: "json",
                             load: function(data,args){
                                 params.trackData = data;
-                                alert("Query ready for visualization");
+                                var url = "data/tracks/"+brwsr.refSeq.name+"/query_"+query_name+"/"+query_name+".bam";
+                                var inner_html = "<a href="+url+">Right-click to download results</a>";
+                                dojo.byId("download_div").innerHTML = inner_html;
+                                //alert("Query ready for visualization");
+                                callback();
                             },
                             error: function(data,args){
                                        alert("trackINfo not successfully reloaded");
@@ -638,10 +657,18 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     var query_button = new dijit.form.Button(
                             {id: "query_button", 
-                             label: "Query Tracks",
+                             label: "Run Query",
                              style: "align-text: right;",
-                             onClick: runQuery  }
-                       ).placeAt( query_div );
+                             onClick: function(){
+                                        var widget = this;
+                                        widget.set("disabled",true); 
+                                        var callback = function(){ 
+                                                        widget.set("disabled",false); 
+                                                       };
+                                        runQuery(callback);
+
+                                      }
+                       }).placeAt( query_div );
  
     var query_form = new dijit.form.Form(
                          {id: "query_form",
@@ -910,7 +937,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
          label: "View Text", 
          style: "margin-top: 0px;",
         //disabled: "true",
-         onClick: function(){ 
+         onClick: function(){
              var host_chrom = brwsr.refSeq.name;
              var query_name = tree.selectedItem.name;
              var url = "data/tracks/"+host_chrom+"/query_"+query_name+"/"+query_name+".gq";
@@ -922,10 +949,11 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                  },
                  error: function(data,args){
                             alert("trouble retrieving the generating query");
-                        }
+                 }
              });
+        }
         }).placeAt( sandbox_button_pane.domNode );
-
+     
 
    
 };

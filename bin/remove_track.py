@@ -48,11 +48,11 @@ def removeTracks( chrom, track_keys_to_remove, delete=False, filename = "../data
 
 def deleteTracks( chrom, track_labels ) :
     for label in track_labels :
-        rdir = "../data/tracks/%s/%s" % (chrom,label)
+        rdir = "../data/tracks/%s/query_%s" % (chrom,label)
         try :
             rmtree( rdir )
         except OSError :
-            print "can't remove %s\n, %s" % (rdir)
+            print "can't remove %s\n" % (rdir)
 
 
 if __name__ == '__main__' :
