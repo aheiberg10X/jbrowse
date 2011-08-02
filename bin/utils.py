@@ -1,5 +1,6 @@
 import simplejson as json
 import re
+import sys
 
 # make this a function, doubtless will be using again
 def fileToJson( filename ) :
@@ -27,3 +28,12 @@ def chromKeyer( chrom ) :
                 return chrom
     else :
         return chrom
+
+def printToServer( s ) :
+    temp = sys.stdout
+    sys.stdout = sys.__stdout__
+    print s
+    sys.stdout = temp
+
+
+

@@ -10,10 +10,6 @@ cgitb.enable()
 
 query_prefix = "query_"
 
-def printToServer( s ) :
-    sys.stdout = sys.__stdout__
-    print s
-    sys.stdout = fout
 
 def getChildren( path ) :
     r = []
@@ -39,11 +35,11 @@ def handleQuery( path ) :
     jresponse = {'total' : total, 'items' : items}
     response = json.dumps( jresponse )
     print response
-    printToServer( response )
+    utils.printToServer( response )
 
 def handlePath( path ) :
     item = makeItem( path )
-    printToServer( json.dumps( item ) )
+    utils.printToServer( json.dumps( item ) )
 
 def getType( path, folder_name ) :
     if os.path.isdir( path ) :
@@ -82,7 +78,7 @@ if __name__ == '__main__' :
     fout = open("%s/filestore_out.txt" % output,'w')
     ferr = open("%s/filestore_err.txt" % output,'w')
 
-    printToServer( "Content-type: text/json\n\n" )
+    utils.printToServer( "Content-type: text/json\n\n" )
 
     projects_root = "%s/data/tracks" % root_dir
 
