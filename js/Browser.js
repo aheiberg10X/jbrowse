@@ -260,9 +260,9 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
          selected: "true"
         }).placeAt(ep);
 
-   var sandbox_bc = new dijit.layout.BorderContainer(
-           {id:"sandbox_bc",
-            title: "Sandbox",
+   var explorer_bc = new dijit.layout.BorderContainer(
+           {id:"explorer_bc",
+            title: "Explorer",
             style: "background-color: #efefef; border-style: none solid none none; border-color: #929292",
             splitter: "true"
 
@@ -586,10 +586,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                          style: "height: 12em; width: 90%"}
                     ).placeAt( query_box_p );
 
-    var download_div = document.createElement("div");
-    download_div.id = "download_div";
-    query_div.appendChild( download_div );
-
     var query_bam = new dijit.form.TextBox(
                         {id: "query_bam",
                          name: "query_bam",
@@ -627,11 +623,18 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                             url: "data/trackInfo.js",
                             handleAs: "json",
                             load: function(data,args){
+                                var a =1;
+                            },
+                            error: function(data,args){
+                                       var a = 1;
+                                   }
+                        });
+
+                        dojo.xhrGet({
+                            url: "data/trackInfo.js",
+                            handleAs: "json",
+                            load: function(data,args){
                                 params.trackData = data;
-                                var url = "data/tracks/"+brwsr.refSeq.name+"/query_"+query_name+"/"+query_name+".bam";
-                                var inner_html = "<a href="+url+">Right-click to download results</a>";
-                                dojo.byId("download_div").innerHTML = inner_html;
-                                //alert("Query ready for visualization");
                                 callback();
                             },
                             error: function(data,args){
@@ -659,15 +662,21 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                             {id: "query_button", 
                              label: "Run Query",
                              style: "align-text: right;",
-                             onClick: function(){
-                                        var widget = this;
-                                        widget.set("disabled",true); 
-                                        var callback = function(){ 
-                                                        widget.set("disabled",false); 
-                                                       };
-                                        runQuery(callback);
+                             onClick: 
+                                 function(){
+                                    var widget = this;
+                                    widget.set("disabled",true); 
+                                    //query_box.set("disabled",true);
+                                    //query_name.set("disabled",true);
 
-                                      }
+                                    var callback = 
+                                        function(){ 
+                                            widget.set("disabled",false); 
+                                        //query_box.set("disabled",false);
+                                        //query_name.set("disabled",false);
+                                        };
+                                    runQuery(callback);
+                                }
                        }).placeAt( query_div );
  
     var query_form = new dijit.form.Form(
@@ -770,12 +779,12 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
 
     /////////////////
-    //Sandbox
-    var sandbox_tree_pane = dijit.layout.ContentPane(
-            {id : "sandbox_tree_pane",
+    //Explorer
+    var explorer_tree_pane = dijit.layout.ContentPane(
+            {id : "explorer_tree_pane",
              region : "top",
              style : "overflow: scroll; background-color: #efefef; height: 90%;"}
-        ).placeAt( sandbox_bc.domNode );
+        ).placeAt( explorer_bc.domNode );
 
     var store = new dojox.data.FileStore( 
                 {id : "store",
@@ -822,7 +831,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                     }
 
                 }
-            }).placeAt( sandbox_tree_pane.domNode ); 
+            }).placeAt( explorer_tree_pane.domNode ); 
 
     var refreshTree = function(){
         dijit.byId("tree").model.store.clearOnClose = true;
@@ -863,7 +872,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                     }
 
                 }
-            }).placeAt( sandbox_tree_pane.domNode );
+            }).placeAt( explorer_tree_pane.domNode );
     
 
         //dijit.byId("tree")._itemNodesMap = {};
@@ -881,37 +890,48 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         //dijit.byId("tree")._load();
     };
 
-    var sandbox_button_pane = dijit.layout.ContentPane(
-            {id : "sandbox_button_pane",
+    var explorer_button_pane = dijit.layout.ContentPane(
+            {id : "explorer_button_pane",
              region : "bottom",
              style : "background-color: #efefef; height: 10%;"}
-        ).placeAt( sandbox_bc.domNode );
+        ).placeAt( explorer_bc.domNode );
+
+    var download_button = new dijit.form.Button(
+            {id: "download_button",
+             label: "Download",
+             style: "margin-top: 0px;",
+             onClick: function(){
+                        var query_name = tree.selectedItem.name; 
+                        var url = "data/tracks/"+brwsr.refSeq.name+"/query_"+query_name+"/"+query_name+".bam";
+                        window.location = url;
+                      }
+            }).placeAt( explorer_button_pane.domNode );
 
     var delete_button = new dijit.form.Button(
-        {id: "delete_button2", 
+        {id: "delete_button", 
          label: "Delete", 
          style: "margin-top: 0px;",
          onClick: function(){ deleteSubmit(brwsr); }
-        }).placeAt( sandbox_button_pane.domNode );
+        }).placeAt( explorer_button_pane.domNode );
    
     
     var visualize_button = new dijit.form.Button(
         {id: "visualize_button", 
          label: "Visualize", 
          style: "margin-top: 0px;"
-        }).placeAt( sandbox_button_pane.domNode );
+        }).placeAt( explorer_button_pane.domNode );
     
     var visualize = function(track_name){
         var tester = function(item){
             return item["key"] == track_name;
         }
         var matches = dojo.filter( params.trackData, tester );
-        if( matches.length == 0 ){ alert("crap no matches"); }
+        if( matches.length == 0 ){ alert(" no matches"); }
         else if( matches.length == 1 ){
            brwsr.viewDndWidget.insertNodes( false, [matches[0]] );
            brwsr.onVisibleTracksChanged();
         }
-        else{ alert("crap too many matches"); }
+        else{ alert(" too many matches"); }
         visualize_button.set('label','Recall');
         visualize_button.onClick = function(){ recall(tree.selectedItem.name); };
 
@@ -952,7 +972,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                  }
              });
         }
-        }).placeAt( sandbox_button_pane.domNode );
+        }).placeAt( explorer_button_pane.domNode );
      
 
    
