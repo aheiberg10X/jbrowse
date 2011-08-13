@@ -7,7 +7,7 @@ use strict;
 use warnings;
 
 use NCList;
-use LazyNCList;
+use LazyNCList2;
 use JSON 2;
 use IO::File;
 use Fcntl ":flock";
@@ -261,7 +261,7 @@ sub new {
     };
 
     $self->{sublistIndex} += 1 if ($self->{sublistIndex} == $lazyIndex);
-    $self->{features} = LazyNCList->new($startIndex, $endIndex,
+    $self->{features} = LazyNCList2->new($startIndex, $endIndex,
                                         $self->{sublistIndex},
                                         $lazyIndex,
                                         $measure,

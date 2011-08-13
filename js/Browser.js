@@ -42,7 +42,7 @@ var Browser = function(params) {
     // end my stuff
 
     var refSeqs = params.refSeqs;
-    var trackData = params.trackData;
+    this.trackData = params.trackData;
     var globals = params.globals;
     this.deferredFunctions = [];
     this.dataRoot = params.dataRoot;
@@ -55,8 +55,8 @@ var Browser = function(params) {
     this.names = new LazyTrie(dataRoot + "/names/lazy-",
 			      dataRoot + "/names/root.json");
     this.tracks = [];
-    for( track in trackData ){
-        this.tracks.push(trackData[track]["key"]);
+    for( track in this.trackData ){
+        this.tracks.push( this.trackData[track]["key"] );
     }
     var brwsr = this;
     brwsr.isInitialized = false;
@@ -232,8 +232,7 @@ var Browser = function(params) {
 
 Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     
-    //var ep = new dojox.layout.ExpandoPane(
-    var ep = new dijit.layout.AccordionContainer(
+    var accordion = new dijit.layout.AccordionContainer(
         {id: "accordion",  //7 
 	     title: "accordion",
          region: "left",
@@ -241,24 +240,165 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
          splitter: "false"
         }).placeAt(parent);
 
-    var form_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
-        {id: "form_pane", //8
-         title: "Manage",
-         //region: "bottom",
-         style: "background-color:#efefef;",
-         //splitter: "true"
-        }).placeAt(ep);
+    //var form_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
+    //{id: "form_pane", //8
+    //title: "Manage",
+    ////region: "bottom",
+    //style: "background-color:#efefef;",
+    ////splitter: "true"
+    //}).placeAt(accordion);
 
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////
+   //                     Query Stuff
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   //var track_pane = new dijit.layout.ContentPane(
-   var track_pane = new dijit.layout.BorderContainer(
-        {id:"track_pane", //9
+    var query_bc = new dijit.layout.BorderContainer(
+        {id:"query_bc", //9
          title: "Query",
          //region: "top",
          style: "background-color: #efefef; border-style: none solid none none; border-color: #929292",
          //splitter: "true",
          selected: "true"
-        }).placeAt(ep);
+        }).placeAt(accordion);
+
+    var query_cpane = new dijit.layout.ContentPane( 
+        {id : "query_cpane",
+         title : "Query",
+         region : "center",
+         layoutPriority: "0",
+         style : "background-color: #efefef"
+        }).placeAt(query_bc);
+
+    var query_div = document.createElement("div");
+    query_div.id = "query_div";
+    query_cpane.domNode.appendChild( query_div );
+
+    var query_name_p = document.createElement("p");
+    query_name_p.id = "query_name_p";
+    query_name_p.innerHTML = "Name<br />";
+    query_div.appendChild( query_name_p );
+
+    var query_name = new dijit.form.TextBox(
+                        {id: "query_name",
+                         label: "Query Name",
+                         name: "query_name"}
+                     ).placeAt( query_name_p );
+
+    var query_box_p = document.createElement("p");
+    query_box_p.id = "query_box_p";
+    query_box_p.innerHTML = "Query<br />";
+    query_div.appendChild( query_box_p );
+
+    var query_box = new dijit.form.TextBox(
+                        {id : "query_box",
+                         name: "query_box",
+                         style: "height: 12em; width: 90%"}
+                    ).placeAt( query_box_p );
+
+    var query_donor_bam = new dijit.form.TextBox(
+                        {id: "query_donor_bam",
+                         name: "query_donor_bam",
+                         value: globals.root_dir + "/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.sorted.bam",
+                         type: "hidden"}
+                    ).placeAt( query_div );
+
+    var host_chrom = new dijit.form.TextBox(
+                        {id: "host_chrom",
+                         name: "host_chrom",
+                         value: brwsr.refSeq.name,
+                         type: "hidden"}
+                     ).placeAt( query_div );        
+    
+    var runQuery = function( disableCallback, enableCallback ){
+        var query_name = dojo.byId("query_name").value;
+        if( dojo.byId("query_box").value == "" ){
+            alert("You must enter a valid query");
+        }
+        else if( query_name == "" ){
+            alert("You must enter a name for ths query");
+        }
+        else if( hasNameConflict( query_name ) ){
+            alert( "There is already a query with that name" );
+        }
+        else {
+            var xhrArgs = {
+                url: "bin/run_query.py",
+                form: dojo.byId("query_form"),
+                handleAs: "json",
+                load: function(data,ioargs){
+                    if( data["status"] == "ok" ){
+                        //refresh track data, this first request is a kludge:
+                        //when site is initially loaded and first query run, 
+                        //just one xhrGet didn't load the modified trackInfo.js
+                        dojo.xhrGet({
+                            url: "data/trackInfo.js",
+                            handleAs: "json",
+                            load: function(data,args){
+                                var a =1;
+                            },
+                            error: function(data,args){
+                                var a = 1;
+                            }
+                        });
+
+                        dojo.xhrGet({
+                            url: "data/trackInfo.js",
+                            handleAs: "json",
+                            load: function(data,args){
+                                brwsr.trackData = data;
+                            },
+                            error: function(data,args){
+                                alert("trackINfo not successfully reloaded");
+                            }
+                        });
+                        brwsr.tracks.push( query_name );
+                        enableCallback();
+                        refreshTree();
+                    }
+                    else{
+                        alert( data["message"] );
+                        enableCallback();
+                    }
+                },
+                error: function(error) {
+                    alert(error);
+                    enableCallback();
+                }
+            };
+            //Call the asynchronous xhrPost
+            var deferred = dojo.xhrPost(xhrArgs);
+            disableCallback();
+        }
+
+    };
+
+    var query_button = new dijit.form.Button(
+                            {id: "query_button", 
+                             label: "Run Query",
+                             style: "align-text: right;",
+                             onClick: 
+                                 function(){
+                                    buttons = [query_button,
+                                               query_box, query_name];
+                                    var disableCallback = function() {
+                                        dojo.forEach( buttons, toggler("disabled",true) );
+                                    };
+                                    var enableCallback = function(){ 
+                                        dojo.forEach( buttons, toggler("disabled",false) );
+                                    };
+                                    runQuery(disableCallback,enableCallback);
+                                }
+                       }).placeAt( query_div );
+ 
+    var query_form = new dijit.form.Form(
+                         {id: "query_form",
+                          encType : "multipart/form-data"},
+                     query_div )
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //                        Explorer Stuff
+    ///////////////////////////////////////////////////////////////////////////////////////////////
 
    var explorer_bc = new dijit.layout.BorderContainer(
            {id:"explorer_bc",
@@ -266,8 +406,99 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             style: "background-color: #efefef; border-style: none solid none none; border-color: #929292",
             splitter: "true"
 
-           }).placeAt(ep);
+           }).placeAt(accordion);
+    
+    var explorer_cpane = dijit.layout.ContentPane(
+            {id : "explorer_cpane",
+             region : "top",
+             style : "overflow: scroll; background-color: #efefef; height: 90%;"}
+        ).placeAt( explorer_bc.domNode );
 
+    var store = new dojox.data.FileStore( 
+                {id : "store",
+                 url : "bin/filestore_dojotree.py",
+                 pathAsQueryParam : "true"}     
+             );
+    
+    var model = new dijit.tree.ForestStoreModel(
+                     {id : "model",
+                      store : store,
+                      rootId : "projects",
+                      rootLabel : "projects" }
+                    );       
+
+    
+    var makeTree = function(){
+        var tree = new dijit.Tree(
+            {id : "tree",
+             model : model,
+             onClick :
+                function(item){ 
+                    var track_name = store.getValue(item, 'name');
+                    var isVisualized = brwsr.view.isVisualized( track_name ); //f.length == 1;
+                    if( isVisualized ){
+                        visualize_button.set('label', 'Recall');
+                        visualize_button.onClick = 
+                            function(){ recall(track_name); }; 
+                    }
+                    else{
+                        visualize_button.set('label', 'Visualize');
+                        visualize_button.onClick = 
+                            function(){ visualize(track_name); };
+                    }   
+                    var buttons = [view_query_button, delete_button,
+                                   visualize_button, download_button];
+                    if( store.getValue( item,'directory' ) ){
+                        dojo.forEach( buttons, toggler("disabled",true) );
+                    }
+                    else{
+                        dojo.forEach( buttons, toggler("disabled",false) );
+                    }
+
+                }
+            })
+        return tree;
+    };
+
+    var tree = makeTree();
+    tree.placeAt( explorer_cpane.domNode ); 
+
+    var refreshTree = function(){
+        dijit.byId("tree").model.store.clearOnClose = true;
+        dijit.byId("tree").model.store.close();
+   
+        dijit.byId("tree").model.constructor(dijit.byId("tree").model)
+
+        dijit.byId("tree").destroyRecursive();
+        tree =  makeTree();
+        tree.placeAt( explorer_cpane.domNode );
+    
+    };
+
+    var explorer_button_pane = dijit.layout.ContentPane(
+            {id : "explorer_button_pane",
+             region : "bottom",
+             style : "background-color: #efefef; height: 10%;"}
+        ).placeAt( explorer_bc.domNode );
+
+    var download_button = new dijit.form.Button(
+            {id: "download_button",
+             label: "Download",
+             style: "margin-top: 0px;",
+             onClick: function(){
+                        var query_name = tree.selectedItem.name; 
+                        var url = "data/tracks/"+brwsr.refSeq.name+"/query_"+query_name+"/"+query_name+".bam";
+                        window.location = url;
+                      }
+            }).placeAt( explorer_button_pane.domNode );
+
+    var delete_button = new dijit.form.Button(
+        {id: "delete_button", 
+         label: "Delete", 
+         style: "margin-top: 0px;",
+         onClick: function(){ deleteSubmit(brwsr); }
+        }).placeAt( explorer_button_pane.domNode );
+   
     var deleteSubmit = function(brwsr) {
 
         //brwsr.chromList.options[brwsr.chromList.selectedIndex].value;
@@ -304,617 +535,10 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         }
         //Call the asynchronous xhrPost
         var deferred = dojo.xhrPost(xhrArgs);
-        dojo.byId("track_manager_status").innerHTML = "posted"
     };
-
-    var deleteSubmit_old_drag_and_drop = function(brwsr) {
-
-        //brwsr.chromList.options[brwsr.chromList.selectedIndex].value;
-        var current_chrom = brwsr.refSeq.name;
-        var tracks_in_trash = [];
-        var ids_to_trash = [];
-        brwsr.trash_drop.forInItems(function(obj, id, map) {
-            tracks_in_trash.push(obj.data.key);
-            ids_to_trash.push(id);
-
-            //current tracklist bookkeeping
-            var ix = brwsr.tracks.indexOf(obj.data.key);
-            if( ix != -1 ){
-                brwsr.tracks.splice(ix,1);
-            }
-        });
-        
-        var args = {chrom: current_chrom,
-                    delete_track: tracks_in_trash};
-
-        var url = "../bin/remove_track.py?" + dojo.objectToQuery(args);
-
-        var xhrArgs = {
-            url: url,
-            form: dojo.byId("track_manager_form"),
-            handleAs: "text",
-            load: function(data,ioargs) {
-                //remove track object
-                brwsr.trash_drop.selectAll();
-                brwsr.trash_drop.deleteSelectedNodes();
-                dojo.byId("track_manager_status").innerHTML = "Message posted.";
-            },
-            error: function(error) {
-                dojo.byId("track_manager_status").innerHTML = "fail";
-            }
-        }
-        //Call the asynchronous xhrPost
-        var deferred = dojo.xhrPost(xhrArgs);
-        dojo.byId("track_manager_status").innerHTML = "posted"
-    };
-
-    var trackkeyFromFilename = function( path ){
-        //handily it will always appear as C:\fakepath\<filename>
-        var splt = path.split('\\');
-        var filename = splt[splt.length-1].split('.');
-        var name = filename.slice(0, filename.length-1).join('.');
-        return name;
-    }
-
-    //0 : OK
-    //1 : malformed name
-    //2 : duplicate name
-    //3 : cannot find histogram file
-    var hasNameConflict = function(name) {
-        if( name == '' ){ 
-            alert("Filename is empty");
-            return 1; 
-        }
-        else{
-            for( trackkey in brwsr.tracks ){
-                if( name == brwsr.tracks[trackkey] ){
-                    alert("There is already a track with that name");
-                    return 2;
-                 }
-            }
-        }
-        return 0;
-        //compared to ?? (other tracks)
-    }
-
-    var uploadBAM = function() {
-        var display_linking = dojo.byId("display_linking").value;
-        //TODO: should pass 'name' to form, rather than deducing the trackname anew in each language
-        var name = trackkeyFromFilename( dojo.byId("bam_filename").value );
-        var isConflict = hasNameConflict( name );
-        if( !isConflict ){
-            dojo.io.iframe.send({
-                url: "bin/bam_to_json_paired_cgi.pl",
-                method: "post",
-                handleAs: "json",
-                form: dojo.byId("track_manager_form"),
-                load: function(data,ioArgs) {
-                    if( data['status'] == "ERROR" ) {
-                        alert(data['message']);
-                    }
-                    else{
-                        brwsr.trackListWidget.insertNodes(false,data['trackData']);
-                        dojo.byId("track_manager_status").innerHTML = "bam posted";
-                        brwsr.tracks.push(name);
-                        ep.selectChild( "track_pane", true);
-                    }
-                },
-                error: function(response, ioArgs){
-                    alert(response);
-                }
-
-            });
-        }
-    };
-
-    var uploadRegion = function(brwsr) {
-        //TODO: should pass 'name' to form, rather than deducing the trackname anew in each language
-        var name = trackkeyFromFilename( dojo.byId("region_filename").value );
-        var isConflict = hasNameConflict(name);
-        if( !isConflict ){
-            alert( "not working right now due to chromosome switch" );
-            //dojo.io.iframe.send({
-            //url: "bin/region_to_json.pl",
-            //method: "post",
-            //handleAs: "json",
-            //form: dojo.byId("track_manager_form"),
-            //load: function(data) {
-            //if( data['status'] == "ERROR" ) {
-            //alert(data['message']);
-            //}
-            //else{
-            //brwsr.trackListWidget.insertNodes(false, data['trackData']);                        
-            //dojo.byId("track_manager_status").innerHTML = "region posted";
-            //}
-            //}
-            //});
-        }
-    };
-
-    
-    //////////// start creating trackListDiv ///////////////////////////////////////
-    var trackListDiv = document.createElement("div");
-    trackListDiv.id = "tracksAvail";
-    trackListDiv.className = "container handles";
-    //trackListDiv.style.cssText =
-    //  "width: 90%; height: 90%; overflow-x: hidden; overflow-y: auto;";
-    trackListDiv.innerHTML =
-        "Available Tracks:<br/>(Drag <img src=\""
-        + (params.browserRoot ? params.browserRoot : "")
-        + "img/right_arrow.png\"/> to view)<br/><br/>";
-    trackListDiv.style.cssText = "background-color: #FF0000; ";
-
-    var brwsr = this;
-    
-    var trackListCreate = function(track, hint) {
-        var node = document.createElement("div");
-        node.className = "tracklist-label";
-        node.innerHTML = track.key;
-        //in the list, wrap the list item in a container for
-        //border drag-insertion-point monkeying
-        if ("avatar" != hint) {  //dropped back into list
-            var container = document.createElement("div");
-            container.className = "tracklist-container";
-            container.style.cssText = "width: 90%;";
-            container.appendChild(node);
-            node = container;
-            brwsr.interestingAreas.removeTrack( track.key );
-            brwsr.navigateTo(brwsr.locationBox.value);
-        }
-        node.id = dojo.dnd.getUniqueId();
-        return {node: node, data: track, type: ["track"]};
-    };
-
-    this.trackListWidget = new dojo.dnd.Source(trackListDiv,
-                                               {creator: trackListCreate,
-						accept: ["track"],
-						withHandles: false});
-    
-    var initCallback = function( trackKey, tracksInterestingAreas ) {
-        brwsr.interestingAreas.addTrack( trackKey, tracksInterestingAreas );
-        brwsr.navigateTo(brwsr.locationBox.value);
-    };
-    var changeCallback = function() {
-        brwsr.view.showVisibleBlocks(true);
-    };
-
-    var trackCreate = function(track, hint) {
-        var node;
-        if ("avatar" == hint) {
-            return trackListCreate(track, hint);
-        } 
-        else {
-            var replaceData = {refseq: brwsr.refSeq.name};
-            var url = track.url.replace(/\{([^}]+)\}/g, function(match, group) {return replaceData[group];});
-            var klass = eval(track.type);
-            var newTrack = new klass(track, url, brwsr.refSeq,
-                                     {
-                                         maxRender: brwsr.maxRender,
-                                         //see FeatureTrack ctor for explanation
-                                         initCallback: initCallback,
-                                         //calls GenomeView showVisibleBlocks()
-                                         changeCallback: changeCallback,
-                                         trackPadding: brwsr.view.trackPadding,
-                                         baseUrl: brwsr.dataRoot,
-                                         charWidth: brwsr.view.charWidth,
-                                         seqHeight: brwsr.view.seqHeight
-                                     });
-            node = brwsr.view.addTrack(newTrack);
-            
-        }
-        return {node: node, data: track, type: ["track"]};
-    };
-
-    this.viewDndWidget = new dojo.dnd.Source(this.view.zoomContainer,
-                                       {
-                                           creator: trackCreate,
-                                           accept: ["track"],
-                                           withHandles: true
-                                       });
-
-    dojo.subscribe("/dnd/drop", function(source,nodes,iscopy){
-                       brwsr.onVisibleTracksChanged();
-                       //multi-select too confusing?
-                       //brwsr.viewDndWidget.selectNone();
-                   });
-
-    this.trackListWidget.insertNodes(false, params.trackData);
-    var oldTrackList = dojo.cookie(this.container.id + "-tracks");
-    if (params.tracks) {
-        this.showTracks(params.tracks);
-    } else if (oldTrackList) {
-        this.showTracks(oldTrackList);
-    } else if (params.defaultTracks) {
-        this.showTracks(params.defaultTracks);
-    }
 
    
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    //            Build Up trackListDiv
-    /////////////////////////////////////////////////////////////////////////////////////////////////// 
-
-    //var tracklist_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
-    //{id:"tracklist_pane", 
-    //title: "Tracks",
-    //region: "top",
-    //style: "background-color:#efefef;",
-    //layoutPriority: "1"
-    ////splitter: "true"
-    //}, trackListDiv);.placeAt(track_pane);
-
-    var query_pane = new dijit.layout.ContentPane( 
-        {id : "query_pane",
-         title : "Query",
-         region : "center",
-         layoutPriority: "0",
-         style : "background-color: #efefef"
-        }).placeAt(track_pane);
-
-//var trashcan_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
-//{id: "trashcan_pane", 
-//title: "Trash Can",
-//region: "bottom",
-//style: "background-color:#efefef;",
-//layoutPriority: "2"
-////splitter: "true"
-//}).placeAt(track_pane);
-
-
-    var query_div = document.createElement("div");
-    query_div.id = "query_div";
-    query_pane.domNode.appendChild( query_div );
-
-    var query_name_p = document.createElement("p");
-    query_name_p.id = "query_name_p";
-    query_name_p.innerHTML = "Name<br />";
-    query_div.appendChild( query_name_p );
-
-    var query_name = new dijit.form.TextBox(
-                        {id: "query_name",
-                         label: "Query Name",
-                         name: "query_name"}
-                     ).placeAt( query_name_p );
-
-    var query_box_p = document.createElement("p");
-    query_box_p.id = "query_box_p";
-    query_box_p.innerHTML = "Query<br />";
-    query_div.appendChild( query_box_p );
-
-    var query_box = new dijit.form.TextBox(
-                        {id : "query_box",
-                         name: "query_box",
-                         style: "height: 12em; width: 90%"}
-                    ).placeAt( query_box_p );
-
-    var query_bam = new dijit.form.TextBox(
-                        {id: "query_bam",
-                         name: "query_bam",
-                         value: globals.root_dir + "/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.sorted.bam",
-                         type: "hidden"}
-                    ).placeAt( query_div );
-
-    var host_chrom = new dijit.form.TextBox(
-                        {id: "host_chrom",
-                         name: "host_chrom",
-                         value: brwsr.refSeq.name,
-                         type: "hidden"}
-                     ).placeAt( query_div );        
-    
-    var runQuery = function( callback ){
-        var query_name = dojo.byId("query_name").value;
-        if( dojo.byId("query_box").value == "" ){
-            alert("You must enter a valid query");
-        }
-        else if( query_name == "" ){
-            alert("You must enter a name for ths query");
-        }
-        else if( hasNameConflict( query_name ) ){
-            alert( "There is already a query with that name" );
-        }
-        else {
-            var xhrArgs = {
-                url: "bin/run_query.py",
-                form: dojo.byId("query_form"),
-                handleAs: "json",
-                load: function(data,ioargs){
-                    if( data["status"] == "ok" ){
-                        //refresh track data
-                        dojo.xhrGet({
-                            url: "data/trackInfo.js",
-                            handleAs: "json",
-                            load: function(data,args){
-                                var a =1;
-                            },
-                            error: function(data,args){
-                                       var a = 1;
-                                   }
-                        });
-
-                        dojo.xhrGet({
-                            url: "data/trackInfo.js",
-                            handleAs: "json",
-                            load: function(data,args){
-                                params.trackData = data;
-                                callback();
-                            },
-                            error: function(data,args){
-                                       alert("trackINfo not successfully reloaded");
-                                   }
-                        });
-                        brwsr.tracks.push( query_name );
-                        refreshTree();
-                    }
-                    else{
-                        alert( data["message"] );
-                    }
-                },
-                error: function(error) {
-                    alert(error);
-                }
-            }
-            //Call the asynchronous xhrPost
-            var deferred = dojo.xhrPost(xhrArgs);
-        }
-
-    };
-
-    var query_button = new dijit.form.Button(
-                            {id: "query_button", 
-                             label: "Run Query",
-                             style: "align-text: right;",
-                             onClick: 
-                                 function(){
-                                    var widget = this;
-                                    widget.set("disabled",true); 
-                                    //query_box.set("disabled",true);
-                                    //query_name.set("disabled",true);
-
-                                    var callback = 
-                                        function(){ 
-                                            widget.set("disabled",false); 
-                                        //query_box.set("disabled",false);
-                                        //query_name.set("disabled",false);
-                                        };
-                                    runQuery(callback);
-                                }
-                       }).placeAt( query_div );
- 
-    var query_form = new dijit.form.Form(
-                         {id: "query_form",
-                          encType : "multipart/form-data"},
-                     query_div )
-
-        
-                        
-
-
-    var trashcan_div = document.createElement("div");
-    trashcan_div.id = "trashcan_div";
-    trashcan_div.style.cssText = "background-color: #FF00FF; text-align: center;";
-    trashcan_div.innerHTML = "trash drop";
-
-
-    //tracklist_pane.domNode.appendChild( trackListDiv);
-    //trashcan_pane.domNode.appendChild( trashcan_div );
-    //
-    //this.trash_drop = new dojo.dnd.Source(trashcan_div, 
-    //{creator: trackListCreate,
-    //accept:["track"]/*, 
-    //withHandles:"false"*/
-    //});
-    //
-    //var delete_button = new dijit.form.Button({id: "delete_button", 
-    //label: "Delete Tracks",
-    //style: "align-text: right;",
-    //onClick: function(){ deleteSubmit_old_drag_and_drop(brwsr) },
-    //disabled: "disabled" 
-    //}).placeAt( trashcan_pane.domNode );
-
-
-    /////////////////////////////////////////////////////////////////////////////////////////
-    //           Build form 
-    /////////////////////////////////////////////////////////////////////////////////////////
-
-    var track_manager_form = document.createElement("form");
-    track_manager_form.id = "track_manager_form";
-    track_manager_form.method = "post";
-    track_manager_form.enctype = "multipart/form-data";
-    track_manager_form.innerHTML = '<h3>BAM</h3>' +
-                                   '<div id="bam_controls">' + 
-                                   '<p id="bamfile">BAM File</p>' + 
-                                   '<p id="bamhistogram">Histogram Data (opt)</p>' +
-                                   '<input type="checkbox" name="display_linking" id="display_linking" value="1" checked=true/>Display Links<br/>' +
-                                   '<input type="hidden" name="host_chrom" id="host_chrom" value="'+brwsr.refSeq.name+'" />' +
-                                   
-                                   '</div>' +
-                                   '<h3>Region</h3>'+
-                                   '<div id="region_controls">' +
-                                   '<p id="regionfile">File</p>' +
-                                   '</div>';
-
-
-    form_pane.domNode.appendChild( track_manager_form );
-
-    var bam_input = document.createElement("input");
-    bam_input.type = "file";
-    bam_input.id = "bam_filename";
-    bam_input.name = "bam_filename";
-    bam_input.style.cssText = "border-top: 10px;";
-    dojo.byId("bamfile").appendChild( bam_input );
-
-    var bam_histogram = document.createElement("input");
-    bam_histogram.type = "file";
-    bam_histogram.name = "bam_histogram_filename";
-    bam_histogram.id = "bam_histogram_filename";
-    //bam_histogram.style.cssText = "visibility:hidden; position: absolute; top:0; left:0;";
-    dojo.byId("bamhistogram").appendChild( bam_histogram );
-
-    var bam_upload = new dijit.form.Button(
-        {name: "bam_upload", 
-         label: "Upload BAM", 
-         style: "margin-top: 0px;",
-         onClick: uploadBAM,
-         disabled: "disabled"
-        }).placeAt( dojo.byId("bam_controls") );
-
-    var input_regionfile = document.createElement("input");
-    input_regionfile.type = "file";
-    input_regionfile.id = "region_filename";
-    input_regionfile.name = "region_filename";
-    //input_regionfile.style.cssText = "visibility: hidden; position: absolute; top:0; left:0;";
-    dojo.byId("regionfile").appendChild( input_regionfile );
-
-    var upload_regionfile = new dijit.form.Button(
-            {id: "upload_regionfile", 
-             label: "Upload Region", 
-             style: "margin-top: -10px;",
-             onClick: function() {uploadRegion(brwsr)}
-            }).placeAt( dojo.byId("region_controls") );
-
-    
-    var track_manager_status = document.createElement("div");
-    track_manager_status.id = "track_manager_status";
-    track_manager_status.innerHTML = "status";
-    form_pane.domNode.appendChild( track_manager_status );
-
-
-    /////////////////
-    //Explorer
-    var explorer_tree_pane = dijit.layout.ContentPane(
-            {id : "explorer_tree_pane",
-             region : "top",
-             style : "overflow: scroll; background-color: #efefef; height: 90%;"}
-        ).placeAt( explorer_bc.domNode );
-
-    var store = new dojox.data.FileStore( 
-                {id : "store",
-                 url : "bin/filestore_dojotree.py",
-                 pathAsQueryParam : "true"}     
-             );
-    
-    var model = new dijit.tree.ForestStoreModel(
-                     {id : "model",
-                      store : store,
-                      rootId : "projects",
-                      rootLabel : "projects" }
-                    );       
-    
-    var tree = new dijit.Tree(
-            {id : "tree",
-             model : model,
-             onClick :
-                function(item){ 
-                    var toggler = function( disable ){
-                                      return function(thing,i){
-                                          thing.set("disabled",disable);
-                                      };
-                                  } 
-                    var track_name = store.getValue(item, 'name');
-                    var isVisualized = brwsr.view.isVisualized( track_name ); //f.length == 1;
-                    if( isVisualized ){
-                        visualize_button.set('label', 'Recall');
-                        visualize_button.onClick = 
-                            function(){ recall(track_name); }; 
-                    }
-                    else{
-                        visualize_button.set('label', 'Visualize');
-                        visualize_button.onClick = 
-                            function(){ visualize(track_name); };
-                    }   
-                    var buttons = [view_query_button, delete_button,
-                                   visualize_button];
-                    if( store.getValue( item,'directory' ) ){
-                        dojo.forEach( buttons, toggler(true) );
-                    }
-                    else{
-                        dojo.forEach( buttons, toggler(false) );
-                    }
-
-                }
-            }).placeAt( explorer_tree_pane.domNode ); 
-
-    var refreshTree = function(){
-        dijit.byId("tree").model.store.clearOnClose = true;
-        dijit.byId("tree").model.store.close();
-   
-        dijit.byId("tree").model.constructor(dijit.byId("tree").model)
-
-        dijit.byId("tree").destroyRecursive();
-                tree =  new dijit.Tree(
-            {id : "tree",
-             model : model,
-             onClick :
-                function(item){ 
-                    var toggler = function( disable ){
-                                      return function(thing,i){
-                                          thing.set("disabled",disable);
-                                      };
-                                  } 
-                    var track_name = store.getValue(item, 'name');
-                    var isVisualized = brwsr.view.isVisualized( track_name ); //f.length == 1;
-                    if( isVisualized ){
-                        visualize_button.set('label', 'Recall');
-                        visualize_button.onClick = 
-                            function(){ recall(track_name); }; 
-                    }
-                    else{
-                        visualize_button.set('label', 'Visualize');
-                        visualize_button.onClick = 
-                            function(){ visualize(track_name); };
-                    }   
-                    var buttons = [view_query_button, delete_button,
-                                   visualize_button];
-                    if( store.getValue( item,'directory' ) ){
-                        dojo.forEach( buttons, toggler(true) );
-                    }
-                    else{
-                        dojo.forEach( buttons, toggler(false) );
-                    }
-
-                }
-            }).placeAt( explorer_tree_pane.domNode );
-    
-
-        //dijit.byId("tree")._itemNodesMap = {};
-        //dijit.byId("tree").rootNode.state = "UNCHECKED";
-        //dijit.byId("tree").model.root.children = null;
-        //
-        ////dijit.byId("tree").destoy();
-        //dijit.byId("tree").rootNode.destroyRecursive();
-        //
-        //
-        //dijit.byId("tree").model.constructor(dijit.byId("tree").model)
-        //
-        //
-        //dijit.byId("tree").postMixInProperties();
-        //dijit.byId("tree")._load();
-    };
-
-    var explorer_button_pane = dijit.layout.ContentPane(
-            {id : "explorer_button_pane",
-             region : "bottom",
-             style : "background-color: #efefef; height: 10%;"}
-        ).placeAt( explorer_bc.domNode );
-
-    var download_button = new dijit.form.Button(
-            {id: "download_button",
-             label: "Download",
-             style: "margin-top: 0px;",
-             onClick: function(){
-                        var query_name = tree.selectedItem.name; 
-                        var url = "data/tracks/"+brwsr.refSeq.name+"/query_"+query_name+"/"+query_name+".bam";
-                        window.location = url;
-                      }
-            }).placeAt( explorer_button_pane.domNode );
-
-    var delete_button = new dijit.form.Button(
-        {id: "delete_button", 
-         label: "Delete", 
-         style: "margin-top: 0px;",
-         onClick: function(){ deleteSubmit(brwsr); }
-        }).placeAt( explorer_button_pane.domNode );
-   
-    
+    //onClick behavior controled by the tree 
     var visualize_button = new dijit.form.Button(
         {id: "visualize_button", 
          label: "Visualize", 
@@ -925,7 +549,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         var tester = function(item){
             return item["key"] == track_name;
         }
-        var matches = dojo.filter( params.trackData, tester );
+        var matches = dojo.filter( brwsr.trackData, tester );
         if( matches.length == 0 ){ alert(" no matches"); }
         else if( matches.length == 1 ){
            brwsr.viewDndWidget.insertNodes( false, [matches[0]] );
@@ -968,14 +592,115 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                      alert(data);
                  },
                  error: function(data,args){
-                            alert("trouble retrieving the generating query");
+                    alert("trouble retrieving the generating query");
                  }
              });
         }
         }).placeAt( explorer_button_pane.domNode );
-     
 
    
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //            Some Helper functions
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////// 
+
+    var toggler = function( property, value ){
+        return function(thing,i){
+            thing.set(property,value);
+        };
+    };
+
+    var trackkeyFromFilename = function( path ){
+        //handily it will always appear as C:\fakepath\<filename>
+        var splt = path.split('\\');
+        var filename = splt[splt.length-1].split('.');
+        var name = filename.slice(0, filename.length-1).join('.');
+        return name;
+    }
+
+    //0 : OK
+    //1 : malformed name
+    //2 : duplicate name
+    //3 : cannot find histogram file
+    var hasNameConflict = function(name) {
+        if( name == '' ){ 
+            alert("Filename is empty");
+            return 1; 
+        }
+        else{
+            for( trackkey in brwsr.tracks ){
+                if( name == brwsr.tracks[trackkey] ){
+                    alert("There is already a track with that name");
+                    return 2;
+                 }
+            }
+        }
+        return 0;
+        //compared to ?? (other tracks)
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    //            GenomeView creator setup
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+   
+    var initCallback = function( trackKey, tracksInterestingAreas ) {
+        brwsr.interestingAreas.addTrack( trackKey, tracksInterestingAreas );
+        brwsr.navigateTo(brwsr.locationBox.value);
+    };
+    var changeCallback = function() {
+        brwsr.view.showVisibleBlocks(true);
+    };
+
+    var trackCreate = function(track, hint) {
+        var node;
+        if ("avatar" == hint) {
+            alert("Dont' want to have to do return a trackListCreate here");
+            //return trackListCreate(track, hint);
+        } 
+        else {
+            var replaceData = {refseq: brwsr.refSeq.name};
+            var url = track.url.replace(/\{([^}]+)\}/g, function(match, group) {return replaceData[group];});
+            var klass = eval(track.type);
+            var newTrack = new klass(track, url, brwsr.refSeq,
+                                     {
+                                         maxRender: brwsr.maxRender,
+                                         //see FeatureTrack ctor for explanation
+                                         initCallback: initCallback,
+                                         //calls GenomeView showVisibleBlocks()
+                                         changeCallback: changeCallback,
+                                         trackPadding: brwsr.view.trackPadding,
+                                         baseUrl: brwsr.dataRoot,
+                                         charWidth: brwsr.view.charWidth,
+                                         seqHeight: brwsr.view.seqHeight
+                                     });
+            node = brwsr.view.addTrack(newTrack);
+            
+        }
+        return {node: node, data: track, type: ["track"]};
+    };
+
+    this.viewDndWidget = new dojo.dnd.Source(this.view.zoomContainer,
+                                       {
+                                           creator: trackCreate,
+                                           accept: ["track"],
+                                           withHandles: true
+                                       });
+
+    dojo.subscribe("/dnd/drop", function(source,nodes,iscopy){
+                       brwsr.onVisibleTracksChanged();
+                       //multi-select too confusing?
+                       //brwsr.viewDndWidget.selectNone();
+                   });
+
+//this.trackListWidget.insertNodes(false, params.trackData);
+    var oldTrackList = dojo.cookie(this.container.id + "-tracks");
+    if (params.tracks) {
+        this.showTracks(params.tracks);
+    } else if (oldTrackList) {
+        this.showTracks(oldTrackList);
+    } else if (params.defaultTracks) {
+        this.showTracks(params.defaultTracks);
+    }
+
 };
 
 
@@ -1011,187 +736,6 @@ Browser.prototype.onFineMove = function(startbp, endbp) {
     this.locationTrap.style.cssText = locationTrapStyle;
 };
 
-/**
- * @private
- */
-/*Browser.prototype.createTrackList = function(parent, params) {*/
-/*var leftPane = document.createElement("div");*/
-/*leftPane.style.cssText="width: 10em";*/
-/*parent.appendChild(leftPane);*/
-
-/*//.///// this is me//////////////*/
-
-/*var deleteSubmit = function() {*/
-/*var xhrArgs = {*/
-/*url: "$root_dir/bin/dostuff.pl",*/
-/*//postData: {name: "om text"},*/
-/*form: dojo.byId("track_manager_form"),*/
-/*//content: {key: },*/
-/*handleAs: "text",*/
-/*load: function(data,ioargs) {*/
-/*dojo.byId("track_manager_status").innerHTML = "Message posted.";*/
-/*},*/
-/*error: function(error) {*/
-/*dojo.byId("track_manager_status").innerHTML = "fail";*/
-/*}*/
-/*}*/
-/*//Call the asynchronous xhrPost*/
-/*var deferred = dojo.xhrPost(xhrArgs);*/
-/*dojo.byId("track_manager_status").innerHTML = "posted"*/
-/*};*/
-
-
-/*var uploadBAM = function() {*/
-
-/*dojo.io.iframe.send({*/
-/*url: "../bin/bam_to_json_paired_cgi.pl",*/
-/*method: "post",*/
-/*handleAs: "text",*/
-/*form: dojo.byId("track_manager_form"),*/
-/*load: function(data) {*/
-/*//alert(data);*/
-/*dojo.byId("track_manager_status").innerHTML = "bam posted"*/
-/*}*/
-/*});*/
-/*};*/
-
-/*var uploadRegion = function() {*/
-/*dojo.io.iframe.send({*/
-/*url: "../bin/region_to_json.pl",*/
-/*method: "post",*/
-/*handleAs: "text",*/
-/*form: dojo.byId("track_manager_form"),*/
-/*load: function(data) {*/
-/*//alert(data);*/
-/*dojo.byId("track_manager_status").innerHTML = "region posted"*/
-/*}*/
-/*});*/
-/*};*/
-
-/*var track_manager_div = document.createElement("div");*/
-/*track_manager_div.id = "track_manager_div";*/
-/*track_manager_div.style.cssText = "padding: 10px; border-bottom:thick solid #000000;";*/
-
-/*var track_manager_status = document.createElement("div");*/
-/*track_manager_status.id = "track_manager_status";*/
-/*track_manager_status.innerHTML = "status";*/
-
-/*var track_manager_form = document.createElement("form");*/
-/*track_manager_form.id = "track_manager_form";*/
-/*track_manager_form.method = "post";*/
-/*track_manager_form.enctype = "multipart/form-data";*/
-
-/*var input_bamfile = document.createElement("input");*/
-/*input_bamfile.type = "file";*/
-/*input_bamfile.name = "bam_filename";*/
-
-/*var upload_bamfile = new dijit.form.Button({id: "upload_bamfile", label: "Upload BAM", onClick: uploadBAM});*/
-
-/*var input_regionfile = document.createElement("input");*/
-/*input_regionfile.type = "file";*/
-/*input_regionfile.name = "region_filename";*/
-
-/*var upload_regionfile = new dijit.form.Button({id: "upload_regionfile", label: "Upload Region", onClick: uploadRegion})*/
-
-/*var delete_button = new dijit.form.Button({id: "delete_button", label: "Delete Track", onClick: deleteSubmit});*/
-
-/*track_manager_form.appendChild( input_bamfile );*/
-/*track_manager_form.appendChild( upload_bamfile.domNode );*/
-/*track_manager_form.appendChild( input_regionfile );*/
-/*track_manager_form.appendChild( upload_regionfile.domNode );*/
-/*track_manager_form.appendChild( delete_button.domNode );*/
-
-/*track_manager_div.appendChild( track_manager_status );*/
-/*track_manager_div.appendChild( track_manager_form );*/
-/*leftPane.appendChild( track_manager_div );*/
-
-/*//// end my stuff/////////////////////*/
-
-
-
-/*var leftWidget = new dijit.layout.ContentPane({region: "left", splitter: true}, leftPane);*/
-/*var trackListDiv = document.createElement("div");*/
-/*trackListDiv.id = "tracksAvail";*/
-/*trackListDiv.className = "container handles";*/
-/*trackListDiv.style.cssText =*/
-/*"width: 100%; height: 100%; overflow-x: hidden; overflow-y: auto;";*/
-/*trackListDiv.innerHTML =*/
-/*"Available Tracks:<br/>(Drag <img src=\""*/
-/*+ (params.browserRoot ? params.browserRoot : "")*/
-/*+ "img/right_arrow.png\"/> to view)<br/><br/>";*/
-/*leftPane.appendChild(trackListDiv);*/
-
-/*var brwsr = this;*/
-
-/*var changeCallback = function() {*/
-/*brwsr.view.showVisibleBlocks(true);*/
-/*};*/
-
-/*var trackListCreate = function(track, hint) {*/
-/*var node = document.createElement("div");*/
-/*node.className = "tracklist-label";*/
-/*node.innerHTML = track.key;*/
-/*//in the list, wrap the list item in a container for*/
-/*//border drag-insertion-point monkeying*/
-/*if ("avatar" != hint) {*/
-/*var container = document.createElement("div");*/
-/*container.className = "tracklist-container";*/
-/*container.appendChild(node);*/
-/*node = container;*/
-/*}*/
-/*node.id = dojo.dnd.getUniqueId();*/
-/*return {node: node, data: track, type: ["track"]};*/
-/*};*/
-
-/*this.trackListWidget = new dojo.dnd.Source(trackListDiv,*/
-/*{creator: trackListCreate,*/
-/*accept: ["track"],*/
-/*withHandles: false});*/
-
-/*var trackCreate = function(track, hint) {*/
-/*var node;*/
-/*if ("avatar" == hint) {*/
-/*return trackListCreate(track, hint);*/
-/*} else {*/
-/*var replaceData = {refseq: brwsr.refSeq.name};*/
-/*var url = track.url.replace(/\{([^}]+)\}/g, function(match, group) {return replaceData[group];});*/
-/*var klass = eval(track.type);*/
-/*var newTrack = new klass(track, url, brwsr.refSeq,*/
-/*{*/
-/*changeCallback: changeCallback,*/
-/*trackPadding: brwsr.view.trackPadding,*/
-/*baseUrl: brwsr.dataRoot,*/
-/*charWidth: brwsr.view.charWidth,*/
-/*seqHeight: brwsr.view.seqHeight*/
-/*});*/
-/*node = brwsr.view.addTrack(newTrack);*/
-/*}*/
-/*return {node: node, data: track, type: ["track"]};*/
-/*};*/
-/*this.viewDndWidget = new dojo.dnd.Source(this.view.zoomContainer,*/
-/*{*/
-/*creator: trackCreate,*/
-/*accept: ["track"],*/
-/*withHandles: true*/
-/*});*/
-/*dojo.subscribe("/dnd/drop", function(source,nodes,iscopy){*/
-/*brwsr.onVisibleTracksChanged();*/
-/*//multi-select too confusing?*/
-/*//brwsr.viewDndWidget.selectNone();*/
-/*});*/
-
-/*this.trackListWidget.insertNodes(false, params.trackData);*/
-/*var oldTrackList = dojo.cookie(this.container.id + "-tracks");*/
-/*if (params.tracks) {*/
-/*this.showTracks(params.tracks);*/
-/*} else if (oldTrackList) {*/
-/*this.showTracks(oldTrackList);*/
-/*} else if (params.defaultTracks) {*/
-/*this.showTracks(params.defaultTracks);*/
-/*}*/
-
-/*return trackListDiv;*/
-/*};*/
 
 /**
  * @private
@@ -1354,20 +898,21 @@ Browser.prototype.showTracks = function(trackNameList) {
         this.deferredFunctions.push(
             function() { brwsr.showTracks(trackNameList); }
         );
-	return;
+    	return;
     }
 
     var trackNames = trackNameList.split(",");
     var removeFromList = [];
     var brwsr = this;
     for (var n = 0; n < trackNames.length; n++) {
-        this.trackListWidget.forInItems(function(obj, id, map) {
-                if (trackNames[n] == obj.data.label) {
-                    
-                    brwsr.viewDndWidget.insertNodes(false, [obj.data]);
-                    removeFromList.push(id);
-                }
-            });
+        //this.trackListWidget.forInItems(function(obj, id, map) {
+        var anon = function(entry,i) {
+            if (trackNames[n] == entry.label) {
+                brwsr.viewDndWidget.insertNodes(false, [entry]);
+                removeFromList.push(i);
+            }
+        };
+        dojo.forEach( brwsr.trackData, anon );
     }
     //var movedNode;
     //for (var i = 0; i < removeFromList.length; i++) {
