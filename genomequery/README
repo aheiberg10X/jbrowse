@@ -1,3 +1,5 @@
+hello
+
 to make go:
 
 change the path of samtools in the various make files
