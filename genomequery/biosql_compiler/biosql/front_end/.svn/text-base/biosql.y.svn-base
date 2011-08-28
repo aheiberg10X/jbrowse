@@ -60,6 +60,7 @@ int nextstat=1; //keep count of the lines of
 %token  WHERE
 %token  COUNT
 %token  TABLE
+%token  INTERSECT
 
 %type <string> names
 %type <entry> table_keyword
@@ -93,7 +94,11 @@ table_prototypes: table_prototype table_prototypes
 |
 ;
 
-table_prototype: table_keyword LPAREN table_args RPAREN SEMICOLON{cur_owner=NULL;}
+table_prototype: table_keyword LPAREN table_args RPAREN SEMICOLON{cur_owner=NULL;
+	if(strcmp($1->name, "READS")!=0){
+		emit(&emit_lst, "end_load_table", NULL, NULL, NULL,NULL);
+	}
+}
 ;
 
 table_keyword: TABLE names{
@@ -101,6 +106,9 @@ table_keyword: TABLE names{
 		$$=create_node($2, "table", "table", NULL);
 		cur_owner=$$;
 		add_node(&lst, $$);
+		if(strcmp($2, "READS")!=0){
+			emit(&emit_lst, "load_table", $$->name, NULL, NULL,NULL);
+		}
 	}
 	else symerror("Conflict with name tables");
 }
@@ -113,8 +121,35 @@ names: ID{
 }
 ;
 
-table_args: table_arg COMMA table_args {/*printf("Table arg\n");*/}
-|table_arg
+table_args: table_arg COMMA table_args {
+//arguments need to appear in output in the order that the user enders them.
+
+	//char *tmp_str=malloc(1024);
+	if(strcmp(cur_owner->name, "READS")!=0){
+		if(strcmp($1->type,"integer")==0)
+			//sprintf(tmp_str, "loaded_param int %s",$1->name);
+			emit(&emit_lst, "loaded_param", "int", $1->name, NULL,NULL);
+		else if(strcmp($1->type,"string")==0)
+			//sprintf(tmp_str, "loaded_param char* %s",$1->name);
+			emit(&emit_lst, "loaded_param", "char*", $1->name, NULL,NULL);
+		else
+			//sprintf(tmp_str, "loaded_param %s %s",$1->type, $1->name);
+			emit(&emit_lst, "loaded_param", $1->type, $1->name, NULL,NULL);
+		//squeeze_node(emit_lst, "loaded_param", tmp_str);
+	}
+	//free(tmp_str);
+}
+
+|table_arg{
+	if(strcmp(cur_owner->name, "READS")!=0){
+		if(strcmp($1->type,"integer")==0)
+			emit(&emit_lst, "loaded_param", "int", $1->name, NULL,NULL);
+		else if(strcmp($1->type,"string")==0)
+			emit(&emit_lst, "loaded_param", "char*", $1->name, NULL,NULL);
+		else
+			emit(&emit_lst, "loaded_param", $1->type, $1->name, NULL,NULL);
+	}
+}
 ;
 
 table_arg: INTEGER names{
@@ -155,7 +190,7 @@ lvalue: names{
 }
 ;
 
-select_statement: SELECT select_args FROM from_args WHERE where_args{
+select_statement: SELECT select_args FROM from_arg WHERE where_args{
 	if(1/*cur_owner != NULL*/){ //indication of assigned select...need to update the symbol table.
 		if(select_lst->name[0]=='*'){
 			replicate_args(from_lst, len_from_lst, lst, cur_owner); //All properties of the tables in from_args are replicated under a new owner.
@@ -172,6 +207,31 @@ select_statement: SELECT select_args FROM from_args WHERE where_args{
 		}
 		
 	}
+	len_from_lst=0;
+	where_lst=NULL;
+	destroy_list(select_lst);
+	select_lst=NULL;
+
+}
+| SELECT select_args FROM INTERSECT from_args{
+	
+	squeeze_node(emit_lst, "Input", "begin_intersect"); //add a flag to help with code generation
+
+	emit(&emit_lst, "end_intersect",NULL, NULL,NULL, NULL);
+	if(select_lst->name[0]=='*'){
+		replicate_args(from_lst, len_from_lst, lst, cur_owner); //All properties of the tables in from_args are replicated under a new owner.
+		///////////////emit(&emit_lst, "return_arg",":", "*",NULL, NULL);
+	}
+	else if(strcmp(select_lst->name, "countvec")==0){
+		add_node(&lst, create_node("countvec", "integer", "attribute", cur_owner));
+		emit(&emit_lst, "return_arg",":","strength_vector",NULL, NULL);
+	}
+	else{
+		check_and_copy_from_mult(&lst, select_lst, from_lst, len_from_lst, cur_owner);
+		st_node *tmp;
+		for(tmp=select_lst;tmp!=NULL;tmp=tmp->next) emit(&emit_lst, "return_arg",":",tmp->name,NULL, NULL);
+	}
+
 	len_from_lst=0;
 	where_lst=NULL;
 	destroy_list(select_lst);
@@ -246,8 +306,24 @@ lowest_expr: arith_expr comparison_op rvalue{
 
 	char *tmp_str1=(char*)malloc(1024);
 	char *tmp_str2=(char*)malloc(1024);
-	sprintf(tmp_str1,"%s %s %s",$1->place,$2,$3->name);
-	sprintf(tmp_str2,"%d",nextstat+3);
+	
+	if (strcmp($1->type, "string")!=0){
+		sprintf(tmp_str1,"%s %s %s",$1->place,$2,$3->name);
+		sprintf(tmp_str2,"%d",nextstat+3);
+	}
+	else{
+		if(strcmp($2,"==")==0)
+			sprintf(tmp_str1, "(strcmp( %s , %s )==0)", $1->place, $3->name);
+		else if(strcmp($2,"!=")==0)
+			sprintf(tmp_str1, "(strcmp( %s , %s )!=0)", $1->place, $3->name);
+		else if($2[0]=='>')
+			sprintf(tmp_str1, "(strcmp( %s , %s )>0)", $1->place, $3->name);
+		else 
+			sprintf(tmp_str1, "(strcmp( %s , %s )<0)", $1->place, $3->name);
+	}
+
+
+	
 
 	$$=get_newtemp();
 	/*emit(&emit_lst, "if", tmp_str1, "goto",tmp_str2,NULL);//original impl
@@ -434,6 +510,30 @@ void add_node(st_node **lst, st_node *newnode){
 		newnode->next=*lst;
 		*lst=newnode;
 	}
+}
+
+//It creates a node with name node_info and adds it to the list at the place that precedes
+//where_str. For example if the list consists of A->B->C and where_str=B, the new node
+//is going to be placed between B and C. Now if there are multiple B's such as A->B->B-C
+//the new node is going to be inserted between B and C
+void squeeze_node(st_node *lst, char *where_str, char *node_info){
+	st_node *tmp=lst;
+	st_node *new_tmp_nxt;
+	for(tmp=lst;tmp!=NULL;tmp=tmp->next){
+		if(tmp->next==NULL) break;
+		if(strstr(tmp->name, where_str)!=NULL && strstr(tmp->next->name, where_str)==NULL)
+			break;
+	}
+	new_tmp_nxt=tmp->next;
+	add_node(&new_tmp_nxt, create_node(node_info, NULL, NULL, NULL));
+	tmp->next=new_tmp_nxt;
+}
+
+//It returns that node of lst that has been entered prior to list_node. In this implementation
+//the answer is lst_node->next, but it can change if the list implementation changes.
+st_node *get_previous_node(st_node *lst_node){
+	if(lst_node==NULL) return NULL;
+	else return lst_node->next;
 }
 
 //It adds newnode to the array list lst of length len_lst. The basic operation is

@@ -1,6 +1,6 @@
-cp H1isvalid.c back_end/isvalid.c
+cp H1isvalid_mates.c back_end/isvalid.c
 make
-back_end/all_tools mates /home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.sorted.bam /home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.sorted.bam.mates.indx 250000000 chr1 3 dst/in dst/H1 0
-cp outisvalid.c back_end/isvalid.c
+back_end/all_tools mates indexing/indexed/chr1.bam indexing/indexed/chr1.bam.mates.indx 247249719 chr1 3 dst/chr1/in dst/chr1/H1 0
+cp outisvalid_mates.c back_end/isvalid.c
 make
-back_end/all_tools mates /home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.sorted.bam /home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.sorted.bam.mates.indx 250000000 chr1 4 dst/H1 dst/out 5
+back_end/all_tools mates indexing/indexed/chr1.bam indexing/indexed/chr1.bam.mates.indx 247249719 chr1 4 dst/chr1/H1 dst/chr1/out 5

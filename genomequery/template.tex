@@ -1,0 +1,256 @@
+\documentclass[10pt,fullpage]{article}
+\usepackage{epsfig,longtable}
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage{fancybox,subfigure}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{mathrsfs}
+\usepackage{verbatim}
+
+\usepackage[authoryear, round]{natbib}
+\bibpunct{(}{)}{;}{}{,}{,}
+\bibliographystyle{plainnat}
+%\usepackage[numbers, square]{natbib}	% citation/references
+% Different font in captions
+\newcommand{\captionfonts}{\small}
+
+\newcommand{\leechOne}{leech E12a$\:$}
+\newcommand{\leechTwo}{leech E12b$\:$}
+\newcommand{\leechThree}{leech E6$\:$}
+\newcommand{\leechFour}{leech E8$\:$}
+\newcommand{\amass}{{\sc amass}}                                                                                                                                          
+\setlength{\topmargin}{-0.5in}
+\usepackage{latexsym}
+\setlength{\columnsep}{0.5cm}
+\setlength{\oddsidemargin}{-0cm}
+\setlength{\evensidemargin}{-0cm}
+\setlength{\textwidth}{6.8in}
+\setlength{\textheight}{8.7in}
+
+\newcommand{\old}[1]{}
+\newcommand{\match}{\stackrel{M}{=}}
+\newcommand{\ncite}[1]{$^{\mbox{\tiny \citep{#1}}}$}
+%\newcommand{\nncite}[1]{\citep{#1}}
+\newcommand{\frags}{{\cal F}}
+\newcommand{\snips}{{\cal S}}
+\newcommand{\A}{{\tt A}}
+\newcommand{\B}{{\tt B}}
+\newcommand{\gap}{{\tt -}}
+\newcommand{\ideas}{\vskip 0.6cm {\bf IDEAS:\ }}
+\newcommand{\motivation}{\vskip 0.6cm {\bf MOTIVATION:\ }}
+\newcommand{\mcost}[2]{#1 #2}
+\newcommand{\ali}{$\mbox{ }$\hspace{0.2in}}
+\newcommand{\acomment}[1]{\hspace{1in}\#{\em #1}}
+\newcommand{\beqn}{\begin{equation}}
+\newcommand{\eeqn}{\end{equation}}
+\newcommand{\captionsize}{\footnotesize}
+\newcommand{\LtoN}[1]{\parallel #1 \parallel_{2}}
+\newcommand{\mecca}{HapCUT$\:$}
+%%%%%%%%%%%%%% FIGURE within a box
+\newenvironment{boxfig}[1]{\fbox{\begin{minipage}{\linewidth}
+                        \vspace{1em}
+                        \makebox[0.025\linewidth]{}
+                        \begin{minipage}{0.95\linewidth}
+                        #1
+\end{minipage}
+                        \end{minipage}}}
+                                                                                                                                                                            
+\newcommand{\MST}{\ensuremath{\mathit{MST}}}
+\newcommand{\dist}{\ensuremath{\mathit{dist}}}
+\newcommand{\TG}[2]{\ensuremath{\mathit{#1}^{(#2)}}}
+\newcommand{\CC}{\ensuremath{\mathcal{CC}}}
+\newcommand{\psubs}{\stackrel{\subset}{+}}
+\newcommand{\rs}{\ensuremath{\mathit{R_s}}}
+\newcommand{\MEC}{\ensuremath{\mathit{MEC}}}
+\newcommand{\Prob}{\ensuremath{\mbox{Pr}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  THEOREM-LIKE ENVIRONMENTS
+                                                                                                                                                                            
+\newtheorem{THEOREM}{{\bf  Theorem}}
+\newenvironment{theorem}{\begin{THEOREM} \hspace{-.85em}  {\bf :} }%
+                        {\end{THEOREM}}
+\newtheorem{LEMMA}[THEOREM]{Lemma}
+\newenvironment{lemma}{\begin{LEMMA} \hspace{-.85em} {\bf :} }%
+                      {\end{LEMMA}}
+\newtheorem{COROLLARY}[THEOREM]{Corollary}
+\newenvironment{corollary}{\begin{COROLLARY} \hspace{-.85em} {\bf :} }%
+                          {\end{COROLLARY}}
+\newtheorem{PROPOSITION}[THEOREM]{Proposition}
+\newenvironment{proposition}{\begin{PROPOSITION} \hspace{-.85em} {\bf :} }%
+                            {\end{PROPOSITION}}
+\newtheorem{CLAIM}[THEOREM]{Claim}
+\newenvironment{claim}{\begin{CLAIM} \hspace{-.85em} {\bf :} }%
+                      {\end{CLAIM}}
+\newtheorem{OBSERVATION}[THEOREM]{Observation}
+\newenvironment{Observation}{\begin{OBSERVATION} \hspace{-.85em} {\bf :} }%
+                      {\end{OBSERVATION}}
+\newtheorem{DEFINITION}{Definition}
+\newenvironment{definition}{\begin{DEFINITION} \hspace{-.85em} {\bf :} }%
+                           {\end{DEFINITION}}
+\newcommand{\QED}{\hfill$\clubsuit$ \vskip 0.1cm}
+\newenvironment{proof}{\noindent {\bf Proof:} \hspace{.677em}}{\QED}
+\newenvironment{packed_enum}{
+\begin{enumerate}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{enumerate}}
+\newenvironment{packed_itemize}{
+\begin{itemize}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{itemize}}
+
+% define the title
+\author{Vineet Bafna, Christos Kozanitis, George Varghese\thanks{CSE, UC San Diego}}
+\title{Abstractions for Genomics: Or which way to the Genomic Information Age?}
+
+
+
+% packages
+\usepackage{graphicx}
+%\usepackage{subfig}
+
+%document
+\begin{document}
+\maketitle
+
+
+\section{Introduction}
+
+The saying that we are a product of “nature and nurture” is formalized in biology by saying that a person’s phenotype (any outward characteristic, in this article especially health) is a function of her genotype (the DNA program inside all cells) and the environment (all the inputs to a human including food and medicine).    For a computer scientist, this is analogous to saying that the behavior of a program (say what is returned by Google Search) is a function of both the program (i.e., Google search) and input (keywords typed by user).   Unlike computers, however, the “program” within human beings has been largely hidden away till the completion of the Human Genome (HG) in 2004.   While the cost of assembling HG was 100’s of millions of dollars, recent advances from companies such as Pacific Biosciences [VB1]promise to drop sequencing costs to under $1000 using small desktop machines.
+
+As a consequence, medicine has traditionally been “impersonal” with doctors providing treatments as a function of the symptoms and not of the distinctive features of the patients themselves.   While some customization is done based on crude features such as weight and race, the ability to cheaply read the program of each human promises the ability to practice personalized medicine --- treatments based on symptoms and the patient’s distinctive program (i.e., DNA) as shown in Figures 1 and 2.   A classic example is provided by the drug warfarin. A blood-thinner, Warfarin has had myriad uses (used as rat-poison [ref], and has ), but is now widely prescribed for prevention of blood clots. The dosage is critical: too high, and the patient can bleed to death; too low and the drug is not effective. Often, the right dosage is established through multiple visits to the clinic, and regular testing. However, recent results [ref] suggest that knowledge of the patient’s genetic program can help establish the right dosage.
+
+A number of experts (“e.g., “A $100 Genome with a 100,000 dollar analysis – Stanford Medicine, 2010)  have seen that while the “hardware” costs of reading human DNA has fallen dramatically, the software costs of analyzing the DNA has not.   
+
+
+
+Figure 1: Personalized medicine can be seen as the task of returning the medical record and genotype of all patients “similar” to a sick patient S.
+
+Our central thesis in this article is that the way around this dilemma is to invent new abstractions for genomics along with efficient implementations thereof.   The invention of such abstractions has been a central concern of computer system designers.  Great abstractions such as virtual memory, time sharing, and relational data models have vastly improved productivity and reduced software costs to keep pace with the cheap hardware costs  of VLSI.  Further computer systems designers have benefitted from systems thinking: making tradeoffs at the component level for overall benefits, and leveraging technology trends. This article is written so that computer scientists --- not just algorithm designers who have already contributed so much, but  computer scientists of every ilk and especially computer systems researchers --- can engage with biologists and doctors in an essential endeavour to improve the health of the planet. 
+
+                    
+
+Fig 2: An initial version of the Personal Medicine Database, the Personal Genome Project.  While the project is filling the database, it has not developed query abstractions
+
+To begin the conversation, we start by describing our vision for a vast genomic database built in layers in Section 1.0.  Next, we provide a very quick overview of the salient features of genetics in Section 2.0 using a programming metaphor so that the common questions posed by biologists and physicians can be made accessible to computer scientists.   In Section 3.0, we will provide specific ideas for new database query abstractions --- our initial proposal for what we call GenomeSQL --  in order to provide an example of possibly new computer systems research that arises from genomics.  Finally, (Section 4.0), we will end by outlining research directions for other aspects of computer science --- e.g., AI, hardware design, programming languages, and data mining --- to further this agenda.  
+
+1.0 Vision
+
+A brief overview of our vision is as follows:
+
+A. By analogy with many successful computer systems, we propose that genomic software be layered.  For example, the Internet has successfully dealt with a wide variety of new link technologies (from dialup to wireless) and applications (from email to social networks) via the “hourglass” model using the key abstractions of TCP and IP (Figure 2).  In the same way, we propose that Genomic Processing software be layered into an Instrument Layer, a compression layer, an evidence layer, and an inference layer that can separate genomic applications (e.g., cancer genomics) from sequencing technology.  
+
+B.  We suggest that the only way to achieve such modularity is to forgo some possible efficiencies that could be gained by leaking information across layers.  For example, biological inferences can be sharpened by considering which sequencing technology is being used (Illumina versus PacBio) but we suggest that modularity is paramount.
+
+C.  We show that the Evidence Layer can be implemented in the cloud while the more volatile Inference layer can be implemented in desktop.   We propose that while Inference methods vary considerably, the Evidence for inferences is fairly standard and hence propose a set of precise APIs between the two layers, allowing efficient implementation in the cloud.
+
+D.  We outline challenges for other computer science including AI and Learning theory researchers (to provide a standard language for the Inference Layer) and systems researchers (to harness other systems trends such as multicore and flash memory).
+
+To describe our vision, we first start by an introduction to genetics that makes it possible to describe the sample queries such a system must support.
+
+2.0 Genetics for Computer Scientists
+
+We start by describing the structure of the DNA program as two interacting modularized programs in Sec 1.1.; we then show how heredity and mating can be described as program composition in Sec 1.2; we show how the program runs to produce proteins (microcode) and also higher level functions (macrocode) in Sec 1.3; we end by describing models for program analysis tools such as sequencing and microarrays.  Even this limited introduction to genetics will motivate the specific database questions we pose in Sec 2.0.
+
+2.1 Program Structure --- Homologous Chromosomes and Genes
+
+Many important queries to genetic data are about parts of the program such as genes: thus it is crucial to have a simple model of program structure.  All living creatures including human beings consist of cells; each cell can be considered to be a computer running a program.   Humans are diploid --- a surprising fact is that there are two programs controlling each cell, one inherited from the father and one from the mother.   
+
+Further, as shown in Fig. 3, each program is broken up into 23 modules called chromosomes and within each chomosome are sparsely scattered, small functional blocks called genes.   The module pairs from the father and mother are called homologous chromosomes and each human has a pair of genes, one inherited from each parent.   Each program uses a 4-character alphabet of bases (A,C,G,T) and is around 3 billion bases long.    (There is further structure that can be safely ignored till we talk about inversions --- each program is really stored as two redundant copies called strands, and the strands are stored in 3-space using the celebrated double helix structure discovered by Crick-Watson.)
+
+
+
+Figure 2: A human genotype has two programs modularized into 23 chromosomes each and in which chromosome contains genes, analogous to function blocks in code.
+
+A first level approximation of how these programs interact is Mendelian via dominance --- each gene controls one trait (e.g., whether one curl one’s tongue) and one of the two functions in each program exercises control of the function and the other gene is essentially absent or recessive.    The truth is more complicated: some functions such as eye color are controlled by both programs, some traits are controlled by multiple genes in concert, and some genes are controlled by multiple traits.  Nevertheless, DNA controls traits so even the simplest queries on DNA are useful, e.g.,
+
+Sample DNA query:   Compared to a “standard” patient, are there parts of the patient’s DNA program (especially genes that affect health)  that has been altered?
+  
+2.2 Program Composition --- Heredity and Sex
+
+Many important queries to genetic data are to address about heredity: for example, is a disease inherited from parents? We provide a simple model for how parents pass on traits to offspring by passing on functional blocks (genes) to children.   The fundamental problem is to take 2 programs, from the father and a different 2 programs from the mother, and produce 2 new programs for the child in way that maximizes variety.    This is done in two stages.  In the first stage, each partner in mating produces a so-called haploid sex cell that has only 1 program by a randomized reduction called crossover that is done as part of a process called meiosis. 
+
+A simple functional description of crossover is that for each pair of homologous chromosomes a new chromosome is formed by splicing together a random prefix (Fig. 4) of one chromosome in the pair with the corresponding suffix of the other chromosome in the pair.   Thus the egg cell of the mother (and the sperm cell of the father) has 1 program that is a randomized combination of the chromosomes the mother (father) inherited from their parents.  Finally, in fertilization, the two sex cells unite to form a zygote with two programs again, one from each sex cell.   Since each sex cell and sperm cell form different randomized combinations, each child is effectively a different randomized mixture of its four grandparents.   Such inheritance of programs suggest the simple query:
+
+  
+
+Figure 4:  A baby’s program is the composition of the programs of the mother and father. First, each parent’s 2 programs is “reduced” to a single program in the sex cell by a randomized splicing.  Next., the two single programs are juxtaposed in the baby cell.
+
+Sample Inheritance Query: Given a faulty gene, which parent did the patient receive it from?  What are the chance of the patient passing it on to his or her children?
+
+The composition is not completely random, however, because of crossover --- it is more probable that 2 genes are that are closer together in a parent chromosome will be passed on to a child than 2 genes that are further apart, a phenomemon known as linkage.   There is more fine print.   For example, one of the 23 chromosomes is called the sex chromosome and come in two forms X and Y, with males having XY and females  having YY: unlike other chromosomes the X chromosome is smaller than the Y chromosome and so the simple crossover model does not apply there.  Further, there can be multiple crossovers where the sex cell program consists of a prefix and a suffix from 1 chromosome and middle from the second.  It is  best to ignore these complexities to make progress on abstractions while realizing that the dance of life is intricate and beautiful.
+
+While a baby starts off as a single cell (gamete), the baby grows by cell copying (mitosis) as shown in Figure 5.   Each copying step ideally copies the program of the parent cell.  The initial cells are stem cells that can perform any function.  At some stage, cells specialize to form liver cells, blood cells etc.   Note that each such cell has the same program as any other cell but apparently has some additional state that directs only some parts of the overall program to run (some genes to express).   The copying process has a number of checks and balances but it is possible for an erroneous copy to arise which can lead to disease.
+
+
+
+
+
+Figure 5: The single “zygote” baby cell grows by a copying process called mitosis followed by specialization into blood, muscle cells etc.  Incorrect copying can also occur.
+
+2.3 Run time Microcode: DNA to RNA to Protein
+ 
+So far we have examined the DNA program statically.   When a “gene” runs, the execution path is as follows.   The gene program is stored in the nucleus of the cell almost like in ROM.   However, execution occurs in one of many “ribosomes” (analogous to a CPU) .   Information travels from the nucleus to the ribosome via a “messenger” called mRNA that makes a copy of the gene called a transcript which then goes to the ribosome (Figure 6).  The ribosome then translates this program to a protein as follows.  
+
+
+Figure 6:  A gene program executes by having the instructions fetched by mRNA to the ribosome where it is executed by converting each 3-character opcode (e.g., AAC) into an amino acid (e.g., threonine) and concatenating amino acids till a stop codon arrives.
+
+The ribosome “reads” the gene program 3 bases at a time.  Each 3 base combination can the thought of an OpCode of an instruction (codon) that specifies a specific Amino acid. Althought there are 4*4* 4 combinations of OpCodes, several codons specify  the same amino acid: there are only 20 amino acids, and the mapping from codons to Amino Acids is called the genetic code.   A protein is the sequence of amino acids specified the codons in the gene.   The actual assembly of amino acids into the resulting protein is the function of so-called tRNA that fetches the specified amino acid and links it to the growing chain of amino acids.  When the ribosome reaches a special codon called the Stop codon, the assembly process stops and a protein is produced.   Proteins are the agents of life: they build cells and help cells do their specified function.     RNA transcripts are logs of run-time program activity and can be used for diagnostics.  A sample RNA query could be:
+
+Sample RNA Query: In a cancerous cell’s RNA transcript, which genes are expressed more than other genes? This may provide insight into the genes implicated in a cancer.
+
+2.4 Higher Level Branching: Operon Model and Pathways
+
+Section 1.3 explained how a “gene” executed and produced a protein.  However, this was a description of the microcode, so to speak.   It begs the question as to how the program decides which genes to execute.  The entire running of the program is shrouded in mystery but there are some high level patterms that are understood.  
+
+First, simple IF-THEN-ELSE branching is often seen in gene execution via the so-called operon model. As shown in Figure 7, a group of genes often is controlled by two entry points called  the Repressor and Operon (also a piece of code).   The figure shows the operon and repressor for two genes that produce the protein Galactose that helps convert milk into sugar.  When program execution reaches the Repressor, the Repressor produces a  protein that physically joins to the Operon site and blocks the reading of the program counter beyond the Operon.  
+
+
+
+Figure 7: IF-THEN branching via the operon model.  The galactose code is run if and only if there are lactose branching.  Note the physical implementation of branching
+
+Thus the Galactose code is not run, and it is not produced.  If milk or lactose drops enter the cell by digestion, then the lactose binds with the protein produced by the repressor to form a new substance that does not bind to the Operon.   This allows the Program counter to go past the Operon (no longer blocked) and produce Galactose.  From a computer science perspective, we have:
+
+IF LACTOSE then GALACTOSE(); 
+
+Note that the presence of lactose is an environmental factor, and note that branching is actually accomplished by physical means such as binding to an operon site.
+
+Figure 7 shows a more complex branching paradigm called a pathway which is a generalization of this simple branching.   A pathway can be considered to a be graph in which the nodes are either genes or enviromental factors and an edge from node A to node B indicates either that the running of node A will induce the running of node B or will suppress the running of node B,   In our example, the presence of  PolyAcyclic Hydrocarbons in a cell that arise from smoke, can lead to the “execution” of two genes, that can result downstream in the production of a bad protein called a carcinogen that produces cancer.  
+
+
+
+Figure 8: A more complicate pathway of “influence” where physical substances (e.g., smoke) induce genes which then induce other genes.  The pathway is represented as a directed acyclic graph with directed edges representing influence.
+
+Pathways are of great interest to drug designers, physicians, and biologists.  For example, to prevent cigarette smoking from causing cancer, it may suffice to interfere with some node in the pathway, for example by a drug that represses the production of Gene 1.  This leads to the sample query
+
+Sample Pathway Query: In an RNA transcript of a new disease, is some existing pathway for some other disease activated (hence can we reuse older drugs for the new disease)?
+
+2.5 Program Analysis Tools – Microarrays and High Throughput Sequencing
+
+It is only recently that scientists have succeeded in reading the DNA programs of human beings,   The first method that is quite mature is via DNA microarrays, and the second is called High Throughput Shotgun sequencing.  Each method has its imperfections and it is important for the computer scientists to understand their limitations abstractly so that they see why even simple queries require a great deal of inference to answer with confidence.
+
+DNA microrrays- Content Based Sampling: Microarrays provide a way to sample a given DNA sample at some specific locations.  Unlike memory technology, where we can index into a position, “sampling” is done via content.  Imagine the sample program was AUGAAGUAG.  Suppose the first five common to most humans, but the 6th location is a variation called a SNP (single character variation) in which most of the population has a G but a few have a U and that is indicative of a disease.  To check whether the given human being has an A, we cannot read the 6th position, but we can ask whether the substring AUGAAU is contained in the program.  In effect, we are guessing the 6th position and adding some flanking (and possibly trailing content) that disambiguates the position.   In practice, a DNA microarray is an array of say 100,000 such queries and the DNA sample is passed over all these queries in parallel.   Thus a single cell manufactured by hardware vendors such as Affymetrix or Illumina can identify 100,000 SNPs in a single run at low cost (around a $100 in volume).
+
+High-throughput Shotgun Sequencing:   Microarrays are good if there is a limited amount of variation and one knows in advance what possible variations might exist (for example, a SNP of either a G or a U in a position).  But when there is massive variaition in the genome, such sampling simply does not scale.   Instead, current technology has found a cheap (but imperfect) way to read the genome called shotgun sequencing.   The idea is shown in Figure 9
+
+
+
+Figure 9: In high-throughput sequencing, the 2 programs fragments are randomly selected from either program and enough fragments are taken to make it likely that the entire length of the program (genome) is “covered”.  Finally, instead of assembling the fragments, they are aligned or mapped to matching positions in a reference program.
+
+First, a physical process is used to randomly cut the DNA program of the patient sample into small pieces called fragments of small length L (100 base pairs in older technology to 10,000 in recent ones).   Each fragment can be considered to be generated by picking one of the two programs (from mother or father) at random, picking a random offset with uniform probability from 1 to the length of the program, and then selecting the L length string that starts at that offset.   This can be done by many physical means including sonication via sound waves.   Next, each fragment is actually read in terms of the sequence of bases in each fragment.  
+
+There are a number of technologies for Reading (see appendix) but it suffices to say that Reads cannot proceed reliably beyond a certain length.  Hence, the current approach is to break up the long DNA into “bite-sized” random fragments that are small enough to be read.   Enough fragments are created such that if they were lined up, the total length of the fragments would be some multiple (called the coverage, factors of 10 are available today) of the length of the genome being sequenced.   
+
+While the natural assumption is that these fragments will be assembled like a giant jigsaw puzzle, this turns out to be complex and expensive because of the large amounts of repetitive portions in human genomes that create aliasing effects that are hard to disambiguate.  Instead, the fragments are aligned or mapped to a so-called reference human genome.    Mapping simply means finding a substring on the reference genome that matches the characters in the fragment up to a small number of errors.  In case of multiple matches, the “best” match is returned, sometimes with some alternatives.
+
+ The human reference genome, oddly enough, is a single (haploid) program.  It was found at great expense by the celebrated human genome project and reflects a composite reference formed out of several individuals including Craig Venter.   Again, owing to the complexities of complete assembly, it reflects a political consensus on what a reference should be.  Mapping new patient genomes works because string search is cheaper than assembly and because most human genomes (including the 2 programs in each human) are 99% similar.   Thus, while a 2-program (diploid) reference may have been ideal, the current reference is 1-program.  It is often augmented with a list of common variations (SNPs) called SNPdb.
+
+
+[VB1]No reason to promote PacBio. We should delete and provide references.
+
+\end{document}
+

@@ -1,3 +1,3 @@
 table READS (string id, string read_str, integer length, string qvals, string chromo, integer location, char strand, string match_descr, string mate_chromo, integer mate_loc, char mate_strand);
 H1=select count from READS where location>=0 and mate_loc>=0 and ((mate_loc-location>1000 and mate_loc-location<2000000) or (location-mate_loc>1000 and location-mate_loc<2000000))
-select * from H1 where countvec>12
+select * from H1 where countvec>4

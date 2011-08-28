@@ -310,7 +310,7 @@ inline int max(int a, int b){if (a<=b) return b; else return a;}
 
 Mult_hist create_histogram(){
 	Mult_hist ret;
-	ret.ttl_histograms=19;
+	ret.ttl_histograms=13; //19;
 	ret.ttl_bins=(int*)malloc(ret.ttl_histograms*sizeof(int));
 	ret.ttl_bins[0]=25;
 	ret.ttl_bins[1]=50;
@@ -325,12 +325,12 @@ Mult_hist create_histogram(){
 	ret.ttl_bins[10]=50000;
 	ret.ttl_bins[11]=125000;
 	ret.ttl_bins[12]=250000;
-	ret.ttl_bins[13]=500000;
+	/*ret.ttl_bins[13]=500000;
 	ret.ttl_bins[14]=1250000;
 	ret.ttl_bins[15]=2500000;
 	ret.ttl_bins[16]=5000000;
 	ret.ttl_bins[17]=12000050;
-	ret.ttl_bins[18]=25000000;
+	ret.ttl_bins[18]=25000000;*/
 
 	ret.hist=(hist_t**)malloc(sizeof(hist_t*)*(ret.ttl_histograms+1));
 	int i=0;

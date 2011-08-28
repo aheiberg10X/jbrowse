@@ -58,5 +58,16 @@ void emit(st_node **em_lst, char *str1, char *str2, char *str3, char *str4, char
 //it traverses lst backwards and outputs the name of each node.
 void output_emit_list(st_node *lst);
 
+//It creates a node with name node_info and adds it to the list at the place that precedes
+//where_str. For example if the list consists of A->B->C and where_str=B, the new node
+//is going to be placed between B and C. Now if there are multiple B's such as A->B->B-C
+//the new node is going to be inserted between B and C
+void squeeze_node(st_node *lst, char *where_str, char *node_info);
+
+
+//It returns that node of lst that has been entered prior to list_node. In this implementation
+//the answer is lst_node->next, but it can change if the list implementation changes.
+st_node *get_previous_node(st_node *lst_node);
+
 //it generates a new temporary variable
 char *get_newtemp();

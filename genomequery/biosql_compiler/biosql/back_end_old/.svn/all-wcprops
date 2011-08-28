@@ -1,0 +1,83 @@
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/6159/genomequery/biosql_compiler/biosql/back_end
+END
+backup.isvalid.c
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/back_end/backup.isvalid.c
+END
+single_reads.c
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/6159/genomequery/biosql_compiler/biosql/back_end/single_reads.c
+END
+backup.isvalid_single.c
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/back_end/backup.isvalid_single.c
+END
+defs.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/back_end/defs.c
+END
+defs.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/back_end/defs.h
+END
+all_tools
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/back_end/all_tools
+END
+all_tools.c
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/back_end/all_tools.c
+END
+mates.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/back_end/mates.c
+END
+isvalid.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/back_end/isvalid.c
+END
+isvalid_single.c
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/back_end/isvalid_single.c
+END
+makefile
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/back_end/makefile
+END
+all_tools.h
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/back_end/all_tools.h
+END
+interval_abstraction.c
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/back_end/interval_abstraction.c
+END

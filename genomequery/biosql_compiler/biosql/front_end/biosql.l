@@ -16,6 +16,7 @@ constChar	"'"([^"\"""\'""\\"])"'"
 constString	"\""([^"\"""\'""\\"\n])*"\""
 select	select|SELECT
 from	from|FROM
+intersect intersect|INTERSECT
 where	where|WHERE
 table	table|TABLE
 count	count|COUNT
@@ -72,6 +73,12 @@ comment #.*\n
 	strcpy(yylval.string,yytext);
 	return FROM;
 
+}
+{intersect}	{
+	lineNo=line;//printf("where\n");
+	yylval.string=(char*)malloc(sizeof(yytext));
+	strcpy(yylval.string,yytext);
+	return INTERSECT;
 }
 
 {where}	{

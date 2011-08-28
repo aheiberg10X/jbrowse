@@ -59,6 +59,35 @@ Intervals *singles2intervals(Mates *indx, int len_indx, int *valid_lst, int ttl_
 	return ret;
 }
 
+//For every entry i of imp that is in valid_lst it creates in interval with st=start, nd=end and rd1=i. The
+//returned array has a length of ttl_intrvl.
+//if valid_lst is NULL, it creates intervals for the entire imp
+Intervals *imported2intervals(Imported_info *imp, int len, int *valid_lst, int ttl_valid, int *ttl_intrvl){
+	int i=0;
+	int cur_i=0;
+	if (valid_lst==NULL) //consider all entries of imp
+		ttl_valid=len;
+	Intervals *ret=(Intervals*)malloc(sizeof(Intervals)*ttl_valid);
+	int cnt=0;
+	for(i=0;i<ttl_valid;i++){
+		if(valid_lst!=NULL)
+			cur_i=valid_lst[i];
+		else 
+			cur_i=i;
+		if(cur_i<0) continue;
+		if(imp[cur_i].start<0) ioerror("Negative start location found. Please revise your imported data");
+		if(imp[cur_i].end<imp[cur_i].start) ioerror("End smaller than start in your imported data");
+		ret[cnt].st=imp[cur_i].start;
+		ret[cnt].nd=imp[cur_i].end;
+		ret[cnt].rd1=cur_i;
+		ret[cnt].rd2=-1;
+		cnt++;
+	}
+	*ttl_intrvl=cnt;
+	return ret;
+}
+
+
 
 /*lst is a pointer to an array of pointers of Intervals of length n.
 The function appends val to lst while it updates n*/
@@ -71,6 +100,66 @@ void append_interval(Intervals **lst, Intervals val, int *n){
 	*lst=tmp;
 	*n=cnt;
 }
+
+/*lst is a pointer to an array of pointers of join of length n.
+The function appends val to lst while it updates n*/
+void append_join(Join **lst, Join val, int *n){
+	Join *tmp;
+	int cnt=(*n)+1;
+	tmp=(Join*)realloc(*lst, cnt*sizeof(Join));
+	if (tmp==NULL) ioerror ("Cannot find memory space to store a join");
+	tmp[cnt-1]=val;
+	*lst=tmp;
+	*n=cnt;
+}
+
+
+/*lst is a pointer to an array of pointers of int of length n.
+The function appends val to lst and updates n only if val
+is not already in the list. For efficiency lst is always sorted*/
+void append_unique_int(int **lst, int val, int *n){
+	inline int cmp(const void *a, const void *b){return *(int*)a-*(int*)b;}
+
+	if((*n)>0)
+		if(bsearch(&val, *lst, *n, sizeof(int), cmp)!=NULL) return;
+
+	int *tmp;
+	int cnt=(*n)+1;
+	tmp=(int*)realloc(*lst, cnt*sizeof(int));
+	if (tmp==NULL) ioerror ("Cannot find memory space to store an interval");
+	tmp[cnt-1]=val;
+	qsort(tmp, cnt, sizeof(int), cmp); //keep the list sorted. Not hard to do on an already sorted list
+	*lst=tmp;
+	*n=cnt;
+
+}
+
+//For the rd values of inta and intb create join objects and append them to ret.
+void update_join_list(Join **lst, int *ttl_join,Intervals inta, Intervals intb){
+	Join tmp;
+	if(inta.rd1>=0 && intb.rd1>=0){
+		tmp.indx1=inta.rd1;
+		tmp.indx2=intb.rd1;
+		append_join(lst, tmp, ttl_join);
+	}
+	if(inta.rd1>=0 && intb.rd2>=0){
+		tmp.indx1=inta.rd1;
+		tmp.indx2=intb.rd2;
+		append_join(lst, tmp, ttl_join);
+	}
+	if(inta.rd2>=0 && intb.rd1>=0){
+		tmp.indx1=inta.rd2;
+		tmp.indx2=intb.rd1;
+		append_join(lst, tmp, ttl_join);
+	}
+	if(inta.rd2>=0 && intb.rd2>=0){
+		tmp.indx1=inta.rd2;
+		tmp.indx2=intb.rd2;
+		append_join(lst, tmp, ttl_join);
+	}
+}
+
+
 
 /*
 Find the first interval between prev_intrvl_start and intrvl_end that overlaps with [region_st, region_nd]. The function returns the index of that interval in the
@@ -347,5 +436,171 @@ Intrevidence max_interval_coverage(Mates *indx, int len_indx, Intervals *intrvl_
 	return ret;
 }
 
+//int1 and int2 are the arrays of intervals to be intersected of length ttl_int1, ttl_int2 respectively. valid_lst1, valid_lst2 are going to contain
+//the (unique) non negative rd values of the intersected intervals.
+/*void intersect_intervals(Intervals *int1, Intervals *int2, int ttl_int1, int ttl_int2, int **valid_lst1, int **valid_lst2, int *ttl_valid1, int *ttl_valid2){
+	Intervals *large, *small;
+	int ttl_large, ttl_small;
+	int *valid_large=NULL, *valid_small=NULL;
+	int ttl_valid_large=0, ttl_valid_small=0;
+	Treenode *interval_tree=NULL;
+	Intervals *reslt=NULL;
+	int ttl_reslt=0;
+	int i=0, j=0;
+	if(ttl_int1<ttl_int2){
+		small=int1;
+		ttl_small=ttl_int1;
+		large=int2;
+		ttl_large=ttl_int2;
+	}
+	else{
+		small=int2;
+		ttl_small=ttl_int2;
+		large=int1;
+		ttl_large=ttl_int1;
+	}
+	interval_tree=build_intrvl_tree(small, ttl_small);
+	for(i=0;i<ttl_large;i++){
+		search_range(interval_tree, large[i].st, large[i].nd, &reslt, &ttl_reslt);
+		if(ttl_reslt>0){
+			if(large[i].rd1>=0)//update large list
+				append_unique_int(&valid_large, large[i].rd1, &ttl_valid_large);
+			if(large[i].rd2>=0)
+				append_unique_int(&valid_large, large[i].rd2, &ttl_valid_large);
+			for(j=0;j<ttl_reslt;j++){ //update small list
+				if(reslt[j].rd1>=0)
+					append_unique_int(&valid_small, reslt[j].rd1, &ttl_valid_small);
+				if(reslt[j].rd2>=0)
+					append_unique_int(&valid_small, reslt[j].rd2, &ttl_valid_small);
+			}
+			ttl_reslt=0; //empty memory for the next iteration
+			if(reslt!=NULL)
+				free(reslt);
+			reslt=NULL;
+		}
+	}
+	if(ttl_int1<ttl_int2){
+		*valid_lst1=valid_small;
+		*ttl_valid1=ttl_valid_small;
+		*valid_lst2=valid_large;
+		*ttl_valid2=ttl_valid_large;
+	}
+	else{
+		*valid_lst1=valid_large;
+		*ttl_valid1=ttl_valid_large;
+		*valid_lst2=valid_small;
+		*ttl_valid2=ttl_valid_small;
+	}
+	destroy_intrvl_tree(interval_tree);
+}*/
 
+//int1 and int2 are the arrays of intervals to be intersected of length ttl_int1, ttl_int2 respectively. The return array contains all
+//pairs of rd values of the intersected intervals. ttl_join is the length of the returned array.
+Join *join_intervals(Intervals *int1, Intervals *int2, int ttl_int1, int ttl_int2, int *ttl_join){
+	Intervals *large, *small;
+	int ttl_large, ttl_small;
+	Join *ret=NULL;
+	//int ttl_ret=0;
+	*ttl_join=0;
+	Treenode *interval_tree=NULL;
+	Intervals *reslt=NULL;
+	int ttl_reslt=0;
+	int i=0, j=0;
+	if(ttl_int1<ttl_int2){
+		small=int1;
+		ttl_small=ttl_int1;
+		large=int2;
+		ttl_large=ttl_int2;
+	}
+	else{
+		small=int2;
+		ttl_small=ttl_int2;
+		large=int1;
+		ttl_large=ttl_int1;
+	}
+	interval_tree=build_intrvl_tree(small, ttl_small);
+	for(i=0;i<ttl_large;i++){
+		search_range(interval_tree, large[i].st, large[i].nd, &reslt, &ttl_reslt);
+		if(ttl_reslt>0){
+			for(j=0;j<ttl_reslt;j++){
+				if(ttl_int1<ttl_int2) //make sure we keep the order of indx1,2
+					update_join_list(&ret, ttl_join, reslt[j], large[i]);
+				else
+					update_join_list(&ret, ttl_join, large[i], reslt[j]);
+			}
+			ttl_reslt=0; //empty memory for the next iteration
+			if(reslt!=NULL)
+				free(reslt);
+			reslt=NULL;
+		}
+	}
+
+	destroy_intrvl_tree(interval_tree);
+	return ret;
+}
+
+//it reduces the size of join_lst by applying the filter isvalid_join.
+//The joined quantities are either imported tables or an imported table
+//and a set of reads. The input contains all possible pointers and the
+//ones that is redundant needs to be NULL.
+void filter_join_list(Join **join_lst, int *ttl_join, Imported_info *tbl1, int ttl_tbl1, Imported_info *tbl2, int ttl_tbl2, Mates *mate_indx, int ttl_reads, long *strand_indx, int strand_len){
+	int cnt=*ttl_join;
+	Join *ret=NULL;
+	int ttl_ret=0;
+	int i=0;
+	for(i=0;i<cnt;i++){
+		if(isvalid_join(*join_lst, i, tbl1, tbl2, mate_indx, strand_indx, strand_len))
+			ttl_ret+=1;
+	}
+	if(ttl_ret==0){
+		*ttl_join=0;
+		free(*join_lst);
+		*join_lst=NULL;
+		return;
+	}
+	ret=(Join*)malloc(sizeof(Join)*(ttl_ret+3));
+	int j=0;
+	for(i=0;i<cnt;i++){
+		if(isvalid_join(*join_lst, i, tbl1, tbl2, mate_indx, strand_indx, strand_len))
+			ret[j++]=(*join_lst)[i];
+	}
+	*ttl_join=ttl_ret;
+	free(*join_lst);
+	*join_lst=ret;
+	return;
+}
+
+//The function returns a list of the uniq indx1 or indx2 of the values of the join_lst. If 
+//both type1 and type2 are non NULL, it chooses the side that has type as "bam*". Otherwise
+//it choose indx from the non NULL side. If type is not "bam_mates", the return list is sorted.
+int* isolate_join_indexes(Join *join_lst, int ttl_join, int *len_rd_lst, char *type1, char *type2){
+
+	inline int int_cmp(const void *a, const void *b){return (*(int*)a-*(int*)b);} //for the qsort
+
+	int *ret=(int*)malloc(sizeof(int)*ttl_join);
+	int cnt=0;
+	int val=0;
+
+	//initialize a bit vector of 3B bits to keep the bits that are already in the list.
+	unsigned int ttl_bits=1000000000; //kind of arbitrary... it can be passed as input as well.
+	unsigned int vec_len=0;
+	long *vec=initialize_bitvector(ttl_bits, &vec_len);
+	int i=0;
+	for(i=0;i<ttl_join;i++){
+		if(type1==NULL) val=join_lst[i].indx2;
+		else if(type2==NULL) val=join_lst[i].indx1;
+		else if(strncmp(type1, "bam", 3)==0) val=join_lst[i].indx1;
+		else if(strncmp(type2, "bam", 3)==0) val=join_lst[i].indx2;
+		if (val<0) ioerror("Cannot isolate negative index values");
+		if (already_visited(vec, vec_len, val)) continue;
+		currently_printing(vec, vec_len, val); //mark val-th bit of vec
+		ret[cnt++]=val;
+	}
+	if (type1==NULL || type2==NULL)
+		qsort(ret, cnt, sizeof(int), int_cmp);
+	else if(strcmp(type1, "bam_mates")!=0 && strcmp(type2, "bam_mates")!=0)
+		qsort(ret, cnt, sizeof(int), int_cmp);
+	*len_rd_lst=cnt;
+	return ret;
+}
 

@@ -73,12 +73,13 @@
      WHERE = 289,
      COUNT = 290,
      TABLE = 291,
-     TK_NEGATIVE_SIGN = 292,
-     TK_POSITIVE_SIGN = 293,
-     TK_RIGHT_SQUARE_BRACKET = 294,
-     TK_LEFT_SQUARE_BRACKET = 295,
-     TK_RIGHT_BRACKET = 296,
-     TK_LEFT_BRACKET = 297
+     INTERSECT = 292,
+     TK_NEGATIVE_SIGN = 293,
+     TK_POSITIVE_SIGN = 294,
+     TK_RIGHT_SQUARE_BRACKET = 295,
+     TK_LEFT_SQUARE_BRACKET = 296,
+     TK_RIGHT_BRACKET = 297,
+     TK_LEFT_BRACKET = 298
    };
 #endif
 
@@ -98,7 +99,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 102 "biosql.h"
+#line 103 "biosql.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

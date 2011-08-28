@@ -286,7 +286,7 @@ inline void currently_printing(long *vec, int vec_len, int pos){
 
 //It initializes a bitvector of "size" bits. Len is the length of the returned
 //long array
-long *initialize_bitvector(int size, int *len){
+long *initialize_bitvector(unsigned int size, int *len){
 	if (size<0) ioerror("Negative size of bit vector");
 	*len=size/(sizeof(long)*8);
 	long *ret=(long*)malloc(sizeof(long)*(*len+1));
@@ -439,9 +439,9 @@ void clone_coverage(Mates *indx, int len_indx, int *valid_lst, int ttl_valid, ch
 //if outfile==NULL it only updates histinfo without producing any output
 void print_rd_list(Mates *indx, int len_indx, int *rd_lst, int len_rd_lst, char *inpt_bam_file, char *outfile, int mate_flag, Hist_info histinfo){
 	inline int cmp(const void *a, const void *b){return *(int*)a-*(int*)b;}
-	if (mate_flag==0){
-		qsort(rd_lst, len_rd_lst, sizeof(int), cmp);
-	}
+	//if (mate_flag==0){
+	qsort(rd_lst, len_rd_lst, sizeof(int), cmp); //it always gives the output sorted.
+	//}
 
 	samfile_t *fp=samopen(inpt_bam_file, "rb",NULL);
 	bam_header_t *bhr=fp->header;
@@ -481,6 +481,48 @@ void print_rd_list(Mates *indx, int len_indx, int *rd_lst, int len_rd_lst, char 
 	samclose(fp);
 	if(outfp!=NULL)	samclose(outfp);
 }
+
+//it prints the meta data of the reads whose locations on indx are stored in rd_lst. 
+//It sorts the rd_lst and prints the output sorted according to mapping location
+//If mate_flag is 1, it prints tuples: loc, loc+len-1, mate_loc, mate_loc+mlen-1
+//Otherwise it prints tuples: loc, loc+len-1
+//BEWARE that if rd_lst gets sorted, its original order of reads gets lost.
+
+//if outfile==NULL it returns without doing anything.
+void print_reduced_rd_list(Mates *indx, int len_indx, long *strand_indx, int strand_len, int *rd_lst, int len_rd_lst, char *outfile, int mate_flag){
+	inline int cmp(const void *a, const void *b){return *(int*)a-*(int*)b;}
+	if(outfile==NULL)
+		return;
+	qsort(rd_lst, len_rd_lst, sizeof(int), cmp);
+	FILE *fp=fopen(outfile, "w");
+	int i=0, j=0;
+	int mate_indx=0;
+	int loc, mloc, len, mlen=0;
+	char strand, mstrand;
+	for(j=0;j<len_rd_lst;j++){
+		i=rd_lst[j];
+		loc=indx[i].loc;
+		len=indx[i].read_len;
+		strand=get_strand(strand_indx, strand_len, mate_indx);
+		mate_indx=indx[i].mate_indx;
+		if(mate_indx<i) continue; //don't print pairs twice.
+		fprintf(fp, "%d\t%d\t%c\t",loc, loc+len-1, strand);
+		if(mate_flag){
+			if(mate_indx>0){
+				mloc=indx[mate_indx].loc;
+				mlen=indx[mate_indx].read_len;
+				mstrand=get_strand(strand_indx, strand_len, mate_indx);
+				fprintf(fp, "%d\t%d\t%c\t",mloc, mloc+mlen-1, mstrand);
+			}
+			else ioerror("An unpaired read found while printing mates\n");
+		}
+		fprintf(fp, "\n");
+	}
+	fclose(fp);
+}
+
+	
+
 /*int main(int argc, char **argv){
 	if(argc!=7) ioerror("usage: ./discordant_coverage <indexed_mate_file> <bam_file> <min_clone_coverage> distance|orientation|dangling <min_dist|left_strand|region_start> <max_dist|right_strand|region_end>\n");
 	char *indx_file=argv[1];

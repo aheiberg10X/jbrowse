@@ -18,5 +18,5 @@ Compilation completed without errors
 17. return_arg : strength_vector 
 18. result_table : H1 
 19. Input = H1 
-20. t15 = countvec > 12 
+20. t15 = countvec > 5 
 21. return_arg : * 
