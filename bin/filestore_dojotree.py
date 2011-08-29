@@ -8,14 +8,12 @@ import cgitb
 import utils
 cgitb.enable()
 
-query_prefix = "query_"
-
+from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX
 
 def getChildren( path ) :
     r = []
     for thing in os.listdir( path ) :
-        splt = thing.rsplit('.',1)
-        if len(splt) == 1 or not splt[1] == 'json' :
+        if show(path,thing) :
             r.append( thing )
     r.sort()
     return r
@@ -42,31 +40,51 @@ def handlePath( path ) :
     utils.printToServer( json.dumps( item ) )
 
 def getType( path, folder_name ) :
-    if os.path.isdir( path ) :
-        if folder_name.startswith( query_prefix ) :
-            return "query"
-        else :
-            return "folder"
+    if folder_name.startswith( PRIVATE_PREFIX ) :
+        return "private"
     else :
-        return "file"
+        if os.path.isdir( path ) :
+            if folder_name.startswith( QUERY_PREFIX ) :
+                return "query"
+            else :
+                return "folder"
+        else :
+            return "file"
+
+perms = {"earthworm jim" : {"NA18507" : False}}
+
+def hasPermission( user, path, name ) :
+    if user == 'su' : return True
+    else :
+        if name.startswith(DONOR_PREFIX) :
+            try :
+                return perms[user][utils.unprefix(name)]
+            except KeyError :
+                return False
+        else :
+            return True
+
+def show( path, name ) :
+    typ = getType( path,name )
+    return not( typ=='file' or typ=='private' ) and \
+           hasPermission("su",path,name)
 
 def makeItem( path ) :
     (parent,name) = path.rsplit('/',1)
     #is_dir = os.path.isdir(path)
     typ = getType( path, name )
     is_dir = typ == 'folder'
-    if typ == 'file' : return {}
-    else :
-        if typ == 'query' :
-            name = name[ len(query_prefix): ]
+    item = {}
+    if show( path, name) : 
+        name = utils.unprefix(name) 
         item = {'name' : name, \
-                'parentDir' : parent, \
-                'size' : 1234, \
-                'directory' : is_dir, \
-                'path' : path }
+                    'parentDir' : parent, \
+                    'size' : 1234, \
+                    'directory' : is_dir, \
+                    'path' : path }
 
-    if is_dir :
-        item["children"] = getChildren( path )
+        if is_dir :
+            item["children"] = getChildren( path )
 
     return item
 

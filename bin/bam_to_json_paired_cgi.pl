@@ -16,24 +16,31 @@ use Bio::DB::Sam;
 use Bio::DB::Bam::AlignWrapper;
 use File::Basename;
 use IO::Handle;
-
+use PairStreamer;
 use Cwd;
 use GlobalConfig;
-
+use Data::Dumper;
 #### DEBUGGING OUTPUT ###
-open( my $OUTPUT, '>', $upload_dir . "/" . "bam_output.txt" ) or die $!;
-open ERROR,  '>', $upload_dir . "/" . "bam_error.txt"  or die $!;
+open( my $OUTPUT, '>', $UPLOAD_DIR . "/" . "bam_output.txt" ) or die $!;
+open ERROR,  '>', $UPLOAD_DIR . "/" . "bam_error.txt"  or die $!;
 STDERR->fdopen( \*ERROR,  'w' ) or die $!;
 #### DEBUGGING OUTPUT ###
+
+my $stream = 0;
 
 my $profiling = 1;
 if( $profiling ){
     my $path = "/home/andrew/school/dnavis/jbrowse/profiling";
     my $option = "big";
     my $bam_file = "$path/profile_$option.bam";
+
+#"/home/andrew/school/dnavis/svn/jbrowse/Apr28/hack/evidence.or.missFR.5.bam";
+#"/home/andrew/school/dnavis/svn/jbrowse/dinh_seg_dups/bam_files/hack/reg_chr18:96741-100669.bam";
+
+#"/home/andrew/school/dnavis/svn/jbrowse/dinh_seg_dups/bam_files/hack/reg_chr18:96741-100669.bam";
     my $host_chrom = "chr1";
     my $linking = "linking";
-    my $histogram_filename = "$path/profile_$option.hist";
+    my $histogram_filename = "$path/profile_big.hist";
 
     createTrack( $bam_file, $host_chrom, $linking, $histogram_filename );
     exit;
@@ -52,20 +59,28 @@ my $cgi = CGI::new();
 
 #if( $DEBUG ) {
     #print $OUTPUT "we getting the auto-histogram file?: $bam_histogram_filename\n";
-    #print $OUTPUT $upload_dir ."/". $bam_filename;
+    #print $OUTPUT $UPLOAD_DIR ."/". $bam_filename;
 #}
 
 #print $OUTPUT "printing headres\n";
 print $cgi->header;
 print "<html><body><textarea>\n";  #place a json response inside here"
-print createTrack( $ARGV[0], $ARGV[1], $ARGV[2], $ARGV[3] );
+my $host_chrom = $ARGV[0];
+my $donor = $ARGV[1];
+my $query_name = $ARGV[2];
+my $linking = $ARGV[3];
+opendir( my $target, "$DATA_DIR/tracks/$CHROM_PREFIX\_$host_chrom/$DONOR_PREFIX\_$donor" );
+while(my $dir = readdir($target)) {
+    print createTrack( "$target/$dir", $host_chrom, $query_name, $linking );
+}
+closedir( $target );
 print "\n</textarea></body></html>";
 ##########################################################################
 ########################  UPLOADING  #####################################
 
-##write the data to $upload_dir, TODO: is it necessary to write to a file, can't we just save in a variable a la $pregen_histograms below?
+##write the data to $UPLOAD_DIR, TODO: is it necessary to write to a file, can't we just save in a variable a la $pregen_histograms below?
 ##print $OUTPUT "writing upload file\n";
-#my $bamFile =  "$upload_dir/$bam_filename";
+#my $bamFile =  "$UPLOAD_DIR/$bam_filename";
 #open (OUTFILE, ">", $bamFile) or die "Couldn't open $bam_filename for writing: $!";
 #while(<$bam_filename>){
   #print OUTFILE $_;
@@ -93,8 +108,10 @@ print "\n</textarea></body></html>";
 #out: json  
 sub createTrack {
     
-    my ($bamFile, $host_chrom, $bam_linking, $bam_histogram_filename) = @_;
-    print "bam_file: $bamFile\n hostchrom: $host_chrom\nlinking: $bam_linking\n";
+    my ($targetdir, $host_chrom, $query_name, $bam_linking) = @_;
+    
+    my $bamFile = "$targetdir/$query_name.bam";
+    my $bam_histogram_filename = "$targetdir/$query_name.hist";
     $bam_linking = $bam_linking eq "linking";
 
     my $pregen_histograms;
@@ -108,6 +125,10 @@ sub createTrack {
         $json_text =~ s/\s+/ /g;
         #delete variable assignment (i.e ' histogram = ...')
         $json_text =~ s/^.+= //;
+
+        #TODO OPTIMIZE
+        #   tell Christos not to generate histogram data for bin sizes < 1000
+        #   they take up huge room and forever to decode
         $pregen_histograms = JSON::decode_json($json_text);
         close FILE; 
         $/ = $OLDSEP;
@@ -124,15 +145,15 @@ sub createTrack {
     $cssClass = $defaultClass;
     $subfeatureClasses = $defaultSubfeatureClasses;
 
-    my ($name, $path, $extension) = fileparse( $bamFile, (".bam") );
-    print $OUTPUT "bamFIle: $bamFile, name: $name, path: $path, ext: $extension\n";
+    #my ($name, $path, $extension) = fileparse( $bamFile, (".bam") );
+    #print $OUTPUT "bamFIle: $bamFile, name: $name, path: $path, ext: $extension\n";
     ##treat the filename, sans extension, as the key and trackLabel
     #my $reversed = reverse $bam_filename;
     #my ($extension, $folders) = split(/\./, $reversed, 2);
     #$extension = reverse $extension;
     #$folders = reverse $folders;
     #my @folders = split(/\//,$folders);
-    $key = $name;
+    $key = $query_name;
     $trackLabel = $key;
     print $OUTPUT "key: $key\n";
     #print $OUTPUT "after deducing filename\n";
@@ -146,17 +167,19 @@ sub createTrack {
     }
 
     my $trackRel = "tracks";
-    my $trackDir = "$data_dir/$trackRel";
-    mkdir($data_dir) unless (-d $data_dir);
-    mkdir($trackDir) unless (-d $trackDir);
+    my $trackDir = "$DATA_DIR/$trackRel";
+    #mkdir($DATA_DIR) unless (-d $DATA_DIR);
+    #mkdir($trackDir) unless (-d $trackDir);
 
     #my $bam = 7;
     #my $hdr = 7;
 
-    print "building index\n";
-    my $index = Bio::DB::Bam->index($bamFile, 1);
-    print "done with index, opening bamFIle\n";
+    #print "building index\n";
+    my $index;
+    #my $index = Bio::DB::Bam->index($bamFile, 1);
+    #print "done with index, opening bamFIle\n";
     my $bam = Bio::DB::Bam->open($bamFile);
+    #my $bam = Bio::DB::Sam->new(-bam  => $bamFile);
     print "bamFile opened\n";
 
     print $OUTPUT "opening upload file\n";
@@ -191,8 +214,8 @@ sub createTrack {
     my @bookmarks;
     my ($cur_left, $cur_right) = (0,0);
 
-    print $OUTPUT "data_dir: $data_dir\n";
-    my @refSeqs = @{JsonGenerator::readJSON("$data_dir/refSeqs.js", [], 1)};
+    print $OUTPUT "data_dir: $DATA_DIR\n";
+    my @refSeqs = @{JsonGenerator::readJSON("$DATA_DIR/refSeqs.js", [], 1)};
     print $OUTPUT "host_chrom: $host_chrom\n";
     my ($refseq_start,$refseq_end,$refseq_name) = 0,0,"";
     foreach my $seqInfo (@refSeqs) {
@@ -216,17 +239,12 @@ sub createTrack {
 
     print $OUTPUT "(bogus) tid: $tid, start: $start, end: $end\n";
 
-    my $newTrackDir = "$trackDir/$refseq_name";
-    mkdir( $newTrackDir ) unless (-d $newTrackDir);
-    
     my $DBHNDL;
-    open $DBHNDL, ">", "$upload_dir/bam2ncl.txt";
+    open $DBHNDL, ">", "$UPLOAD_DIR/bam2ncl.txt";
     print $DBHNDL "test rpint\n";
 
     if ( defined($tid) ) {
-        print $OUTPUT "trackDir: $trackDir\n, trackLabel: $trackLabel\n";
-        my $outdir = "$trackDir/" . $refseq_name . "/query_" . $trackLabel;
-        my $jsonGen = JsonGenerator->new($outdir,
+        my $jsonGen = JsonGenerator->new($targetdir,
                                          $nclChunk,
                                          $compress, 
                                          $trackLabel,
@@ -243,56 +261,76 @@ sub createTrack {
                                     $DBHNDL);
 
         if( $bam_linking  ) {
-            my $callback = sub {
-                my ($callone,$calltwo) = @_;
-                my ($absleft,$absright) = $callone->[0],($calltwo->[1])-20;
-                push( @$callone, $callone->[2] ? "reverse" : "forward" );
-                push( @$calltwo, $calltwo->[2] ? "reverse" : "forward" );
-                my $feature = [$absleft,$absright,0,$callone,$calltwo];
-                #can somehow merge addFeature and updateBookmarks?  
-                $jsonGen->addFeature($feature,$startIndex,$endIndex);
-                updateBookmarks( $jsonGen,
-                                 \$cur_left,
-                                 \$cur_right,
-                                 $feature );
-            };
-            my $streamer = PairStreamer->new( $callback );
-#
-            my $fetch_callback = sub { 
-                passAlignmentToStreamer( $_[0], $streamer );
-            };
-            $index->fetch($bam,
-                          $tid,
-                          $start,
-                          $end,
-                          $fetch_callback);
-             
-            #print $OUTPUT "linkingi\n";
-            
-            
-            #my %paired_info;
-#
-            ## $_[0] is the alignment found by fetch
-            ## $_[1] is \%paired_info reference
-            #print "beginning fetch\n";
-            #$index->fetch($bam,
-                          #$tid,
-                          #$start,
-                          #$end,
-                          ##sub { linking_align2array( $_[0], $_[1]) }, \%paired_info);
-            #print "done with fetch, starting sort\n";
-#
-            #my @sorted = sort {$paired_info{$a}[0] <=> $paired_info{$b}[0]} 
-                         #keys %paired_info;
-            #print "done with sort, starting to add to sorter\n";
-            #foreach my $key (@sorted){
-                #updateBookmarks( $jsonGen,
-                                 #\$cur_left, 
-                                 #\$cur_right, 
-                                 #$paired_info{$key} );
-                #$sorter->addSorted( $paired_info{$key} );
-            #}
-            #print "done adding to sorter\n";
+
+            if( $stream ) {
+                my $callback = sub {
+                    my ($callone,$calltwo) = @_;
+                    my ($absleft,$absright) = ($callone->[0], $calltwo->[1]);
+                    push( @$callone, $callone->[2]-1 ? "reverse" : "forward" );
+                    push( @$calltwo, $calltwo->[2]-1 ? "reverse" : "forward" );
+                    my $feature = [$absleft,$absright,0,[$callone,$calltwo]];
+                    #can somehow merge addFeature and updateBookmarks?  
+                    $sorter->addSorted($feature);
+                    updateBookmarks( $jsonGen,
+                                     \$cur_left,
+                                     \$cur_right,
+                                     $feature );
+                };
+
+                my $streamer = PairStreamer->new( $callback );
+    #
+                my $fetch_callback = sub { 
+                    passAlignmentToStreamer( $_[0], $streamer );
+                };
+                print "starting stream...\n";
+                #$index->fetch($bam,
+                              #$tid,
+                              #$start,
+                              #$end,
+                              #$fetch_callback);
+                $bam->fetch($tid,$start,$end,$fetch_callback);
+                print "done streaming\n";
+            }
+            else{
+    
+                my $callback = sub {
+                    my $feature = shift;
+                    updateBookmarks( $jsonGen,
+                                     \$cur_left, 
+                                     \$cur_right, 
+                                     $feature );
+                    $sorter->addSorted( $feature ); 
+                };
+
+                print $OUTPUT "linkingi\n";
+                
+                # $_[0] is the alignment found by fetch
+                # $_[1] is \%paired_info reference
+                print "beginning fetch\n";
+                while( my $align = $bam->read1 ){
+                    new_linking_align2array( $align, $callback );
+                }
+                print "done fetching\n";
+                #$index->fetch($bam,
+                              #$tid,
+                              #0, #$start,
+                              #10000000, #$end,
+                              #sub { new_linking_align2array( $_[0], $sorter) });
+                              ##sub { linking_align2array( $_[0], $_[1]) }, \%paired_info);
+                #print "done with fetch, starting sort\n";
+   # 
+                #my @sorted = sort {$paired_info{$a}[0] <=> $paired_info{$b}[0]} 
+                             #keys %paired_info;
+                #print "done with sort, starting to add to sorter\n";
+                #foreach my $key (@sorted){
+                    #updateBookmarks( $jsonGen,
+                                     #\$cur_left, 
+                                     #\$cur_right, 
+                                     #$paired_info{$key} );
+                    #$sorter->addSorted( $paired_info{$key} );
+                #}
+                #print "done adding to sorter\n";
+            }
         }
         else{
             print $OUTPUT "not linking\n";
@@ -311,6 +349,7 @@ sub createTrack {
 
         #it could be that there are no gaps in reads, meaning updateBookmarks never adds anything to IAs
         #if thats the case, add the one giant interval herei
+        print "huh\n";
         my $perlIsGay = $jsonGen->{interestingAreas};
         print $OUTPUT "$perlIsGay\n";
         my $countIA =  scalar @{ $perlIsGay };
@@ -324,6 +363,7 @@ sub createTrack {
         }
 
         $sorter->flush();
+        print "lkasdlkfasjdf\n";
         #catching error, i.e not finding alignments in BAM file and consequently dividing by 0
         eval {
             print "starting generate track\n";
@@ -353,7 +393,7 @@ sub createTrack {
                               'url' => "$trackRel/{refseq}/query_" . $trackLabel . "/trackData.$ext",
                               'type' => "FeatureTrack",
                              };
-        JsonGenerator::writeTrackEntry( "$data_dir/trackInfo.js", $new_entry_json );
+        JsonGenerator::writeTrackEntry( "$DATA_DIR/trackInfo.js", $new_entry_json );
 
         $status = '{"status":"OK", "trackData":[';
         $status .=  JSON::to_json($new_entry_json, {pretty => 1});
@@ -385,15 +425,80 @@ sub align2array {
     push(@$tosort, [$left,$right,$strand]); #[[$left,$right,$strand,$strand ? "reverse" : "forward"]]]);
 }
 
+
+sub new_linking_align2array{
+    my ($alignment,$callback) = @_; 
+    #my $paired = $alignment->paired;
+    my $start = $alignment->pos+1;
+    my $end = $alignment->calend+1;
+    #my $length = $alignment->length;
+    my $strand = $alignment->strand;
+    #my $reversed = $alignment->reversed;
+    #my $mreversed = $alignment->mreversed;
+    my $mstart = $alignment->mate_start+1;
+    #my $mate_end = $alignment->mate_end;
+    #my $mate_len = $alignment->mate_len;
+    my $mstrand = $alignment->mstrand;
+    #my $pair_name = $alignment->qname;
+    #my $unmapped = $alignment->unmapped;
+    #my $munmapped = $alignment->munmapped;    
+    
+    #print "$pair_name - [$left,$right] UNMapped: ($unmapped|$munmapped) Rev: ($reversed|$mreversed) Len: ($length | $mate_len) \n";
+    #print "$pair_name, $left\n";
+    #if( $left == 5989217 ){
+        #print "SPECIAL$paired - [$left,$right]($reversed) ---> [$mate_start,$mate_end]($mreversed)\n";
+    #}
+    if( $start < $mstart ) {  
+        my $mend = $mstart + ($end-$start +1 ) - 1;
+        my $style = $strand+1 ? "forward" : "reverse";
+        my $mstyle = $mstrand+1 ? "forward" : "reverse";
+        my $feature = [$start,$mend,0,
+                       [[$start,$end,$strand,$style],
+                        [$mstart,$mend,$mstrand,$mstyle]]];
+        $callback->($feature);
+    }
+
+        #5th bit is strand bit. 1 means reverse, 0 means forward
+        #my $strand = ($alignment->flag & 0x10) >> 4;
+        #$strand = $strand ? -1 : 1;
+
+
+    #}
+};
+
+
+
 sub passAlignmentToStreamer {
-    my ($self, $alignment, $streamer) = @_;
-    my $left = $alignment->pos+1;
-    my $right = $alignment->calend+1;
+    my ($alignment, $streamer) = @_;
+    my $paired = $alignment->paired;
+    my $proper_pair = $alignment->proper_pair;
+
+    my $start = $alignment->pos+1;
+    my $end = $alignment->calend+1;
+    my $reversed = $alignment->reversed;
+    my $strand = $alignment->strand;
+
+    #my $mstart = $alignment->mate_start;
+    #my $mend = $alignment->mate_end;
+    #my $mreversed = $alignment->mreversed;
+    #my $mstrand = $alignment->mstrand;
+
     #5th bit is strand bit. 1 means reverse, 0 means forward
-    my $strand = ($alignment->flag & 0x10) >> 4;
-    $strand = $strand ? -1 : 1;
+    #my $strand = ($alignment->flag & 0x10) >> 4;
+    #$strand = $strand ? -1 : 1;
+    
     my $pair_name = $alignment->qname;
-    $streamer->accept( $pair_name, [$left,$right,$strand] );
+
+    #if( defined($mend) ){
+        #if( $start < $mstart ){
+            #$streamer->acceptFullPair( [$start,$end,$strand], 
+                                       #[$mstart,$mend,$mstrand] );
+        #}
+    #}
+    #else{
+        $streamer->acceptHalfPair( $pair_name, [$start,$end,$strand] );
+    #}
+
 }
 
 sub linking_align2array {

@@ -212,7 +212,7 @@ sub new {
         $self->{histBinBases} = $multiple;
         last if $multiple > $histBinThresh;
     }
-    open( my $OUTPUT, '>', $upload_dir . "/" . "jsongen_output2.txt" ) or die $!;
+    open( my $OUTPUT, '>', $DEBUG_DIR . "/" . "jsongen_output2.txt" ) or die $!;
     my $temp = $self->{histBinBases};
     print $OUTPUT "histBinThresh: $histBinThresh\n";
     print $OUTPUT "histBinBases: $temp\n";
@@ -319,7 +319,7 @@ sub hasFeatures {
 
 sub generateTrack {
     my ($self) = @_;
-    open( my $OUTPUT, '>', $upload_dir . "/" . "generateTrack_output.txt" ) or die $!;
+    open( my $OUTPUT, '>', $DEBUG_DIR . "/" . "generateTrack_output.txt" ) or die $!;
 
     my $ext = $self->{ext};
     my $features = $self->{features};
@@ -384,6 +384,12 @@ sub generateTrack {
             print $OUTPUT "    binBases[$j]: $histBases\n";
         }
 
+        #TODO OPTIMIZE
+        #this seems like a huge waste:
+        #   why create chunks at all, why not just loop through
+        #   curHist in sets of 'histChunkSize'
+        #   writeJSON needs a stand-along array to deal with,
+        #   maybe alter it a big to accept two ints, start and end?
         my $chunks = chunkArray($curHist, $histChunkSize);
         for (my $i = 0; $i <= $#{$chunks}; $i++) {
             writeJSON($self->{outDir} . "/hist-$histBases-$i.$ext",
