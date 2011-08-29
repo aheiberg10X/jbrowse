@@ -5,7 +5,7 @@ use warnings;
 
 use Exporter 'import';
 
-our @EXPORT = qw($root_dir $data_dir $upload_dir $DEBUG $INTERESTING_AREAS_GAP_THRESH);
+our @EXPORT = qw($ROOT_DIR $DATA_DIR $DEBUG_DIR $UPLOAD_DIR $DEBUG $INTERESTING_AREAS_GAP_THRESH $CHROM_PREFIX $DONOR_PREFIX $PRIVATE_PREFIX $QUERY_PREFIX);
 use JSON 2;
 
 use Cwd;
@@ -27,17 +27,22 @@ close GC;
 
 my $globals = JSON::decode_json($json_text);
 
+our $CHROM_PREFIX = $globals->{CHROM_PREFIX};
+our $DONOR_PREFIX = $globals->{DONOR_PREFIX};
+our $PRIVATE_PREFIX = $globals->{PRIVATE_PREFIX};
+our $QUERY_PREFIX = $globals->{QUERY_PREFIX};
 
-our $root_dir = $globals->{root_dir};
-our $data_dir = $root_dir . $globals->{data_dir};
-our $upload_dir = $root_dir . $globals->{upload_dir};
+our $ROOT_DIR = $globals->{ROOT_DIR};
+our $DATA_DIR = $ROOT_DIR . $globals->{DATA_DIR};
+our $UPLOAD_DIR = $ROOT_DIR . $globals->{UPLOAD_DIR};
+our $DEBUG_DIR = $ROOT_DIR . $globals->{DEBUG_DIR};
 our $DEBUG = $globals->{DEBUG};
 our $INTERESTING_AREAS_GAP_THRESH = $globals->{INTERESTING_AREAS_GAP_THRESH};
 #our $FAKING_REFSEQ = $globals->{FAKING_REFSEQ};
 
 #print DEBUGFILE "$globals\n";
-#print DEBUGFILE "rootdir: $root_dir\n";
-#print DEBUGFILE "uploaddir: $upload_dir\n";
+#print DEBUGFILE "rootdir: $ROOT_DIR\n";
+#print DEBUGFILE "uploaddir: $UPLOAD_DIR\n";
 #close(DEBUGFILE);
 
 1;
