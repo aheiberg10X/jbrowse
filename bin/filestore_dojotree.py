@@ -40,17 +40,19 @@ def handlePath( path ) :
     item = makeItem( path )
     utils.printToServer( json.dumps( item ) )
 
-def getType( path, folder_name ) :
-    if folder_name.startswith( PRIVATE_PREFIX ) :
-        return "private"
+def getPrefix( path, name ) :
+    if name.startswith( PRIVATE_PREFIX ) :
+        return PRIVATE_PREFIX
     else :
         if os.path.isdir( path ) :
-            if folder_name.startswith( QUERY_PREFIX ) :
-                return "query"
-            else :
-                return "folder"
+            if name.startswith( QUERY_PREFIX ) :
+                return QUERY_PREFIX
+            elif name.startswith( CHROM_PREFIX ) :
+                return CHROM_PREFIX
+            elif name.startswith( DONOR_PREFIX ) :
+                return DONOR_PREFIX
         else :
-            return "file"
+            return "file_"
 
 perms = {"earthworm jim" : {"NA18507" : False}}
 
@@ -66,22 +68,30 @@ def hasPermission( user, path, name ) :
             return True
 
 def show( path, name ) :
-    typ = getType( path,name )
-    return not( typ=='file' or typ=='private' ) and \
+    prefix = getPrefix( path,name )
+    return not( prefix == 'file' or prefix == 'private' ) and \
            hasPermission("su",path,name)
 
 def makeItem( path ) :
-    (parent,name) = path.rsplit('/',1)
+    print "path: %s" % path
+    (head,parent_name,name) = path.rsplit('/',2)
+    parent= "%s/%s" % (head, parent_name)
     #is_dir = os.path.isdir(path)
-    typ = getType( path, name )
-    is_dir = typ == 'folder'
+    prefix = getPrefix( path, name )
+    is_dir = prefix == CHROM_PREFIX or prefix == DONOR_PREFIX 
     item = {}
-    if show( path, name) : 
-        name = utils.unprefix(name) 
+    if show( path, name) :
+        name = utils.unprefix(name)
+        parent_prefix = getPrefix( parent, parent_name )
+        parent_name = utils.extractName(parent_prefix, path)
         item = {'name' : name, \
                 'parentDir' : parent, \
                 'directory' : is_dir, \
                 'path' : path }
+
+        if prefix == QUERY_PREFIX : 
+            assert parent_prefix == DONOR_PREFIX
+            item['trackkey'] = "%s/%s" % (parent_name,name)
 
         if is_dir :
             item["children"] = getChildren( path )
