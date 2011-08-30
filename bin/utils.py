@@ -35,5 +35,10 @@ def printToServer( s ) :
     print s
     sys.stdout = temp
 
+def unprefix( name ) :
+    splt = name.split('_',1)
+    if len(splt) == 2 :
+        return splt[1]
+    else : return splt
 
 
