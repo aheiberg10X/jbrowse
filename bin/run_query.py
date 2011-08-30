@@ -85,6 +85,6 @@ try :
     utils.printToServer( json.dumps( {"status":"ok",
                                       "message":out} ) )
 
-except IOError as e:
+except IOError :
     utils.printToServer( json.dumps( {"status":"error", \
-                                      "message":str(e)} ) )
+                                      "message":"io error in run query"} ) )
