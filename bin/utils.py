@@ -1,6 +1,8 @@
+import sys
+sys.path.append('../lib')
 import simplejson as json
 import re
-import sys
+import GlobalConfig
 
 # make this a function, doubtless will be using again
 def fileToJson( filename ) :
@@ -35,10 +37,19 @@ def printToServer( s ) :
     print s
     sys.stdout = temp
 
+#WATCH OUT WHAT IF name HAS AN UNDERSCORE IN IT NATURALLY?
 def unprefix( name ) :
     splt = name.split('_',1)
     if len(splt) == 2 :
         return splt[1]
     else : return splt
 
+def extractName( prefix, path ) :
+    if not prefix : return ""
+    splt = path.split('/')
+    for s in splt :
+        if prefix in s :
+            return unprefix(s)
 
+if __name__ == '__main__' :
+    print extractName('andrew@rodion:~/school/dnavis/jbrowse/data/tracks/chrom_chr1/donor_NA18507')

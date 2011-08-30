@@ -1040,11 +1040,11 @@ GenomeView.prototype.addTrack = function(track) {
     this.trackLabels.push(labelDiv);
     var trackDiv = document.createElement("div");
     trackDiv.className = "track";
-    trackDiv.id = "track_" + track.name;
+    trackDiv.id = "track_" + track.key;
     trackDiv.track = track;
     var view = this;
     var heightUpdate = function(height) {
-        view.trackHeightUpdate(track.name, height);
+        view.trackHeightUpdate(track.key, height);
     };
     track.setViewInfo(heightUpdate, this.stripeCount, trackDiv, labelDiv,
 		      this.stripePercent, this.stripeWidth,
@@ -1066,9 +1066,9 @@ GenomeView.prototype.trackIterate = function(callback) {
         callback(this.tracks[i], this);
 };
 
-GenomeView.prototype.isVisualized = function( track_name ) {
+GenomeView.prototype.isVisualized = function( trackkey ) {
      var filterer = function( track ){ 
-                        return track.key == track_name;
+                        return track.key == trackkey;
                     };
      var f = dojo.filter( this.tracks, filterer );
      return f.length == 1;
@@ -1091,13 +1091,13 @@ GenomeView.prototype.updateTrackList = function() {
     var newIndices = {};
     var newHeights = new Array(this.tracks.length);
     for (var i = 0; i < tracks.length; i++) {
-        newIndices[tracks[i].name] = i;
-        if (tracks[i].name in this.trackIndices) {
-            newHeights[i] = this.trackHeights[this.trackIndices[tracks[i].name]];
+        newIndices[tracks[i].key] = i;
+        if (tracks[i].key in this.trackIndices) {
+            newHeights[i] = this.trackHeights[this.trackIndices[tracks[i].key]];
         } else {
             newHeights[i] = 0;
         }
-        this.trackIndices[tracks[i].name] = i;
+        this.trackIndices[tracks[i].key] = i;
     }
     this.trackIndices = newIndices;
     this.trackHeights = newHeights;

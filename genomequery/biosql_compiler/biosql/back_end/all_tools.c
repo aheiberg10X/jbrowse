@@ -180,7 +180,11 @@ void intersect_transaction(char *indx_file1, char *type1, char *valid_lst_file1,
 		if(strcmp(type1, "bam_mates")==0){
 			//tmp1_valid_lst=find_valid_clones(mate_indx, ttl_reads, strand_indx, len_strand, &ttl_tmp1_valid);
 			if(valid_lst_file1!=NULL){
-				tmp1_valid_lst=retrieve_vec(valid_lst_file1, sizeof(int), &ttl_tmp1_valid);
+				if(strstr(valid_lst_file1,"READS")!=NULL){
+					tmp1_valid_lst=NULL; ttl_tmp1_valid=0;
+				}
+				else
+					tmp1_valid_lst=retrieve_vec(valid_lst_file1, sizeof(int), &ttl_tmp1_valid);
 				int1=mates2intervals(mate_indx, ttl_reads, tmp1_valid_lst, ttl_tmp1_valid, &ttl_int1);
 				if(tmp1_valid_lst!=NULL){ free(tmp1_valid_lst); tmp1_valid_lst=NULL; ttl_tmp1_valid=0;}
 			}
@@ -189,7 +193,11 @@ void intersect_transaction(char *indx_file1, char *type1, char *valid_lst_file1,
 		else{
 			//tmp1_valid_lst=find_valid_reads(mate_indx, ttl_reads, strand_indx, len_strand, &ttl_tmp1_valid, -1, -1);
 			if(valid_lst_file1!=NULL){
-				tmp1_valid_lst=retrieve_vec(valid_lst_file1, sizeof(int), &ttl_tmp1_valid);
+				if(strstr(valid_lst_file1,"READS")!=NULL){
+					tmp1_valid_lst=NULL; ttl_tmp1_valid=0;
+				}
+				else
+					tmp1_valid_lst=retrieve_vec(valid_lst_file1, sizeof(int), &ttl_tmp1_valid);
 				int1=singles2intervals(mate_indx, ttl_reads, tmp1_valid_lst, ttl_tmp1_valid, &ttl_int1);
 				if(tmp1_valid_lst!=NULL){ free(tmp1_valid_lst); tmp1_valid_lst=NULL;ttl_tmp1_valid=0;}
 			}
@@ -221,7 +229,11 @@ void intersect_transaction(char *indx_file1, char *type1, char *valid_lst_file1,
 		if(strcmp(type2, "bam_mates")==0){
 			//tmp2_valid_lst=find_valid_clones(mate_indx, ttl_reads, strand_indx, len_strand, &ttl_tmp2_valid);
 			if(valid_lst_file2!=NULL){
-				tmp2_valid_lst=retrieve_vec(valid_lst_file2, sizeof(int), &ttl_tmp2_valid);
+				if(strstr(valid_lst_file2,"READS")!=NULL){
+					tmp2_valid_lst=NULL; ttl_tmp2_valid=0;
+				}
+				else
+					tmp2_valid_lst=retrieve_vec(valid_lst_file2, sizeof(int), &ttl_tmp2_valid);
 				int2=mates2intervals(mate_indx, ttl_reads, tmp2_valid_lst, ttl_tmp2_valid, &ttl_int2);
 				if(tmp2_valid_lst!=NULL){ free(tmp2_valid_lst); tmp2_valid_lst=NULL;ttl_tmp2_valid=0;}
 			}
@@ -230,7 +242,11 @@ void intersect_transaction(char *indx_file1, char *type1, char *valid_lst_file1,
 		else{
 			//tmp2_valid_lst=find_valid_reads(mate_indx, ttl_reads, strand_indx, len_strand, &ttl_tmp2_valid, -1, -1);
 			if(valid_lst_file2!=NULL){
-				tmp2_valid_lst=retrieve_vec(valid_lst_file2, sizeof(int), &ttl_tmp2_valid);
+				if(strstr(valid_lst_file2,"READS")!=NULL){
+					tmp2_valid_lst=NULL; ttl_tmp2_valid=0;
+				}
+				else
+					tmp2_valid_lst=retrieve_vec(valid_lst_file2, sizeof(int), &ttl_tmp2_valid);
 				int2=singles2intervals(mate_indx, ttl_reads, tmp2_valid_lst, ttl_tmp2_valid, &ttl_int2);
 				if(tmp2_valid_lst!=NULL){ free(tmp2_valid_lst); tmp2_valid_lst=NULL;ttl_tmp2_valid=0;}
 			}
@@ -567,7 +583,7 @@ void parse_and_call_intersect_transaction(char **argv, int argc){
 			ioerror("mode is not supported");
 	 }
 	
-	if(mode==1 || mode==2){
+	if(mode==1 || mode==2 || mode==4 || mode==5){
 		FILE *histfp=fopen(hist_file,"w");
 		print_histogram(histfp, histinfo.mhist, histinfo.chromo_length);
 		fclose(histfp);

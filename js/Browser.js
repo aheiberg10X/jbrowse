@@ -312,14 +312,16 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                      ).placeAt( query_div );        
     
     var runQuery = function( disableCallback, enableCallback ){
-        var query_name = dojo.byId("query_name").value;
+        var donor = dojo.byId("query_donor").value;
+        var query_name =  dojo.byId("query_name").value;
+        var trackkey = donor + "/" + query_name;
         if( dojo.byId("query_box").value == "" ){
             alert("You must enter a valid query");
         }
         else if( query_name == "" ){
             alert("You must enter a name for ths query");
         }
-        else if( hasNameConflict( query_name ) ){
+        else if( hasNameConflict( trackkey ) ){
             alert( "There is already a query with that name" );
         }
         else {
@@ -353,7 +355,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                                 alert("trackINfo not successfully reloaded");
                             }
                         });
-                        brwsr.tracks.push( query_name );
+                        brwsr.tracks.push( trackkey );
                         enableCallback();
                         refreshTree();
                     }
@@ -436,17 +438,17 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
              model : model,
              onClick :
                 function(item){ 
-                    var track_name = store.getValue(item, 'name');
-                    var isVisualized = brwsr.view.isVisualized( track_name ); //f.length == 1;
+                    var trackkey = store.getValue(item, 'trackkey');
+                    var isVisualized = brwsr.view.isVisualized( trackkey ); //f.length == 1;
                     if( isVisualized ){
                         visualize_button.set('label', 'Recall');
                         visualize_button.onClick = 
-                            function(){ recall(track_name); }; 
+                            function(){ recall(trackkey); }; 
                     }
                     else{
                         visualize_button.set('label', 'Visualize');
                         visualize_button.onClick = 
-                            function(){ visualize(track_name); };
+                            function(){ visualize(trackkey); };
                     }   
                     var buttons = [view_query_button, delete_button,
                                    visualize_button, download_button];
@@ -506,8 +508,10 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         //brwsr.chromList.options[brwsr.chromList.selectedIndex].value;
         var current_chrom = brwsr.refSeq.name;
         var deleted_item = tree.selectedItem;
-        var parent_dir = delete_item.parentDir;
         var delete_name = deleted_item.name;
+        var parent_prefix = deleted_item.parentPrefix;
+        var parent_name = deleted_item.parentName;
+
         recall( tree.selectedItem.name );
         var tracks_in_trash = [delete_name];
         //what are we doing with ids_to_trash?
@@ -548,9 +552,9 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
          style: "margin-top: 0px;"
         }).placeAt( explorer_button_pane.domNode );
     
-    var visualize = function(track_name){
+    var visualize = function(trackkey){
         var tester = function(item){
-            return item["label"] == track_name;
+            return item["key"] == trackkey;
         }
         var matches = dojo.filter( brwsr.trackData, tester );
         if( matches.length == 0 ){ alert(" no matches"); }
@@ -564,12 +568,12 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     };
 
-    var recall = function(track_name){
-        var isVisualized = brwsr.view.isVisualized( track_name );
+    var recall = function(trackkey){
+        var isVisualized = brwsr.view.isVisualized( trackkey );
         //var c = dojo.byId( 'track_'+track_name );
         if( isVisualized ){
             brwsr.view.zoomContainer.removeChild( 
-                dojo.byId( 'track_'+track_name )
+                dojo.byId( 'track_'+trackkey )
             );
         }
         brwsr.onVisibleTracksChanged();
