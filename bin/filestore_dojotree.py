@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import sys
+sys.path.append("../lib")
 import os
 import simplejson as json
 import re
@@ -8,7 +9,7 @@ import cgitb
 import utils
 cgitb.enable()
 
-from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX
+from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR
 
 def getChildren( path ) :
     r = []
@@ -78,10 +79,9 @@ def makeItem( path ) :
     if show( path, name) : 
         name = utils.unprefix(name) 
         item = {'name' : name, \
-                    'parentDir' : parent, \
-                    'size' : 1234, \
-                    'directory' : is_dir, \
-                    'path' : path }
+                'parentDir' : parent, \
+                'directory' : is_dir, \
+                'path' : path }
 
         if is_dir :
             item["children"] = getChildren( path )
@@ -89,16 +89,14 @@ def makeItem( path ) :
     return item
 
 if __name__ == '__main__' :
-    jconfig = utils.fileToJson( "../lib/GlobalConfig.js" )
-    root_dir = jconfig["root_dir"]
 
-    output = "%s/bin/debugging" % root_dir
+    output = "%s/bin/debugging" % ROOT_DIR
     fout = open("%s/filestore_out.txt" % output,'w')
     ferr = open("%s/filestore_err.txt" % output,'w')
 
     utils.printToServer( "Content-type: text/json\n\n" )
 
-    projects_root = "%s/data/tracks" % root_dir
+    projects_root = "%s/data/tracks" % ROOT_DIR
 
     sys.stderr = ferr
     sys.stdout = fout

@@ -295,10 +295,12 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                          style: "height: 12em; width: 90%"}
                     ).placeAt( query_box_p );
 
-    var query_donor_bam = new dijit.form.TextBox(
-                        {id: "query_donor_bam",
-                         name: "query_donor_bam",
-                         value: globals.root_dir + "/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.sorted.bam",
+    //TODO : make it a drop down
+    var query_donor = new dijit.form.TextBox(
+                        {id: "query_donor",
+                         name: "query_donor",
+                         value: "NA18507",
+        //globals.root_dir + "/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.sorted.bam",
                          type: "hidden"}
                     ).placeAt( query_div );
 
@@ -504,6 +506,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         //brwsr.chromList.options[brwsr.chromList.selectedIndex].value;
         var current_chrom = brwsr.refSeq.name;
         var deleted_item = tree.selectedItem;
+        var parent_dir = delete_item.parentDir;
         var delete_name = deleted_item.name;
         recall( tree.selectedItem.name );
         var tracks_in_trash = [delete_name];
@@ -547,7 +550,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     
     var visualize = function(track_name){
         var tester = function(item){
-            return item["key"] == track_name;
+            return item["label"] == track_name;
         }
         var matches = dojo.filter( brwsr.trackData, tester );
         if( matches.length == 0 ){ alert(" no matches"); }

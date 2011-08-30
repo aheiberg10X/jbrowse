@@ -1,16 +1,17 @@
 #!/usr/bin/python
 import sys
+sys.path.append("../lib")
 import simplejson as json
 import re
 from os import mkdir
 from shutil import rmtree
 import cgi
 import cgitb
-
+import GlobalConfig
 from utils import fileToJson
 #cgitb.enable()
 
-def removeTracks( chrom, track_keys_to_remove, delete=False, filename = "../data/trackInfo.js" ) :
+def removeQuery( donor, query_name, delete=False, filename = "../data/trackInfo.js" ) :
 
     #the name javascript expects the json to be loaded into
     js_var_name = "trackInfo"
@@ -28,16 +29,19 @@ def removeTracks( chrom, track_keys_to_remove, delete=False, filename = "../data
     json_tracks = json.loads( cleaned_json )
     tifile.close()
 
-    track_keys_to_remove = [k.lower() for k in track_keys_to_remove]
-    #print track_keys_to_remove
-
     retained_tracks = []
     for track in json_tracks :
-        #print track
-        if str(track["key"]).lower() not in track_keys_to_remove :
-            retained_tracks.append( track )
+        if not track["key"].lower() == "%s/%s" % (donor.lower(), query_name.lower()) :
+             retained_tracks.append( track )
         elif delete :
-            deleteTracks( chrom, [track["label"]] )
+            try :
+                chroms = range(1,23) + ['X','Y']
+                for c in chroms :
+                    trackpath = GlobalConfig.TRACK_TEMPLATE % ("chr%s" % str(c), donor, query_name)
+                    print trackpath
+                    rmtree( "%s/%s" % (GlobalConfig.DATA_DIR, trackpath) )
+            except OSError as e :
+                print "can't remove %s: %s\n" % (trackpath,str(e))
 
     if len(retained_tracks) == len(json_tracks) :
         raise Exception("No tracks were removed. Check to make sure the supplied track names are correct")
@@ -46,36 +50,23 @@ def removeTracks( chrom, track_keys_to_remove, delete=False, filename = "../data
     tifile.write( "%s = \n%s" % (js_var_name, json.dumps( retained_tracks, indent=4 )))
     tifile.close()
 
-def deleteTracks( chrom, track_labels ) :
-    for label in track_labels :
-        rdir = "../data/tracks/%s/query_%s" % (chrom,label)
-        try :
-            rmtree( rdir )
-        except OSError :
-            print "can't remove %s\n" % (rdir)
-
 
 if __name__ == '__main__' :
-    jglobals = fileToJson( "../lib/GlobalConfig.js" )
-    root_dir = jglobals['root_dir']
+    root_dir = GlobalConfig.ROOT_DIR 
 
     fields = cgi.FieldStorage()
     print 'Content-type: text/html\n\n'
 
     if not fields :
-        chrom = sys.argv[1]
-        to_remove = sys.argv[2:]
-        removeTracks( chrom, to_remove, delete=True )
+        donor = sys.argv[1]
+        query_name = sys.argv[2]
+        removeQuery( donor, query_name, delete=True )
     else :
         sys.stderr = open("%s/uploads/delete_error.txt" % root_dir,'w')
         sys.stdout = open("%s/uploads/delete_output.txt" % root_dir,'w')
-        print "iuoasdhvoweovnwie"
         fields = cgi.parse()
         print fields
-        print fields["chrom"][0]
-        print fields["delete_track"]
-
-        removeTracks( fields["chrom"][0], fields["delete_track"], delete=True )
+        removeQuery( fields["donor"][0], fields["query_name"], delete=True )
 
     #removeTracks( ['Linked Test rEAds'], delete=True );
 

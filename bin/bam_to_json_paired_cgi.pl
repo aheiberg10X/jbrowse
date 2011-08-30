@@ -21,14 +21,14 @@ use Cwd;
 use GlobalConfig;
 use Data::Dumper;
 #### DEBUGGING OUTPUT ###
-open( my $OUTPUT, '>', $UPLOAD_DIR . "/" . "bam_output.txt" ) or die $!;
-open ERROR,  '>', $UPLOAD_DIR . "/" . "bam_error.txt"  or die $!;
+open( my $OUTPUT, '>', $DEBUG_DIR . "/" . "bam_output.txt" ) or die $!;
+open ERROR,  '>', $DEBUG_DIR . "/" . "bam_error.txt"  or die $!;
 STDERR->fdopen( \*ERROR,  'w' ) or die $!;
 #### DEBUGGING OUTPUT ###
 
 my $stream = 0;
 
-my $profiling = 1;
+my $profiling = 0;
 if( $profiling ){
     my $path = "/home/andrew/school/dnavis/jbrowse/profiling";
     my $option = "big";
@@ -65,15 +65,18 @@ my $cgi = CGI::new();
 #print $OUTPUT "printing headres\n";
 print $cgi->header;
 print "<html><body><textarea>\n";  #place a json response inside here"
-my $host_chrom = $ARGV[0];
-my $donor = $ARGV[1];
-my $query_name = $ARGV[2];
-my $linking = $ARGV[3];
-opendir( my $target, "$DATA_DIR/tracks/$CHROM_PREFIX\_$host_chrom/$DONOR_PREFIX\_$donor" );
-while(my $dir = readdir($target)) {
-    print createTrack( "$target/$dir", $host_chrom, $query_name, $linking );
+my $donor = $ARGV[0];
+my $query_name = $ARGV[1];
+my $linking = $ARGV[2];
+
+my @chroms = qw/1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y/;
+#opendir( my $target, "$DATA_DIR/tracks/" );
+#"$CHROM_PREFIX\_$host_chrom/$DONOR_PREFIX\_$donor" );
+foreach my $chromnum (@chroms) {
+    my $chrom = "chr$chromnum";
+    print createTrack( $chrom, $donor, $query_name, $linking );
 }
-closedir( $target );
+#closedir( $target );
 print "\n</textarea></body></html>";
 ##########################################################################
 ########################  UPLOADING  #####################################
@@ -108,8 +111,12 @@ print "\n</textarea></body></html>";
 #out: json  
 sub createTrack {
     
-    my ($targetdir, $host_chrom, $query_name, $bam_linking) = @_;
+    my ($host_chrom, $donor, $query_name, $bam_linking) = @_;
     
+    my $template = "tracks/$CHROM_PREFIX%s/$DONOR_PREFIX$donor/$QUERY_PREFIX$query_name";
+    my $targetdir = sprintf( "$DATA_DIR/$template", $host_chrom );
+    #print "targetdir: $targetdir\n";
+
     my $bamFile = "$targetdir/$query_name.bam";
     my $bam_histogram_filename = "$targetdir/$query_name.hist";
     $bam_linking = $bam_linking eq "linking";
@@ -153,8 +160,8 @@ sub createTrack {
     #$extension = reverse $extension;
     #$folders = reverse $folders;
     #my @folders = split(/\//,$folders);
-    $key = $query_name;
-    $trackLabel = $key;
+    $key = "$donor/$query_name";
+    $trackLabel = $query_name;
     print $OUTPUT "key: $key\n";
     #print $OUTPUT "after deducing filename\n";
 
@@ -180,7 +187,7 @@ sub createTrack {
     #print "done with index, opening bamFIle\n";
     my $bam = Bio::DB::Bam->open($bamFile);
     #my $bam = Bio::DB::Sam->new(-bam  => $bamFile);
-    print "bamFile opened\n";
+    #print "bamFile opened\n";
 
     print $OUTPUT "opening upload file\n";
     my $hdr = $bam->header();
@@ -282,14 +289,14 @@ sub createTrack {
                 my $fetch_callback = sub { 
                     passAlignmentToStreamer( $_[0], $streamer );
                 };
-                print "starting stream...\n";
+                #print "starting stream...\n";
                 #$index->fetch($bam,
                               #$tid,
                               #$start,
                               #$end,
                               #$fetch_callback);
                 $bam->fetch($tid,$start,$end,$fetch_callback);
-                print "done streaming\n";
+                #print "done streaming\n";
             }
             else{
     
@@ -306,18 +313,18 @@ sub createTrack {
                 
                 # $_[0] is the alignment found by fetch
                 # $_[1] is \%paired_info reference
-                print "beginning fetch\n";
+                #print "beginning fetch\n";
                 while( my $align = $bam->read1 ){
                     new_linking_align2array( $align, $callback );
                 }
-                print "done fetching\n";
+                #print "done fetching\n";
                 #$index->fetch($bam,
                               #$tid,
                               #0, #$start,
                               #10000000, #$end,
                               #sub { new_linking_align2array( $_[0], $sorter) });
                               ##sub { linking_align2array( $_[0], $_[1]) }, \%paired_info);
-                #print "done with fetch, starting sort\n";
+                ##print "done with fetch, starting sort\n";
    # 
                 #my @sorted = sort {$paired_info{$a}[0] <=> $paired_info{$b}[0]} 
                              #keys %paired_info;
@@ -349,7 +356,7 @@ sub createTrack {
 
         #it could be that there are no gaps in reads, meaning updateBookmarks never adds anything to IAs
         #if thats the case, add the one giant interval herei
-        print "huh\n";
+        #print "huh\n";
         my $perlIsGay = $jsonGen->{interestingAreas};
         print $OUTPUT "$perlIsGay\n";
         my $countIA =  scalar @{ $perlIsGay };
@@ -363,12 +370,12 @@ sub createTrack {
         }
 
         $sorter->flush();
-        print "lkasdlkfasjdf\n";
+        #print "lkasdlkfasjdf\n";
         #catching error, i.e not finding alignments in BAM file and consequently dividing by 0
         eval {
-            print "starting generate track\n";
+            #print "starting generate track\n";
             $jsonGen->generateTrack();
-            print "done with generate track\n";
+            #print "done with generate track\n";
             1;
         } or do {
             print $OUTPUT $@;
@@ -390,7 +397,8 @@ sub createTrack {
         my $new_entry_json = {
                               'label' => $trackLabel,
                               'key' => $key,
-                              'url' => "$trackRel/{refseq}/query_" . $trackLabel . "/trackData.$ext",
+                              'url' => sprintf( "$template/trackData.$ext", "{refseq}" ),
+                              #'url' => "$trackRel/{refseq}/query_" . $trackLabel . "/trackData.$ext",
                               'type' => "FeatureTrack",
                              };
         JsonGenerator::writeTrackEntry( "$DATA_DIR/trackInfo.js", $new_entry_json );
