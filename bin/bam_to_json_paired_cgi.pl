@@ -28,7 +28,7 @@ STDERR->fdopen( \*ERROR,  'w' ) or die $!;
 
 my $stream = 0;
 
-my $profiling = 1;
+my $profiling = 0;
 if( $profiling ){
     my $path = "/home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/dst/chr1"; #"/home/andrew/school/dnavis/jbrowse/profiling";
     my $option = "big";
