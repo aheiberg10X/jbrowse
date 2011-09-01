@@ -11,7 +11,7 @@ use JSON 2;
 use Cwd;
 
 
-open(GC, "<", "/home/andrew/school/dnavis/jbrowse/lib/GlobalConfig.js") or die $!;
+open(GC, "<", "/data/sites/projects/genomequery/lib/GlobalConfig.js") or die $!;
 local $/=undef;
 my $json_text = <GC>;
     
