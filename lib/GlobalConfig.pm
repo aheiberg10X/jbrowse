@@ -5,15 +5,25 @@ use warnings;
 
 use Exporter 'import';
 
-our @EXPORT = qw($ROOT_DIR $DATA_DIR $DEBUG_DIR $UPLOAD_DIR $DEBUG $INTERESTING_AREAS_GAP_THRESH $CHROM_PREFIX $DONOR_PREFIX $PRIVATE_PREFIX $QUERY_PREFIX);
+our @EXPORT = qw($ROOT_DIR $DATA_DIR $DEBUG_DIR $UPLOAD_DIR $DEBUG $INTERESTING_AREAS_GAP_THRESH $CHROM_PREFIX $DONOR_PREFIX $PRIVATE_PREFIX $QUERY_PREFIX $TRACK_TEMPLATE);
 use JSON 2;
 
 use Cwd;
 
+my @tries = ("GlobalConfig.js", "../lib/GlobalConfig.js");
+my $good = 0;
+my $json_text;
+foreach my $try (@tries) {
+    if( -e $try ){
+        open(GC, "<", "/home/andrew/school/dnavis/jbrowse/lib/GlobalConfig.js") or die $!;
+        local $/=undef;
+        $json_text = <GC>;
+        close GC;
+        last;
+    }
+}
 
-open(GC, "<", "/data/sites/projects/genomequery/lib/GlobalConfig.js") or die $!;
-local $/=undef;
-my $json_text = <GC>;
+if( ! $good ){ die "cannot find GlobalConfig.js for GlobalConfig.pl"; }
     
 #delete whitespace
 $json_text =~ s/\s+/ /g;
@@ -38,6 +48,8 @@ our $UPLOAD_DIR = $ROOT_DIR . $globals->{UPLOAD_DIR};
 our $DEBUG_DIR = $ROOT_DIR . $globals->{DEBUG_DIR};
 our $DEBUG = $globals->{DEBUG};
 our $INTERESTING_AREAS_GAP_THRESH = $globals->{INTERESTING_AREAS_GAP_THRESH};
+our $TRACK_TEMPLATE = sprintf($globals->{TRACK_TEMPLATE},$CHROM_PREFIX,$DONOR_PREFIX,$QUERY_PREFIX);
+print "whalshdflksadkf: $TRACK_TEMPLATE\n";
 #our $FAKING_REFSEQ = $globals->{FAKING_REFSEQ};
 
 #print DEBUGFILE "$globals\n";
