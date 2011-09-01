@@ -1,3 +1,5 @@
+
+
 /**
  * Construct a new Browser object.
  * @class This class is the main interface between JBrowse and embedders
@@ -490,8 +492,17 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
              label: "Download",
              style: "margin-top: 0px;",
              onClick: function(){
-                        var query_name = tree.selectedItem.name; 
-                        var url = "data/tracks/"+brwsr.refSeq.name+"/query_"+query_name+"/"+query_name+".bam";
+                        var selected = tree.selectedItem;
+                        var query_name = selected.name; 
+                        var donor_name = selected.parentName;
+                        var url = "data/" + sprintf( sprintf( globals.TRACK_TEMPLATE, 
+                                                              globals.CHROM_PREFIX, 
+                                                              globals.DONOR_PREFIX, 
+                                                              globals.QUERY_PREFIX ), 
+                                                     brwsr.refSeq.name, 
+                                                     donor_name, 
+                                                     query_name ) + "/" + query_name + ".bam";
+                        //var url = "data/tracks/"+brwsr.refSeq.name+"/query_"+query_name+"/"+query_name+".bam";
                         window.location = url;
                       }
             }).placeAt( explorer_button_pane.domNode );
