@@ -10,22 +10,22 @@ for t in tries :
         break
 
 if not good :
-    raise Exception("cannot find GlobalConfig.js from GlobalConfig.py")
+    raise Exception("cannot find GlobalConfig.js for GlobalConfig.py")
 
 fin.readline()
-js = json.loads(fin.read())
+globes = json.loads(fin.read())
 
 
-ROOT_DIR = js["ROOT_DIR"]
-DATA_DIR = ROOT_DIR + js["DATA_DIR"]
-DEBUG_DIR = ROOT_DIR + js["DEBUG_DIR"]
-UPLOAD_DIR = ROOT_DIR + js["UPLOAD_DIR"]
+ROOT_DIR = globes["ROOT_DIR"]
+DATA_DIR = ROOT_DIR + globes["DATA_DIR"]
+DEBUG_DIR = ROOT_DIR + globes["DEBUG_DIR"]
+UPLOAD_DIR = ROOT_DIR + globes["UPLOAD_DIR"]
 
-QUERY_PREFIX = js["QUERY_PREFIX"]
-PRIVATE_PREFIX = js["PRIVATE_PREFIX"]
-CHROM_PREFIX = js["CHROM_PREFIX"]
-DONOR_PREFIX = js["DONOR_PREFIX"]
+QUERY_PREFIX = globes["QUERY_PREFIX"]
+PRIVATE_PREFIX = globes["PRIVATE_PREFIX"]
+CHROM_PREFIX = globes["CHROM_PREFIX"]
+DONOR_PREFIX = globes["DONOR_PREFIX"]
 
-TRACK_TEMPLATE = "tracks/%s%%s/%s%%s/%s%%s" % (CHROM_PREFIX,DONOR_PREFIX,QUERY_PREFIX)
+TRACK_TEMPLATE = globes["TRACK_TEMPLATE"] % (CHROM_PREFIX,DONOR_PREFIX,QUERY_PREFIX)
 
 fin.close()

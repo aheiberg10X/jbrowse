@@ -3,8 +3,8 @@
 function IANode( trackKey, locs ){
     this.trackKey = trackKey;
 
-    this.leftLoc = locs[0];
-    this.rightLoc = locs[1];
+    this.leftLoc = parseInt(locs[0]);
+    this.rightLoc = parseInt(locs[1]);
     //this.leftLoc = locs;
 
     this.next = null;
@@ -84,7 +84,14 @@ InterestingAreas.prototype.addTrack = function( trackKey, interestingAreas ){
     var p2 = p1.next;
     while( head != null ){
         //console.log(p1,p2,head);
-        if(  p1.leftLoc <= head.leftLoc && head.leftLoc <= p2.leftLoc ){
+        console.log(p1.leftLoc);
+        console.log(head.leftLoc);
+        console.log(p2.leftLoc);
+        var a = p1.leftLoc <= head.leftLoc;
+        var b = head.leftLoc <= p2.leftLoc;
+        console.log( a );
+        console.log( b );
+        if(  a && b ){
             //console.log("in between");
             head.next = p2;
             p2.prev = head;
