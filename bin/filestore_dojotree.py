@@ -9,7 +9,7 @@ import cgitb
 import utils
 cgitb.enable()
 
-from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR
+from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR, DEBUG_DIR
 
 def getChildren( path ) :
     r = []
@@ -91,6 +91,7 @@ def makeItem( path ) :
 
         if prefix == QUERY_PREFIX : 
             assert parent_prefix == DONOR_PREFIX
+            item['parentName'] = parent_name
             item['trackkey'] = "%s/%s" % (parent_name,name)
 
         if is_dir :
@@ -100,9 +101,8 @@ def makeItem( path ) :
 
 if __name__ == '__main__' :
 
-    output = "%s/bin/debugging" % ROOT_DIR
-    fout = open("%s/filestore_out.txt" % output,'w')
-    ferr = open("%s/filestore_err.txt" % output,'w')
+    fout = open("%s/filestore_out.txt" % DEBUG_DIR,'w')
+    ferr = open("%s/filestore_err.txt" % DEUBUG_DIR,'w')
 
     utils.printToServer( "Content-type: text/json\n\n" )
 
