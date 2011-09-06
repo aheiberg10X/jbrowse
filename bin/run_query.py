@@ -46,7 +46,7 @@ H3=select * from INTERSECT genes,H2
 
 select * from H3 where chr=="chr1" and strand=='F' and location>0 and mate_loc<1000 and mate_loc>0 and id=="gene1"''' 
     print "query_name: %s" % query_name
-    print "donor: %s" % donor_name
+    print "donor: %s" % donor
     print "query: %s" % query
 
 try :
@@ -57,44 +57,44 @@ try :
     fuq.write( query)
     fuq.close()
 
-    print "popping run_biosql.sh"
-    t1 = time.time()
-    pop = Popen(["../genomequery/biosql_compiler/biosql/run_biosql.sh", \
-                 query_loc, \
-                 donor ], \
-                stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    (out, err) = pop.communicate()
-    sys.stdout.write( out )
-    sys.stderr.write( err )
-    t2 = time.time()
-    print "done with run_biosql, took: %f s" % (t2-t1)
-
-    t = '%s/genomequery/biosql_compiler/biosql/dst' % root
-    for thing in os.listdir(t) :
-        if thing.startswith("chr") :
-            chrom = thing
-        else :
-            continue
-        source = "%s/%s" % (t,chrom)
-        dest = "%s/data/tracks/chrom_%s/donor_%s/query_%s" % (root,chrom,donor,query_name)
-       
-	print "copying (change to moving!!) from %s to %s" % (source,dest)
-        if not os.path.exists( dest ) :
-            os.makedirs( dest )
-        #copy bam
-        shutil.copy( "%s/out.evidence.bam" % source, \
-                     "%s/%s.bam" % (dest,query_name) )
-        #copy query
-        shutil.copy( query_loc, "%s/%s.gq" % (dest, query_name) )
-        #copy histogram
-        histogram = "%s/out.hist.txt" % source 
-        shutil.copy( histogram, "%s/%s.hist" % (dest, query_name) )
-        #copy intervals
-        shutil.copy( "%s/out.evidence.bam.short" % source, \
-                     "%s/%s.intervals" % (dest,query_name) )
-
+    #print "popping run_biosql.sh"
+    #t1 = time.time()
+    #pop = Popen(["../genomequery/biosql_compiler/biosql/run_biosql.sh", \
+                 #query_loc, \
+                 #donor ], \
+                #stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    #(out, err) = pop.communicate()
+    #sys.stdout.write( out )
+    #sys.stderr.write( err )
+    #t2 = time.time()
+    #print "done with run_biosql, took: %f s" % (t2-t1)
+#
+    #t = '%s/genomequery/biosql_compiler/biosql/dst' % root
+    #for thing in os.listdir(t) :
+        #if thing.startswith("chr") :
+            #chrom = thing
+        #else :
+            #continue
+        #source = "%s/%s" % (t,chrom)
+        #dest = "%s/data/tracks/chrom_%s/donor_%s/query_%s" % (root,chrom,donor,query_name)
+      # 
+	#print "copying (change to moving!!) from %s to %s" % (source,dest)
+        #if not os.path.exists( dest ) :
+            #os.makedirs( dest )
+        ##copy bam
+        #shutil.copy( "%s/out.evidence.bam" % source, \
+                     #"%s/%s.bam" % (dest,query_name) )
+        ##copy query
+        #shutil.copy( query_loc, "%s/%s.gq" % (dest, query_name) )
+        ##copy histogram
+        #histogram = "%s/out.hist.txt" % source 
+        #shutil.copy( histogram, "%s/%s.hist" % (dest, query_name) )
+        ##copy intervals
+        #shutil.copy( "%s/out.evidence.bam.short" % source, \
+                     #"%s/%s.intervals" % (dest,query_name) )
+#
     t3 = time.time()
-    print "done moving, took: %f s" (t3-t2)
+    #print "done moving, took: %f s" % (t3-t2)
 
     print "starting bam2ncl"
     pop = Popen(["./bam_to_json_paired_cgi.pl", \
