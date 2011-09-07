@@ -163,7 +163,7 @@ sub evalSubStrings {
 sub new {
     my ($class, $outDir, $chunkBytes, $compress, $label, $segName,
         $refStart, $refEnd, $setStyle, $headers, $subfeatHeaders,
-        $featureCount, $pregen_histograms) = @_;
+        $pregen_histograms) = @_;
 
     my %style = ("key" => $label,
                  %builtinDefaults,
@@ -194,38 +194,23 @@ sub new {
     # a relatively high-resolution histogram; we can always throw
     # away the higher-resolution histogram data later, so a dense
     # estimate is conservative.  A dense estimate does cost more RAM, though)
-    $featureCount = $refEnd * $density_estimate unless defined($featureCount);
-
-    # $histBinThresh is the approximate the number of bases per
-    # histogram bin at the zoom level where FeatureTrack.js switches
-    # to the histogram view by default
-    my $histBinThresh = ($refEnd * $density_estimate * 100) / $featureCount;
-    $self->{histBinBases} = $multiples[0];
-    foreach my $multiple (@multiples) {
-        $self->{histBinBases} = $multiple;
-        last if $multiple > $histBinThresh;
-    }
-    open( my $OUTPUT, '>', $DEBUG_DIR . "/" . "jsongen_output2.txt" ) or die $!;
-    my $temp = $self->{histBinBases};
-    print $OUTPUT "histBinThresh: $histBinThresh\n";
-    print $OUTPUT "histBinBases: $temp\n";
+    #$featureCount = $refEnd * $density_estimate unless defined($featureCount);
 
     $self->{hists} = [];
-    if( ! defined $pregen_histograms ){
-        # initialize histogram arrays to all zeroes
-        for (my $i = 0; $i <= $#multiples; $i++) {
-            my $binBases = $self->{histBinBases} * $multiples[$i];
-            $self->{hists}->[$i] = [(0) x ceil($refEnd / $binBases)];
-            my $temp = ceil($refEnd / $binBases);
-
-            print $OUTPUT "zoom level $i has $temp bins\n";
-
-            # somewhat arbitrarily cut off the histograms at 100 bins
-            last if $binBases * 100 > $refEnd;
-        }
-    }
+    #if( ! defined $pregen_histograms ){
+        ## initialize histogram arrays to all zeroes
+        #for (my $i = 0; $i <= $#multiples; $i++) {
+            #my $binBases = $self->{histBinBases} * $multiples[$i];
+            #$self->{hists}->[$i] = [(0) x ceil($refEnd / $binBases)];
+            #my $temp = ceil($refEnd / $binBases);
+#
+            #print $OUTPUT "zoom level $i has $temp bins\n";
+#
+            ## somewhat arbitrarily cut off the histograms at 100 bins
+            #last if $binBases * 100 > $refEnd;
+        #}
+    #}
     #else do nothing, wait until generateTrack to pull in pregen data
-    close $OUTPUT;
 
     
     mkdir($outDir) unless (-d $outDir);
@@ -311,17 +296,27 @@ sub hasFeatures {
 }
 
 sub generateTrack {
-    my ($self) = @_;
-    open( my $OUTPUT, '>', $DEBUG_DIR . "/" . "generateTrack_output.txt" ) or die $!;
+    my ($self, $featureCount) = @_;
+    $self->{count} = $featureCount;
 
     my $ext = $self->{ext};
     my $features = $self->{features};
     $features->finish();
-
-    # approximate the number of bases per histogram bin at the zoom level where
+    
+# approximate the number of bases per histogram bin at the zoom level where
     # FeatureTrack.js switches to histogram view, by default
     my $histBinThresh = ($self->{refEnd} * $density_estimate * 10) / $self->{count};
-    print $OUTPUT  "what";
+
+    
+    # $histBinThresh is the approximate the number of bases per
+    # histogram bin at the zoom level where FeatureTrack.js switches
+    # to the histogram view by default
+    $self->{histBinBases} = $multiples[0];
+    foreach my $multiple (@multiples) {
+        $self->{histBinBases} = $multiple;
+        last if $multiple > $histBinThresh;
+    }
+    my $temp = $self->{histBinBases};
 
     # find multiple of base hist bin size that's just over $histBinThresh
     my $i;
@@ -330,10 +325,7 @@ sub generateTrack {
     }
     
     if( $DEBUG ){ 
-        print $OUTPUT "histBinThresh: $histBinThresh\n"; 
         my $temp = $self->{histBinBases};
-        print $OUTPUT "histBinBases: $temp\n";
-        print $OUTPUT "i: $i\n";
     }
 
     my @histogramMeta;
@@ -342,10 +334,8 @@ sub generateTrack {
     if( defined $self->{pregen_histograms} ){
         my @sorted = sort { $a->{basesPerBin} <=> $b->{basesPerBin} } @{$self->{pregen_histograms}};
         $self->{pregen_histograms} = \@sorted;
-        print $OUTPUT "sorted it\n";
         my $num_pregen_hists = scalar @{$self->{pregen_histograms}};
         #my $num_hists = scalar @{$self->{hists}};
-        print $OUTPUT "numhistlevels: $num_pregen_hists\n";
 
         for( my $k = 0; $k < $num_pregen_hists; $k++ ){
             $self->{hists}->[$k] = $self->{pregen_histograms}->[$k]->{counts};
@@ -353,7 +343,9 @@ sub generateTrack {
 
         $i = 1; #($#multiples + 1) - $num_pregen_hists + 1;
         #set $i to reflect how many histograms were pre-generated
-        if( $DEBUG ){ print $OUTPUT "new i is $i\n"; }
+    }
+    else {
+	die "pregen_histograms needs to be defined\n";
     }
     ### pregen histogram meta ###
     #############################
@@ -373,10 +365,6 @@ sub generateTrack {
             $histBases = $self->{pregen_histograms}->[$j]->{basesPerBin};
         }
     
-        if( $DEBUG ){
-            print $OUTPUT "    binBases[$j]: $histBases\n";
-        }
-
         #TODO OPTIMIZE
         #this seems like a huge waste:
         #   why create chunks at all, why not just loop through
@@ -413,10 +401,6 @@ sub generateTrack {
         }
         push @histStats, {'bases' => $binBases,
                           arrayStats($self->{hists}->[$j])};
-    }
-
-    if( $DEBUG ) {
-        print $OUTPUT "hi there";
     }
 
     my $trackData = {
@@ -462,7 +446,6 @@ sub generateTrack {
               {pretty => 0, max_depth => MAX_JSON_DEPTH},
               $self->{compress});
 
-    close $OUTPUT;
 }
 
 sub arrayStats {

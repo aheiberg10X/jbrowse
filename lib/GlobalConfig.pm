@@ -15,7 +15,8 @@ my $good = 0;
 my $json_text;
 foreach my $try (@tries) {
     if( -e $try ){
-        open(GC, "<", "/home/andrew/school/dnavis/jbrowse/lib/GlobalConfig.js") or die $!;
+        open(GC, "<", $try) or die $!;
+	$good = 1;
         local $/=undef;
         $json_text = <GC>;
         close GC;
@@ -49,7 +50,6 @@ our $DEBUG_DIR = $ROOT_DIR . $globals->{DEBUG_DIR};
 our $DEBUG = $globals->{DEBUG};
 our $INTERESTING_AREAS_GAP_THRESH = $globals->{INTERESTING_AREAS_GAP_THRESH};
 our $TRACK_TEMPLATE = sprintf($globals->{TRACK_TEMPLATE},$CHROM_PREFIX,$DONOR_PREFIX,$QUERY_PREFIX);
-print "whalshdflksadkf: $TRACK_TEMPLATE\n";
 #our $FAKING_REFSEQ = $globals->{FAKING_REFSEQ};
 
 #print DEBUGFILE "$globals\n";
