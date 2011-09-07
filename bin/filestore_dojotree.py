@@ -11,6 +11,8 @@ cgitb.enable()
 
 from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR, DEBUG_DIR
 
+perms = {"earthworm jim" : {"NA18507" : False}}
+
 def getChildren( path ) :
     r = []
     for thing in os.listdir( path ) :
@@ -52,9 +54,7 @@ def getPrefix( path, name ) :
             elif name.startswith( DONOR_PREFIX ) :
                 return DONOR_PREFIX
         else :
-            return "file_"
-
-perms = {"earthworm jim" : {"NA18507" : False}}
+            return "file"
 
 def hasPermission( user, path, name ) :
     if user == 'su' : return True
@@ -69,7 +69,7 @@ def hasPermission( user, path, name ) :
 
 def show( path, name ) :
     prefix = getPrefix( path,name )
-    return not( prefix == 'file' or prefix == 'private' ) and \
+    return not( prefix == 'file' or prefix == PRIVATE_PREFIX ) and \
            hasPermission("su",path,name)
 
 def makeItem( path ) :
@@ -102,7 +102,7 @@ def makeItem( path ) :
 if __name__ == '__main__' :
 
     fout = open("%s/filestore_out.txt" % DEBUG_DIR,'w')
-    ferr = open("%s/filestore_err.txt" % DEUBUG_DIR,'w')
+    ferr = open("%s/filestore_err.txt" % DEBUG_DIR,'w')
 
     utils.printToServer( "Content-type: text/json\n\n" )
 
