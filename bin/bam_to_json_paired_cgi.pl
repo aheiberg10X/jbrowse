@@ -59,10 +59,14 @@ my $linking = $ARGV[2];
 #HERE IS WHERE WE CAN MULTI THREAD
 my @chroms = qw/1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y/;
 foreach my $chromnum (@chroms) {
+    print $OUTPUT "printing chrom $chromnum\n";
     my $chrom = "chr$chromnum";
     print createTrack( $chrom, $donor, $query_name, $linking );
+    print $OUTPUT "affter chreatTrack for $chrom\n";
 }
 #closedir( $target );
+close $OUTPUT;
+close ERROR;
 print "\n</textarea></body></html>";
 
 sub createTrack {
@@ -70,9 +74,9 @@ sub createTrack {
     my ($host_chrom, $donor, $query_name, $bam_linking) = @_;
     
     my $template = $TRACK_TEMPLATE; #"tracks/$CHROM_PREFIX%s/$DONOR_PREFIX$donor/$QUERY_PREFIX$query_name";
-    print "template: $template\n";
+    print $OUTPUT "template: $template\n";
     my $targetdir = sprintf( "$DATA_DIR/$template", $host_chrom, $donor, $query_name );
-    print "targetdir: $targetdir\n";
+    print $OUTPUT "targetdir: $targetdir\n";
 
 
     #my $bamFile = "$targetdir/$query_name.bam";
@@ -103,7 +107,7 @@ sub createTrack {
         $/ = $OLDSEP;
     }
 
-    my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $compress, $key, $featureCount);
+    my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $compress, $key);
 
     my $defaultClass = "transcript";
     my $defaultSubfeatureClasses = {"forward","forward-strand",
@@ -165,7 +169,7 @@ sub createTrack {
     #}
 
     my @bookmarks;
-    my ($cur_left, $cur_right) = (0,0);
+    my ($cur_left, $cur_right, $featureCount) = (0,0,0);
 
     my @refSeqs = @{JsonGenerator::readJSON("$DATA_DIR/refSeqs.js", [], 1)};
     my ($refseq_start,$refseq_end,$refseq_name) = 0,0,"";
@@ -188,7 +192,6 @@ sub createTrack {
                                      \%style, 
                                      \@bamHeaders, 
                                      \@subfeatureHeaders,
-                                     $featureCount,
                                      $pregen_histograms);
 
     #ensures ties of left-sort are broken by right-end
@@ -209,6 +212,7 @@ sub createTrack {
                 updateBookmarks( $jsonGen,
                                  \$cur_left,
                                  \$cur_right,
+                                 \$featureCount,
                                  $feature );
             };
 
@@ -233,6 +237,7 @@ sub createTrack {
                 updateBookmarks( $jsonGen,
                                  \$cur_left, 
                                  \$cur_right, 
+	                         \$featureCount,
                                  $feature );
                 $sorter->addSorted( $feature ); 
             };
@@ -241,22 +246,17 @@ sub createTrack {
 
             open( FINT, '<', $interval_file );
             while( <FINT> ) {
+		print $OUTPUT "line in intval file is: $_\n";
                 my $feat = makeFeature( $_ );
                 $callback->( $feat );
             }
             
-            # $_[0] is the alignment found by fetch
-            # $_[1] is \%paired_info reference
-            #print "beginning fetch\n";
-            #while( my $align = $bam->read1 ){
-                #new_linking_align2array( $align, $callback );
-            #}
-            #print "done fetching\n";
         }
     }
-    else{
-    }
 
+    if( $featureCount <= 0 ){
+	return '{"status":"OK", "trackData":"empty"}';
+    }
     ##it could be that there are no gaps in reads, meaning updateBookmarks never adds anything to IAs
     #if thats the case, add the one giant interval herei
     #print "huh\n";
@@ -272,7 +272,7 @@ sub createTrack {
 
     $sorter->flush();
     eval {
-        $jsonGen->generateTrack();
+        $jsonGen->generateTrack($featureCount);
         1;
     }
     or do {
@@ -306,8 +306,6 @@ sub createTrack {
 
     print $OUTPUT "done\n";
 
-    close $OUTPUT;
-    close ERROR;
 
     return $status;
 }
@@ -439,7 +437,10 @@ sub updateBookmarks {
     my $jsonGen = shift;
     my $cur_left = shift;
     my $cur_right = shift;
+    my $featureCount = shift;
     my $align_array = shift;
+
+    $$featureCount += 1;
 
     #print $OUTPUT "$align_array->[0], $align_array->[1]\n";
     #print $OUTPUT "curleft: $$cur_left, curright: $$cur_right\n";
