@@ -72,7 +72,7 @@ for thing in os.listdir(t) :
     source = "%s/%s" % (t,chrom)
     dest = "%s/data/tracks/chrom_%s/donor_%s/query_%s" % (root,chrom,donor,query_name)
    
-print "copying (change to moving!!) from %s to %s" % (source,dest)
+    print "copying (change to moving!!) from %s to %s" % (source,dest)
     if not os.path.exists( dest ) :
         os.makedirs( dest )
     #copy bam
