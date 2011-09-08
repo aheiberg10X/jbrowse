@@ -3,4 +3,8 @@
 cd ../genomequery/biosql_compiler/biosql
 rm -f low_level.sh bytecode.txt
 
-cd -f ../../../debug/*
+cd ../../../debug
+rm -f *
+
+cd ../uploads
+rm -f *
