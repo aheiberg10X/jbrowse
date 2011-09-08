@@ -515,7 +515,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         }).placeAt( explorer_button_pane.domNode );
    
     var deleteSubmit = function(brwsr) {
-
+        alert("remeberg doing reset as apache.sh");
         //brwsr.chromList.options[brwsr.chromList.selectedIndex].value;
         var current_chrom = brwsr.refSeq.name;
         var selected = tree.selectedItem;
@@ -535,7 +535,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         var url = "bin/remove_track.py?" + dojo.objectToQuery(args);
 
         var xhrArgs = {
-            url: url,
+            url: "bin/reset_as_apache.sh",//url,
             form: dojo.byId("track_manager_form"),
             handleAs: "json",
             load: function(data,ioargs) {
