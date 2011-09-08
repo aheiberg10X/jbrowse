@@ -43,8 +43,8 @@ def removeQuery( donor, query_name, delete=False, filename = "../data/trackInfo.
                     fullpath = "%s/%s" % (GlobalConfig.DATA_DIR, trackpath)
                     if( exists(fullpath) ) :
                         rmtree( fullpath )
-            except OSError as e :
-                print "can't remove %s: %s\n" % (trackpath,str(e))
+            except OSError :
+                print "can't remove %s: %s\n" % (trackpath,"bix cant do OSError as e...")
 
     if len(retained_tracks) == len(json_tracks) :
         raise Exception("No tracks were removed. Check to make sure the supplied track names are correct")

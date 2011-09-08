@@ -43,67 +43,66 @@ select * from H3 where chr=="chr1" and strand=='F' and location>0 and mate_loc<1
     print "donor: %s" % donor
     print "query: %s" % query
 
-try :
-    query_loc = "%s/user_query.txt" % GlobalConfig.UPLOAD_DIR 
-    print "writing query to %s" % query_loc 
+query_loc = "%s/user_query.txt" % GlobalConfig.UPLOAD_DIR 
+print "writing query to %s" % query_loc 
 
-    fuq = open( query_loc, 'wb')
-    fuq.write( query)
-    fuq.close()
+fuq = open( query_loc, 'wb')
+fuq.write( query)
+fuq.close()
 
-    print "popping run_biosql.sh"
-    t1 = time.time()
-    pop = Popen(["../genomequery/biosql_compiler/biosql/run_biosql.sh", \
-                 query_loc, \
-                 donor ], \
-                stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    (out, err) = pop.communicate()
-    sys.stdout.write( out )
-    sys.stderr.write( err )
-    t2 = time.time()
-    print "done with run_biosql, took: %f s" % (t2-t1)
+print "popping run_biosql.sh"
+t1 = time.time()
+pop = Popen(["../genomequery/biosql_compiler/biosql/run_biosql.sh", \
+             query_loc, \
+             donor ], \
+            stdin=PIPE, stdout=PIPE, stderr=PIPE)
+(out, err) = pop.communicate()
+sys.stdout.write( out )
+sys.stderr.write( err )
+t2 = time.time()
+print "done with run_biosql, took: %f s" % (t2-t1)
 
-    t = '%s/genomequery/biosql_compiler/biosql/dst' % root
-    for thing in os.listdir(t) :
-        if thing.startswith("chr") :
-            chrom = thing
-        else :
-            continue
-        source = "%s/%s" % (t,chrom)
-        dest = "%s/data/tracks/chrom_%s/donor_%s/query_%s" % (root,chrom,donor,query_name)
-       
-	print "copying (change to moving!!) from %s to %s" % (source,dest)
-        if not os.path.exists( dest ) :
-            os.makedirs( dest )
-        #copy bam
-        shutil.copy( "%s/out.evidence.bam" % source, \
-                     "%s/%s.bam" % (dest,query_name) )
-        #copy query
-        shutil.copy( query_loc, "%s/%s.gq" % (dest, query_name) )
-        #copy histogram
-        histogram = "%s/out.hist.txt" % source 
-        shutil.copy( histogram, "%s/%s.hist" % (dest, query_name) )
-        #copy intervals
-        shutil.copy( "%s/out.evidence.bam.short" % source, \
-                     "%s/%s.intervals" % (dest,query_name) )
+t = '%s/genomequery/biosql_compiler/biosql/dst' % root
+for thing in os.listdir(t) :
+    if thing.startswith("chr") :
+        chrom = thing
+    else :
+        continue
+    source = "%s/%s" % (t,chrom)
+    dest = "%s/data/tracks/chrom_%s/donor_%s/query_%s" % (root,chrom,donor,query_name)
+   
+print "copying (change to moving!!) from %s to %s" % (source,dest)
+    if not os.path.exists( dest ) :
+        os.makedirs( dest )
+    #copy bam
+    shutil.copy( "%s/out.evidence.bam" % source, \
+                 "%s/%s.bam" % (dest,query_name) )
+    #copy query
+    shutil.copy( query_loc, "%s/%s.gq" % (dest, query_name) )
+    #copy histogram
+    histogram = "%s/out.hist.txt" % source 
+    shutil.copy( histogram, "%s/%s.hist" % (dest, query_name) )
+    #copy intervals
+    shutil.copy( "%s/out.evidence.bam.short" % source, \
+                 "%s/%s.intervals" % (dest,query_name) )
 #
-    t3 = time.time()
-    #print "done moving, took: %f s" % (t3-t2)
+t3 = time.time()
+#print "done moving, took: %f s" % (t3-t2)
 
-    print "starting bam2ncl"
-    pop = Popen(["./bam_to_json_paired_cgi.pl", \
-                 donor, \
-                 query_name, \
-                 "linking"], \
-                stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    (out, err) = pop.communicate()
+print "starting bam2ncl"
+pop = Popen(["./bam_to_json_paired_cgi.pl", \
+             donor, \
+             query_name, \
+             "linking"], \
+            stdin=PIPE, stdout=PIPE, stderr=PIPE)
+(out, err) = pop.communicate()
 
-    t4 = time.time()
-    print "done with bam2ncl, took: %f s" % (t4-t3)
+t4 = time.time()
+print "done with bam2ncl, took: %f s" % (t4-t3)
 
-    utils.printToServer( json.dumps( {"status":"ok",
-                                      "message":out} ) )
+utils.printToServer( json.dumps( {"status":"ok",
+                                  "message":out} ) )
 
-except IOError :
-    utils.printToServer( json.dumps( {"status":"error", \
-                                      "message":"io error in run query"} ) )
+#except IOError :
+    #utils.printToServer( json.dumps( {"status":"error", \
+                                      #"message":"io error in run query"} ) )
