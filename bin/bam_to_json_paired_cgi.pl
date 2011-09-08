@@ -255,7 +255,7 @@ sub createTrack {
     }
 
     if( $featureCount <= 0 ){
-	return '{"status":"OK", "trackData":"empty"}';
+    	return '{"status":"OK", "trackData":"empty"}';
     }
     ##it could be that there are no gaps in reads, meaning updateBookmarks never adds anything to IAs
     #if thats the case, add the one giant interval herei

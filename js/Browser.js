@@ -518,34 +518,33 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
         //brwsr.chromList.options[brwsr.chromList.selectedIndex].value;
         var current_chrom = brwsr.refSeq.name;
-        var deleted_item = tree.selectedItem;
-        var delete_name = deleted_item.name;
-        var parent_prefix = deleted_item.parentPrefix;
-        var parent_name = deleted_item.parentName;
+        var selected = tree.selectedItem;
+        var query_name = selected.name;
+        var trackkey = selected.trackkey;
+        var donor = selected.parentName;
 
-        recall( tree.selectedItem.name );
-        var tracks_in_trash = [delete_name];
-        //what are we doing with ids_to_trash?
-        var ids_to_trash = [];
-        var ix = brwsr.tracks.indexOf(delete_name);
+        recall( trackkey );
+        var ix = brwsr.tracks.indexOf(trackkey);
         if( ix != -1 ){
             brwsr.tracks.splice(ix,1);
         }
-        var args = {chrom: current_chrom,
-                    delete_track: tracks_in_trash};
+        //var args = {chrom: current_chrom,
+        //delete_track: tracks_in_trash};
+        var args = {donor: donor, query_name: query_name};
 
         var url = "bin/remove_track.py?" + dojo.objectToQuery(args);
 
         var xhrArgs = {
             url: url,
             form: dojo.byId("track_manager_form"),
-            handleAs: "text",
+            handleAs: "json",
             load: function(data,ioargs) {
-                //var tree = dijit.byId('tree');
-                //if(tree){ tree.destroy(); }
-                //var tree = 
-                refreshTree();
-                alert('Track deleted');
+                if( data["status"] == "ok" ){
+                    refreshTree();
+                }
+                else{       
+                    alert(data["message"]);
+                }
             },
             error: function(error) {
                 dojo.byId("track_manager_status").innerHTML = "fail";
@@ -819,57 +818,57 @@ Browser.prototype.navigateTo = function(loc) {
     //matches[4] = start base (optional)
     //matches[6] = end base (or center base, if it's the only one)
     if (matches) {
-	if (matches[3]) {
-	    var refName;
-	    for (ref in this.allRefs) {
-		if ((matches[3].toUpperCase() == ref.toUpperCase())
-                    ||
-                    ("CHR" + matches[3].toUpperCase() == ref.toUpperCase())
-                    ||
-                    (matches[3].toUpperCase() == "CHR" + ref.toUpperCase())) {
+        if (matches[3]) {
+            var refName;
+            for (ref in this.allRefs) {
+                if ((matches[3].toUpperCase() == ref.toUpperCase())
+                        ||
+                        ("CHR" + matches[3].toUpperCase() == ref.toUpperCase())
+                        ||
+                        (matches[3].toUpperCase() == "CHR" + ref.toUpperCase())) {
 
-		    refName = ref;
+                    refName = ref;
                 }
             }
-	    if (refName) {
-		dojo.cookie(this.container.id + "-refseq", refName, {expires: 60});
-		if (refName == this.refSeq.name) {
-		    //go to given start, end on current refSeq
-		    this.view.setLocation(this.refSeq,
-					  parseInt(matches[4].replace(/[,.]/g, "")),
-					  parseInt(matches[6].replace(/[,.]/g, "")));
-		} else {
-		    //new refseq, record open tracks and re-open on new refseq
-                    var curTracks = [];
-                    this.viewDndWidget.forInItems(function(obj, id, map) {
-                            curTracks.push(obj.data);
-                        });
+            if (refName) {
+            dojo.cookie(this.container.id + "-refseq", refName, {expires: 60});
+            if (refName == this.refSeq.name) {
+                //go to given start, end on current refSeq
+                this.view.setLocation(this.refSeq,
+                          parseInt(matches[4].replace(/[,.]/g, "")),
+                          parseInt(matches[6].replace(/[,.]/g, "")));
+            } else {
+                //new refseq, record open tracks and re-open on new refseq
+                var curTracks = [];
+                this.viewDndWidget.forInItems(function(obj, id, map) {
+                        curTracks.push(obj.data);
+                    });
 
-		    for (var i = 0; i < this.chromList.options.length; i++)
-			if (this.chromList.options[i].text == refName)
-			    this.chromList.selectedIndex = i;
-		    this.refSeq = this.allRefs[refName];
-		    //go to given refseq, start, end
-		    this.view.setLocation(this.refSeq,
-					  parseInt(matches[4].replace(/[,.]/g, "")),
-					  parseInt(matches[6].replace(/[,.]/g, "")));
+                for (var i = 0; i < this.chromList.options.length; i++)
+                if (this.chromList.options[i].text == refName)
+                    this.chromList.selectedIndex = i;
+                this.refSeq = this.allRefs[refName];
+                //go to given refseq, start, end
+                this.view.setLocation(this.refSeq,
+                          parseInt(matches[4].replace(/[,.]/g, "")),
+                          parseInt(matches[6].replace(/[,.]/g, "")));
 
-                    this.viewDndWidget.insertNodes(false, curTracks);
-                    this.onVisibleTracksChanged();
-		}
-		return;
-	    }
-	} else if (matches[4]) {
-	    //go to start, end on this refseq
-	    this.view.setLocation(this.refSeq,
-				  parseInt(matches[4].replace(/[,.]/g, "")),
-				  parseInt(matches[6].replace(/[,.]/g, "")));
-	    return;
-	} else if (matches[6]) {
-	    //center at given base
-	    this.view.centerAtBase(parseInt(matches[6].replace(/[,.]/g, "")));
-	    return;
-	}
+                        this.viewDndWidget.insertNodes(false, curTracks);
+                        this.onVisibleTracksChanged();
+            }
+            return;
+            }
+        } else if (matches[4]) {
+            //go to start, end on this refseq
+            this.view.setLocation(this.refSeq,
+                      parseInt(matches[4].replace(/[,.]/g, "")),
+                      parseInt(matches[6].replace(/[,.]/g, "")));
+            return;
+        } else if (matches[6]) {
+            //center at given base
+            this.view.centerAtBase(parseInt(matches[6].replace(/[,.]/g, "")));
+            return;
+        }
     }
     //if we get here, we didn't match any expected location format
 

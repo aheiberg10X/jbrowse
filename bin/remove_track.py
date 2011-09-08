@@ -4,11 +4,12 @@ sys.path.append("../lib")
 import simplejson as json
 import re
 from os import mkdir
+from os.path import exists
 from shutil import rmtree
 import cgi
 import cgitb
 import GlobalConfig
-from utils import fileToJson
+import utils
 #cgitb.enable()
 
 def removeQuery( donor, query_name, delete=False, filename = "../data/trackInfo.js" ) :
@@ -32,14 +33,16 @@ def removeQuery( donor, query_name, delete=False, filename = "../data/trackInfo.
     retained_tracks = []
     for track in json_tracks :
         if not track["key"].lower() == "%s/%s" % (donor.lower(), query_name.lower()) :
-             retained_tracks.append( track )
+            print "retaining %s" % track["key"]
+            retained_tracks.append( track )
         elif delete :
             try :
                 chroms = range(1,23) + ['X','Y']
                 for c in chroms :
                     trackpath = GlobalConfig.TRACK_TEMPLATE % ("chr%s" % str(c), donor, query_name)
-                    print trackpath
-                    rmtree( "%s/%s" % (GlobalConfig.DATA_DIR, trackpath) )
+                    fullpath = "%s/%s" % (GlobalConfig.DATA_DIR, trackpath)
+                    if( exists(fullpath) ) :
+                        rmtree( fullpath )
             except OSError as e :
                 print "can't remove %s: %s\n" % (trackpath,str(e))
 
@@ -55,20 +58,25 @@ if __name__ == '__main__' :
     root_dir = GlobalConfig.ROOT_DIR 
 
     fields = cgi.FieldStorage()
-    print 'Content-type: text/html\n\n'
+    print 'Content-type: text/json\n\n'
 
     if not fields :
         donor = sys.argv[1]
         query_name = sys.argv[2]
         removeQuery( donor, query_name, delete=True )
     else :
-        sys.stderr = open("%s/uploads/delete_error.txt" % root_dir,'w')
-        sys.stdout = open("%s/uploads/delete_output.txt" % root_dir,'w')
+        sys.stderr = open("%s/delete_error.txt" % GlobalConfig.DEBUG_DIR,'w')
+        sys.stdout = open("%s/delete_output.txt" % GlobalConfig.DEBUG_DIR,'w')
         fields = cgi.parse()
         print fields
-        removeQuery( fields["donor"][0], fields["query_name"], delete=True )
+        utils.printToServer('<html><body><textarea>')
+        #try :
+        removeQuery( fields["donor"][0], fields["query_name"][0], delete=True )
+        utils.printToServer( '{"status":"ok", "message":"Query Deleted"}' )
+        #except Exception :
+            #utils.printToServer( '{"status":"error", "message":"Something went wrong, check the logs"}' )
 
-    #removeTracks( ['Linked Test rEAds'], delete=True );
+        utils.printToServer('</textarea></body></html>')
 
 
 
