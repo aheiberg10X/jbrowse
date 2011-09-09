@@ -7,7 +7,7 @@ use warnings;
 use CGI;
 
 use FindBin qw($Bin);
-use lib "$Bin/../lib";
+use lib ("$Bin/../lib", "/usr/local/lib/perl5", "/usr/local/lib/perl5/site_perl","/home/aheiberg/perl5/lib/perl5/");
 
 use Getopt::Long;
 use JsonGenerator;
@@ -17,7 +17,6 @@ use Bio::DB::Sam;
 use Bio::DB::Bam::AlignWrapper;
 
 use IO::Handle;
-use bam_to_json_paired_cgi;
 use GlobalConfig;
 
 my $using_CGI = 1;

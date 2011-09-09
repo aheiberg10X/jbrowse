@@ -429,8 +429,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     var model = new dijit.tree.ForestStoreModel(
                      {id : "model",
                       store : store,
-                      rootId : "projects",
-                      rootLabel : "projects" }
+                      rootId : "tree_root",
+                      rootLabel : "Donors" }
                     );       
 
     
@@ -494,11 +494,11 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
              onClick: function(){
                         var selected = tree.selectedItem;
                         var query_name = selected.name; 
-                        var donor_name = selected.parentName;
+                        var donor_name = selected.donor;
                         var url = "data/" + sprintf( sprintf( globals.TRACK_TEMPLATE, 
-                                                              globals.CHROM_PREFIX, 
                                                               globals.DONOR_PREFIX, 
-                                                              globals.QUERY_PREFIX ), 
+                                                              globals.QUERY_PREFIX,
+                                                              globals.CHROM_PREFIX ), 
                                                      brwsr.refSeq.name, 
                                                      donor_name, 
                                                      query_name ) + "/" + query_name + ".bam";
@@ -515,13 +515,13 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         }).placeAt( explorer_button_pane.domNode );
    
     var deleteSubmit = function(brwsr) {
-        alert("remeberg doing reset as apache.sh");
+        //alert("remeberg doing reset as apache.sh");
         //brwsr.chromList.options[brwsr.chromList.selectedIndex].value;
         var current_chrom = brwsr.refSeq.name;
         var selected = tree.selectedItem;
         var query_name = selected.name;
         var trackkey = selected.trackkey;
-        var donor = selected.parentName;
+        var donor = selected.donor;
 
         recall( trackkey );
         var ix = brwsr.tracks.indexOf(trackkey);
@@ -535,7 +535,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         var url = "bin/remove_track.py?" + dojo.objectToQuery(args);
 
         var xhrArgs = {
-            url: "bin/reset_as_apache.sh",//url,
+            url: url,
             form: dojo.byId("track_manager_form"),
             handleAs: "json",
             load: function(data,ioargs) {

@@ -36,15 +36,14 @@ sub new {
     my $self = { 'topList' => $curList,
                  'startIndex' => $start,
                  'endIndex' => $end,
-		 'sublistIndex' => $sublistIndex,
+        		 'sublistIndex' => $sublistIndex,
                  'sublistStack' => [],
                  'curList' => $curList,
-	         'count' => 0,
+	             'count' => 0,
                  'lastAdded' => undef,
                  'minStart' => undef,
                  'maxEnd' => undef };
     bless $self, $class;
-
     return $self;
 }
 
@@ -58,9 +57,12 @@ sub ID {
     }
 }
 
+
+#TODO OPTIMIZE
+#take out the sorted check
 sub addFeatures {
     my ($self, $features) = @_;
-
+    my $jamon = $features->[0]->[1];
     #@$sublistStack is a list of all the currently relevant sublists
     #(one for each level of nesting)
     my $sublistStack = $self->{sublistStack};
@@ -79,6 +81,7 @@ sub addFeatures {
     if (!defined($lastAdded)) {
         $lastAdded = shift @$features;
         $self->{minStart} = $lastAdded->[$start];
+        #print "minStart: $self->{minStart}\n";
         $maxEnd = $lastAdded->[$end];
         push @$curList, $lastAdded;
     } else {
@@ -104,12 +107,12 @@ sub addFeatures {
 
     $self->{curList} = $curList;
     $self->{maxEnd} = $maxEnd;
+    #print "maxEnd: $maxEnd\n";
     $self->{lastAdded} = $lastAdded;
 }
 
 sub _addSingle {
     my ($feat, $lastAdded, $sublistStack, $curList, $end, $sublistIndex) = @_;
-
     #if this interval is contained in the previous interval,
     if ($feat->[$end] < $lastAdded->[$end]) {
         #create a new sublist starting with this interval

@@ -18,7 +18,7 @@ var Sandbox = function(params) {
 
             var fs = new dojox.data.FileStore( 
                         {"id" : "fs",
-                         "url" : "../bin/filestore_dojotree.php",
+                         "url" : "../bin/filestore_dojotree.py",
                          "pathAsQueryParam" : "true"}
                      );
 
@@ -34,28 +34,6 @@ var Sandbox = function(params) {
                              "model" : model,
                              "dndController" : "dijit.tree.dndSource"}
                        ).placeAt( hello_div ); 
-/*
-
-            
-            var store = new dojo.data.ItemFileReadStore({
-                url: "../bin/countries.json"
-            });
-
-            var treeModel = new dijit.tree.ForestStoreModel({
-                store: store,
-                query: {
-                    "type": "continent"
-                },
-                rootId: "root",
-                rootLabel: "Continents",
-                childrenAttrs: ["children"]
-            });
-
-            new dijit.Tree({
-                model: treeModel
-            }, "hello_div" );
-            
-*/
         }
     );
 

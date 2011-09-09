@@ -20,6 +20,9 @@ sub new {
     return $self;
 }
 
+#TODO OPTIMIZE
+# the measure function of counting characters takes too long
+# replace with a simple counter, or counter * max_feature_length
 sub addSorted {
     #print "\nIn addSorted\n";
     my ($self, $feat) = @_;
@@ -27,7 +30,8 @@ sub addSorted {
         $self->finish();        
     }
     $self->{NCL}->addFeatures([$feat]);
-    $self->{size} += $self->{measure}->($feat);
+    $self->{size} += 60; # ~ 7*6 pos numbers + 3 strands + 8 []
+    #$self->{size} += $self->{measure}->($feat);
 }
 
 sub finish {
@@ -36,7 +40,6 @@ sub finish {
     if( $self->{size} > 0 ){
         my $id = $self->{id};
         #write the chunk out
-        print "WRITING OUTPUT CHUNK\n";
         $self->{output}->($self->{NCL}->nestedList, $id);
 
         my $NCL = $self->{NCL};

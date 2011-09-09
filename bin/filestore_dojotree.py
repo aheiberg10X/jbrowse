@@ -9,7 +9,7 @@ import cgitb
 import utils
 cgitb.enable()
 
-from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR, DEBUG_DIR
+from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR, DEBUG_DIR, TRACK_TEMPLATE, UNBOUND_CHROM
 
 perms = {"earthworm jim" : {"NA18507" : False}}
 
@@ -91,8 +91,9 @@ def makeItem( path ) :
 
         if prefix == QUERY_PREFIX : 
             assert parent_prefix == DONOR_PREFIX
-            item['parentName'] = parent_name
+            item['donor'] = parent_name
             item['trackkey'] = "%s/%s" % (parent_name,name)
+            item['url'] = TRACK_TEMPLATE % (parent_name, name, UNBOUND_CHROM) 
 
         if is_dir :
             item["children"] = getChildren( path )

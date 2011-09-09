@@ -1,31 +1,22 @@
 Compilation completed without errors
-1. load_table genes 
-2. loaded_param char* annot_id 
-3. loaded_param char* chr 
-4. loaded_param int begin 
-5. loaded_param int end 
-6. end_load_table 
-7. Input = READS 
-8. t0 = location > 0 
-9. t1 = location < 1000 
-10. t2 = t0 && t1 
-11. return_arg : id 
-12. result_table : H2 
-13. begin_intersect
-14. Input = genes 
-15. Input = H2 
-16. end_intersect 
-17. result_table : H3 
-18. Input = H3 
-19. t3 = (strcmp( chr , "chr1" )==0) 
-20. t4 = strand == 'F' 
-21. t5 = t3 && t4 
-22. t6 = location > 0 
-23. t7 = t5 && t6 
-24. t8 = mate_loc < 1000 
-25. t9 = t7 && t8 
-26. t10 = mate_loc > 0 
-27. t11 = t9 && t10 
-28. t12 = (strcmp( id , "gene1" )==0) 
-29. t13 = t11 && t12 
-30. return_arg : * 
+1. Input = READS 
+2. t0 = location >= 0 
+3. t1 = mate_loc >= 0 
+4. t2 = t0 && t1 
+5. t3 = mate_loc - location 
+6. t4 = t3 > 1000 
+7. t5 = mate_loc - location 
+8. t6 = t5 < 2000000 
+9. t7 = t4 && t6 
+10. t8 = location - mate_loc 
+11. t9 = t8 > 1000 
+12. t10 = location - mate_loc 
+13. t11 = t10 < 2000000 
+14. t12 = t9 && t11 
+15. t13 = t7 || t12 
+16. t14 = t2 && t13 
+17. return_arg : strength_vector 
+18. result_table : H1 
+19. Input = H1 
+20. t15 = countvec > 5 
+21. return_arg : * 

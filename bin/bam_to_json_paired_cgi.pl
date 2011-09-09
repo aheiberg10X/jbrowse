@@ -75,7 +75,7 @@ sub createTrack {
     
     my $template = $TRACK_TEMPLATE; #"tracks/$CHROM_PREFIX%s/$DONOR_PREFIX$donor/$QUERY_PREFIX$query_name";
     print $OUTPUT "template: $template\n";
-    my $targetdir = sprintf( "$DATA_DIR/$template", $host_chrom, $donor, $query_name );
+    my $targetdir = sprintf( "$DATA_DIR/$template", $donor, $query_name, $host_chrom );
     print $OUTPUT "targetdir: $targetdir\n";
 
 
@@ -293,7 +293,7 @@ sub createTrack {
         my $new_entry_json = {
                               'label' => $trackLabel,
                               'key' => $key,
-                              'url' => sprintf( "$template/trackData.$ext", "{refseq}", $donor, $query_name ),
+                              'url' => sprintf( "$template/trackData.$ext", $donor, $query_name, $UNBOUND_CHROM ),
                               #'url' => "$trackRel/{refseq}/query_" . $trackLabel . "/trackData.$ext",
                               'type' => "FeatureTrack",
                              };

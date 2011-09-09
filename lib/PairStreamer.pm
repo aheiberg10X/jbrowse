@@ -26,20 +26,27 @@ sub new {
                  "highest_order" => -1,
                  "dnamix" => {},
                  "callback" => $callback};
+    open STATS, '>', 'stats.txt';
     bless $self, $class;
     return $self;
 }
 
-sub accept {
+sub acceptFullPair {
+    my ($self,$lpair,$rpair) = @_;
+    $self->{callback}->($lpair,$rpair); 
+}
+
+sub acceptHalfPair {
     my ($self, $pair_name, $half_feat) = @_;
     my $row;
+    print STATS "\n$pair_name [ $half_feat->[0], $half_feat->[1] ]\n";
     if( defined $self->{dnamix}->{$pair_name} ){    
-        print "pair_name exists!\n";
         my $rowix = $self->{dnamix}->{$pair_name};
         $row = $self->{working_set}->[$rowix];
         $row->[2] = $half_feat;
         $row->[3] = 1;
-        while( $rowix == $self->{top_ix} && $row->[3] ){
+        while( $rowix == $self->{top_ix} && $row->[3] ){   
+            print STATS "done\n"; 
             $self->{callback}->($row->[1], $row->[2]);
             push( @{$self->{free_ixs}}, $rowix );
 
@@ -50,7 +57,6 @@ sub accept {
         }
     }
     else{
-        print "novel pair_name\n";
         $row = [];
         $row->[0] = ++$self->{highest_order};
         $row->[1] = $half_feat;
@@ -64,8 +70,11 @@ sub accept {
         $self->{dorix}->{$row->[0]} = $newix;
         $self->{dnamix}->{$pair_name} = $newix; 
     }
-}
 
+    my $elems = scalar(@{$self->{working_set}}) - scalar(@{$self->{free_ixs}});
+    print STATS "Elems: $elems\n";
+    print STATS "Tot: $self->{highest_order}\n";
+}
 
 1;
 

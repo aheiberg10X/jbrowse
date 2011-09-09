@@ -82,7 +82,6 @@ NCList.prototype.binarySearch = function(arr, item, itemIndex) {
         else
             low = mid;
     }
-
     //if we're iterating rightward, return the high index;
     //if leftward, the low index
     if (1 == itemIndex) return high; else return low;

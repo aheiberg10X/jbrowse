@@ -1,4 +1,11 @@
 package NCLSorter;
+
+# so what the hell, all this does is require input that is sorted by start pos
+# if two reads start the same start, they get sorted by end pos, then consumed (jsonGen->addFeature)
+# if not, each read is consumed as it comes in
+# so why not bypass this entirely by sorting %paired_reads by start then by end pos.
+# then can consume each sequentially
+
 # takes a stream of features (represented by arrays) sorted by start position,
 # and outputs a stream of features sorted by the NCL sort,
 # suitable for sending to JsonGenerator
@@ -16,8 +23,7 @@ sub new {
         consumer => $consumer,
         pending => [],
         start => $start,
-        end => $end
-    };
+        end => $end};
     bless $self, $class;
 }
 
@@ -27,6 +33,7 @@ sub addSorted {
     my $pending = $self->{pending};
     my $start = $self->{start};
     my $end = $self->{end};
+
     if ($#$pending >= 0) {
         # if the new feature has a later start position,
         if ($pending->[-1]->[$start] < $toAdd->[$start]) {

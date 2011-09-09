@@ -1,12 +1,26 @@
 
 
 <?php
+    function endsWith($haystack, $needle)
+    {
+        $length = strlen($needle);
+        $start  = $length * -1; //negative
+        return (substr($haystack, $start) === $needle);
+    }
+
+
+    $fbug = fopen( "debugging/funcs_out.txt", 'w' );
+    fwrite( $fbug, "fufufufufufckckckckckckck\n" );
 	//Define the root directory to use for this service.
 	//All file lookups are relative to this path.
 	$rootDir = "/home/andrew/school/dnavis/jbrowse/data/tracks";
 
+    $fname = "/home/andrew/school/dnavis/jbrowse/bin/debugging/real_filestore_out.txt";
+    $fout = fopen( $fname, 'w' );
 	require_once("filestore_funcs.php");
 
+    $ew = endsWith("abeeedoo","doo");
+    fwrite( $fout, "endswith: $ew\n" );
 	//Extract the query, if any.
 	$query = false;
 	if (array_key_exists("query", $_GET)) {
@@ -58,13 +72,15 @@
 	}
 
 	if (!is_string($path)) {
-
+        fwrite( $fout, "path is not a string\n" );
+        fwrite( $fout, "query is: $query\n" );    
 		$files = array();
 
 		//Handle query for files.  Must try to generate patterns over the query 
 		//attributes.
 		$patterns = array();
 		if (is_array($query)) {
+            fwrite( $fout, "getting curiouser\n" );
 			//Generate a series of RegExp patterns as necessary.
 			$keys = array_keys($query);
 			$total = count($keys);
@@ -78,10 +94,12 @@
 				}
 				$files = matchFiles($query, $patterns, $ignoreCase, ".", $rootDir, $deep, $dirsOnly, $expand, $showHiddenFiles);
 			} else {
-				$files = getAllFiles(".",$rootDir,$deep,$dirsOnly,$expand,$showHiddenFiles);
+                fwrite( $fout, "klajflkdajslkfs\n" );
+				$files = getAllFiles(".",$rootDir,$deep,$dirsOnly,$expand,$showHiddenFiles, $fbug);
 			}
 		}else{
-			$files = getAllFiles(".",$rootDir,$deep,$dirsOnly,$expand,$showHiddenFiles);
+            fwrite( $fout, "shoulld be here\n" );
+			$files = getAllFiles(".",$rootDir,$deep,$dirsOnly,$expand,$showHiddenFiles, $fbug);
 		}
 
 		$total = count($files);
@@ -122,6 +140,7 @@
         //print("/* ".json_encode($result)." */");
         print( json_encode($result) );
 	} else {
+        fwrite( $fout, "path is too a string\n" );
 		//Query of a specific file (useful for fetchByIdentity and loadItem)
 
 		//Make sure the path isn't trying to walk out of the rooted directory

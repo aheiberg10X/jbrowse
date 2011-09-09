@@ -39,7 +39,7 @@ def removeQuery( donor, query_name, delete=False, filename = "../data/trackInfo.
             try :
                 chroms = range(1,23) + ['X','Y']
                 for c in chroms :
-                    trackpath = GlobalConfig.TRACK_TEMPLATE % ("chr%s" % str(c), donor, query_name)
+                    trackpath = GlobalConfig.TRACK_TEMPLATE % (donor, query_name, "chr%s" % str(c) )
                     fullpath = "%s/%s" % (GlobalConfig.DATA_DIR, trackpath)
                     if( exists(fullpath) ) :
                         rmtree( fullpath )
@@ -57,18 +57,19 @@ def removeQuery( donor, query_name, delete=False, filename = "../data/trackInfo.
 if __name__ == '__main__' :
     root_dir = GlobalConfig.ROOT_DIR 
 
+    sys.stderr = open("%s/delete_error.txt" % GlobalConfig.DEBUG_DIR,'w')
+    sys.stdout = open("%s/delete_output.txt" % GlobalConfig.DEBUG_DIR,'w')
+    
     fields = cgi.FieldStorage()
-    print 'Content-type: text/json\n\n'
+    utils.printToServer( 'Content-type: text/json\n\n' )
+    print 'fields: ', fields
 
     if not fields :
         donor = sys.argv[1]
         query_name = sys.argv[2]
         removeQuery( donor, query_name, delete=True )
     else :
-        sys.stderr = open("%s/delete_error.txt" % GlobalConfig.DEBUG_DIR,'w')
-        sys.stdout = open("%s/delete_output.txt" % GlobalConfig.DEBUG_DIR,'w')
         fields = cgi.parse()
-        print fields
         utils.printToServer('<html><body><textarea>')
         #try :
         removeQuery( fields["donor"][0], fields["query_name"][0], delete=True )

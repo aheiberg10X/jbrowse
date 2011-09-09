@@ -52,7 +52,14 @@
 			}
 		}
 		return "(".$rxp."$)";
-	}
+    }
+
+//function endsWith($haystack, $needle)
+//{
+//$length = strlen($needle);
+//$start  = $length * -1; //negative
+//return (substr($haystack, $start) === $needle);
+//}
 
 	/**
 	 * Function to load all file info from a particular directory.
@@ -64,37 +71,49 @@
 	 * @param $expand boolean to indicate whether or not to inflate all children files along a path/file, or leave them as stubs.
 	 * @param $showHiddenFiles boolean to indicate to return hidden files as part of the list.
 	 */
-	function getAllfiles($dir, $rootDir, $recurse, $dirsOnly, $expand, $showHiddenFiles) { 
+    function getAllfiles($dir, $rootDir, $recurse, $dirsOnly, $expand, $showHiddenFiles, $fbug) { 
 		//  summary:
 		//      A function to obtain all the files in a particular directory (file or dir)
 		$files = array();
 		$dirHandle = opendir($rootDir."/".$dir);
 		if ($dirHandle) {
 			while($file = readdir($dirHandle)) {
-				if ($file) {
+                if ($file) {
+                    fwrite( $fbug, "file: $file\n" );
 					if ($file != ".." && $file != ".") {
 						$path = $dir."/".$file;
-						$fileObj = generateFileObj($file, $dir, $rootDir,$expand,$showHiddenFiles);
+                        $fileObj = generateFileObj($file, $dir, $rootDir,$expand,$showHiddenFiles, $fbug);
+                        fwrite( $fbug, "fileobj\n" );
 						if (is_dir($rootDir."/".$path)) {
-							if ($recurse) {
+                            if ($recurse) {
+                                fwrite( $fbug, "is dir and are recursing\n" );
 								if ($showHiddenFiles || $fileObj["name"][0] != '.') {
-									$subfiles = getAllfiles($path,$rootDir,$recurse,$dirsOnly,$expand,$showHiddenFiles);
+                                    fwrite( $fbug, "going recursive!\n" );
+                                    $subfiles = getAllfiles($path,$rootDir,$recurse,$dirsOnly,$expand,$showHiddenFiles, $fbug);
 									$length = count($subfiles);
-									for ($i = 0; $i < $length; $i++) {
-										$files[] = $subfiles[$i];
+                                    for ($i = 0; $i < $length; $i++) {
+                                        fwrite( $fbug, $subfiles[$i] );
+                                        if( !endsWith( $subfiles[$i]["name"], "json") ){
+                                            $a = 1;
+                                            $files[] = $subfiles[$i];
+                                        }
 									}
 								}
 							}
 						}
 						if (!$dirsOnly || $fileObj["directory"]) {
-							if ($showHiddenFiles || $fileObj["name"][0] !== '.') {
-								$files[] = $fileObj;
+                            if ($showHiddenFiles || $fileObj["name"][0] !== '.') {
+                                fwrite( $fbug, $fileObj["name"] );
+                                if( !endsWith( $fileObj["name"], "json" ) ){
+                                    $a = 1;
+                                    $files[] = $fileObj;
+                                }
 							}
 						}
 					}
 				}
 			}
-		}
+        }
 		closedir($dirHandle);
 		return $files;
 	}
@@ -117,7 +136,7 @@
 	 *  $file["modified] - The modified date of the file in milliseconds since Jan 1st, 1970.
 	 *  $file["children"] - Children files of a directory.  Empty if a standard file.
 	 */
-	function generateFileObj($file, $dir, $rootDir, $expand, $showHiddenFiles) {
+	function generateFileObj($file, $dir, $rootDir, $expand, $showHiddenFiles, $fbug) {
 		//  summary:
 		//      Function to generate an object representation of a disk file.
 		$path = $file;
@@ -165,14 +184,18 @@
 							if (!$expand) {
 								$children[] = $cFile;
 							}else{
-								$children[] = generateFileObj($cFile, $path, $rootDir, $expand, $showHiddenFiles);
+                                $child = generateFileObj($cFile, $path, $rootDir, $expand, $showHiddenFiles, $fbug);
+                                fwrite( $fbug, $child["name"] );
+                                if( !endsWith( $child["name"], "json" ) ){
+                                    $a = 1;    //$children[] = $child;
+                                }
 							}
 						}
 					}
 				}
 			}
 			closedir($dirHandle);
-			$fObj["children"] = $children;
+            $fObj["children"] = $children;
 		}
 		return $fObj;
 	}

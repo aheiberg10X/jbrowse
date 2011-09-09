@@ -1,5 +1,3 @@
-hello
-
 to make go:
 
 change the path of samtools in the various make files
@@ -14,5 +12,6 @@ add #!/bin/bash to run_biosql.sh
 also added parameters so the BAM file in code_generator.py doesn't have to be hardcoded
 
 in run_biosql.sh, must: 'cd ../genomequery/biosql_compiler/biosql
+delete everything from previous run with 'rm -rf dst/chr*'
 
 parameterize the BAM and bam.indx files supplied to run_biosql.sh and code_gen.py
