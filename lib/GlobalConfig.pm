@@ -10,7 +10,7 @@ use JSON 2;
 
 use Cwd;
 
-my @tries = ("GlobalConfig.js", "../lib/GlobalConfig.js");
+my @tries = ("GlobalConfig.js", "../lib/GlobalConfig.js","lib/GlobalConfig.js");
 my $good = 0;
 my $json_text;
 foreach my $try (@tries) {
