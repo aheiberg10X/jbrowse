@@ -92,36 +92,37 @@ def makeItem( path ) :
         if prefix == QUERY_PREFIX : 
             assert parent_prefix == DONOR_PREFIX
             item['donor'] = parent_name
-            item['trackkey'] = "%s/%s" % (parent_name,name)
-            item['url'] = TRACK_TEMPLATE % (parent_name, name, UNBOUND_CHROM) 
+            item['key'] = "%s/%s" % (parent_name,name)
+            item['url'] = "%s/trackData.json" % (TRACK_TEMPLATE % (parent_name, name, UNBOUND_CHROM))
+            item['label'] = name
+            item['type'] = 'FeatureTrack'
 
         if is_dir :
             item["children"] = getChildren( path )
 
     return item
 
-if __name__ == '__main__' :
 
-    fout = open("%s/filestore_out.txt" % DEBUG_DIR,'w')
-    ferr = open("%s/filestore_err.txt" % DEBUG_DIR,'w')
+if __name__ == '__main__' :
 
     utils.printToServer( "Content-type: text/json\n\n" )
 
     projects_root = "%s/data/tracks" % ROOT_DIR
 
-    sys.stderr = ferr
-    sys.stdout = fout
+    sys.stderr = open("%s/filestore_err.txt" % DEBUG_DIR,'w')
+    sys.stdout = open("%s/filestore_out.txt" % DEBUG_DIR,'w')
 
     dparams = cgi.parse()
     print dparams
+
     if 'path' in dparams :
         print 'handel path:', dparams['path'][0]
         handlePath( dparams['path'][0] )
     else :
         handleQuery( projects_root )
 
-    fout.close()
-    ferr.close()
+    sys.stderr.close()
+    sys.stdout.close()
 
 #print os.environ['REQUEST_URI']
 #keys = ["query","queryOptions","start","count"]

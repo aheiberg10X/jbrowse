@@ -44,7 +44,9 @@ var Browser = function(params) {
     // end my stuff
 
     var refSeqs = params.refSeqs;
+
     this.trackData = params.trackData;
+
     var globals = params.globals;
     this.deferredFunctions = [];
     this.dataRoot = params.dataRoot;
@@ -56,6 +58,7 @@ var Browser = function(params) {
 
     this.names = new LazyTrie(dataRoot + "/names/lazy-",
 			      dataRoot + "/names/root.json");
+
     this.tracks = [];
     for( track in this.trackData ){
         this.tracks.push( this.trackData[track]["key"] );
@@ -336,28 +339,40 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                         //refresh track data, this first request is a kludge:
                         //when site is initially loaded and first query run, 
                         //just one xhrGet didn't load the modified trackInfo.js
-                        dojo.xhrGet({
-                            url: "data/trackInfo.js",
-                            handleAs: "json",
-                            load: function(data,args){
-                                var a =1;
-                            },
-                            error: function(data,args){
-                                var a = 1;
-                            }
-                        });
-
-                        dojo.xhrGet({
-                            url: "data/trackInfo.js",
-                            handleAs: "json",
-                            load: function(data,args){
-                                brwsr.trackData = data;
-                            },
-                            error: function(data,args){
-                                alert("trackINfo not successfully reloaded");
-                            }
-                        });
+                        
+                        //TODO TRACKDATA
+                        //all this ballyhoo will be unnecessary
+                        //have run_query return the trackData information
+                        //for the new track, add it to brwsr.trackData
+                        //dojo.xhrGet({
+                        //url: "data/trackInfo.js",
+                        //handleAs: "json",
+                        //load: function(data,args){
+                        //var a =1;
+                        //},
+                        //error: function(data,args){
+                        //var a = 1;
+                        //}
+                        //});
+                        //
+                        //dojo.xhrGet({
+                        //url: "data/trackInfo.js",
+                        //handleAs: "json",
+                        //load: function(data,args){
+                        //brwsr.trackData = data;
+                        //},
+                        //error: function(data,args){
+                        //alert("trackINfo not successfully reloaded");
+                        //}
+                        //});
+                        // end ballyhoo
+                        entry = data["trackData"];
+                        brwsr.trackData.push( entry );
+                        if( entry['key'] != trackkey ){
+                            alert( 'trackkeys do not line up' );
+                        }
                         brwsr.tracks.push( trackkey );
+                        alert( data["message"] );
                         enableCallback();
                         refreshTree();
                     }
@@ -440,7 +455,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
              model : model,
              onClick :
                 function(item){ 
-                    var trackkey = store.getValue(item, 'trackkey');
+                    var trackkey = store.getValue(item, 'key');
                     var isVisualized = brwsr.view.isVisualized( trackkey ); //f.length == 1;
                     if( isVisualized ){
                         visualize_button.set('label', 'Recall');
@@ -520,18 +535,12 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         var current_chrom = brwsr.refSeq.name;
         var selected = tree.selectedItem;
         var query_name = selected.name;
-        var trackkey = selected.trackkey;
+        var trackkey = selected.key;
         var donor = selected.donor;
 
-        recall( trackkey );
-        var ix = brwsr.tracks.indexOf(trackkey);
-        if( ix != -1 ){
-            brwsr.tracks.splice(ix,1);
-        }
-        //var args = {chrom: current_chrom,
+                //var args = {chrom: current_chrom,
         //delete_track: tracks_in_trash};
         var args = {donor: donor, query_name: query_name};
-
         var url = "bin/remove_track.py?" + dojo.objectToQuery(args);
 
         var xhrArgs = {
@@ -541,6 +550,13 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             load: function(data,ioargs) {
                 if( data["status"] == "ok" ){
                     refreshTree();
+                    recall( trackkey );
+                    var ix = brwsr.tracks.indexOf(trackkey);
+                    if( ix != -1 ){
+                        brwsr.tracks.splice(ix,1);
+                        brwsr.trackData.splice(ix,1);
+                    }
+
                 }
                 else{       
                     alert(data["message"]);
@@ -638,14 +654,14 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     //1 : malformed name
     //2 : duplicate name
     //3 : cannot find histogram file
-    var hasNameConflict = function(name) {
-        if( name == '' ){ 
+    var hasNameConflict = function(trackkey) {
+        if( trackkey == '' ){ 
             alert("Filename is empty");
             return 1; 
         }
         else{
-            for( trackkey in brwsr.tracks ){
-                if( name == brwsr.tracks[trackkey] ){
+            for( tk in brwsr.tracks ){
+                if( trackkey == brwsr.tracks[tk] ){
                     alert("There is already a track with that name");
                     return 2;
                  }

@@ -49,29 +49,59 @@ if( $profiling ){
 #################### CGI STUFF #######################
 
 
-my $cgi = CGI::new();
-print $cgi->header;
-print "<html><body><textarea>\n";  #place a json response inside here"
+#my $cgi = CGI::new();
+#print $cgi->header;
+#print "<html><body><textarea>\n";  #place a json response inside here"
+
 my $donor = $ARGV[0];
 my $query_name = $ARGV[1];
 my $linking = $ARGV[2];
+
+#for building our response to server
+my ($trackkey, $message);
+my @messages = ();
+
+my $compress = 0;
 
 #HERE IS WHERE WE CAN MULTI THREAD
 my @chroms = qw/1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y/;
 foreach my $chromnum (@chroms) {
     print $OUTPUT "printing chrom $chromnum\n";
     my $chrom = "chr$chromnum";
-    print createTrack( $chrom, $donor, $query_name, $linking );
+    ($trackkey, $message) = createTrack( $chrom, $donor, $query_name, $linking,
+                                       $compress );
+    push( @messages, "$trackkey : $message" );
     print $OUTPUT "affter chreatTrack for $chrom\n";
 }
-#closedir( $target );
+
+my $ext = ($compress ? "jsonz" : "json");
+my $new_entry_json = 
+     {
+      'label' => $query_name,
+      'key' => $trackkey,
+      'url' => sprintf( "$TRACK_TEMPLATE/trackData.$ext", 
+                        $donor, $query_name, $UNBOUND_CHROM ),
+      'type' => "FeatureTrack",
+     };
+
+        #JsonGenerator::writeTrackEntry( "$DATA_DIR/trackInfo.js", $new_entry_json );
+
+my $return_json = '{"status":"ok", "message":"';
+$return_json .= join( '\n', @messages ); 
+$return_json .= '", "trackData":';
+$return_json .=  JSON::to_json($new_entry_json, {pretty => 1});
+$return_json .= '}';
+
+print $OUTPUT "returned json is: $return_json\n";
+print $return_json;
+
 close $OUTPUT;
 close ERROR;
-print "\n</textarea></body></html>";
+#print "\n</textarea></body></html>";
 
 sub createTrack {
     
-    my ($host_chrom, $donor, $query_name, $bam_linking) = @_;
+    my ($host_chrom, $donor, $query_name, $bam_linking, $compress) = @_;
     
     my $template = $TRACK_TEMPLATE; #"tracks/$CHROM_PREFIX%s/$DONOR_PREFIX$donor/$QUERY_PREFIX$query_name";
     print $OUTPUT "template: $template\n";
@@ -79,10 +109,14 @@ sub createTrack {
     print $OUTPUT "targetdir: $targetdir\n";
 
 
+
+    my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $key);
+    $key = "$donor/$query_name";
+    $trackLabel = $query_name;
     #my $bamFile = "$targetdir/$query_name.bam";
 
     my $interval_file = "$targetdir/$query_name.intervals";
-    if( ! -e $interval_file ){ return; }
+    if( ! -e $interval_file ){ return ($key, "No interval file"); }
 
     my $bam_histogram_filename = "$targetdir/$query_name.hist";
     $bam_linking = $bam_linking eq "linking";
@@ -107,8 +141,6 @@ sub createTrack {
         $/ = $OLDSEP;
     }
 
-    my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $compress, $key);
-
     my $defaultClass = "transcript";
     my $defaultSubfeatureClasses = {"forward","forward-strand",
                                     "reverse","reverse-strand",
@@ -118,8 +150,6 @@ sub createTrack {
     $cssClass = $defaultClass;
     $subfeatureClasses = $defaultSubfeatureClasses;
 
-    $key = "$donor/$query_name";
-    $trackLabel = $query_name;
 
     if (!defined($nclChunk)) {
         # default chunk size is 50KiB
@@ -246,7 +276,6 @@ sub createTrack {
 
             open( FINT, '<', $interval_file );
             while( <FINT> ) {
-		print $OUTPUT "line in intval file is: $_\n";
                 my $feat = makeFeature( $_ );
                 $callback->( $feat );
             }
@@ -255,7 +284,7 @@ sub createTrack {
     }
 
     if( $featureCount <= 0 ){
-    	return '{"status":"OK", "trackData":"empty"}';
+    	return ($key, "featureCount = 0");
     }
     ##it could be that there are no gaps in reads, meaning updateBookmarks never adds anything to IAs
     #if thats the case, add the one giant interval herei
@@ -279,35 +308,14 @@ sub createTrack {
         $bad_bam = 1;
     };
 #
-    my $status;
+    my $message;
     if( $bad_bam ){
-        $status = '{"status":"ERROR", "message":"Something went wrong with track generation."}';
-        print $OUTPUT "bad bam\n";
+        $message = "Error with track generation";
     }
     else{
-        print $OUTPUT "good bam\n";
-        #add a new entry to trackInfo.js
-        #what if we want to group specific tracks to particular reference sequences
-
-        my $ext = ($compress ? "jsonz" : "json");
-        my $new_entry_json = {
-                              'label' => $trackLabel,
-                              'key' => $key,
-                              'url' => sprintf( "$template/trackData.$ext", $donor, $query_name, $UNBOUND_CHROM ),
-                              #'url' => "$trackRel/{refseq}/query_" . $trackLabel . "/trackData.$ext",
-                              'type' => "FeatureTrack",
-                             };
-        JsonGenerator::writeTrackEntry( "$DATA_DIR/trackInfo.js", $new_entry_json );
-
-        $status = '{"status":"OK", "trackData":[';
-        $status .=  JSON::to_json($new_entry_json, {pretty => 1});
-        $status .= ']}';
+        $message = "Track generated successfully"
     }
-
-    print $OUTPUT "done\n";
-
-
-    return $status;
+    return ($key, $message);
 }
 
 sub convertStrand {

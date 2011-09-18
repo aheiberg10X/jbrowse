@@ -15,6 +15,7 @@ import time
 debugging = False 
 
 utils.printToServer( 'Content-type: text/json\n\n' )
+#utils.printToServer( utils.textarea_opener )
 
 fields = cgi.FieldStorage()
 query = fields.getvalue("query_box")
@@ -102,10 +103,9 @@ pop = Popen(["./bam_to_json_paired_cgi.pl", \
 
 t4 = time.time()
 print "done with bam2ncl, took: %f s" % (t4-t3)
-
-utils.printToServer( json.dumps( {"status":"ok",
-                                  "message":out} ) )
-
+print "returning %s" % out
+utils.printToServer( out )
+#utils.printToServer( utils.textarea_closer )
 #except IOError :
     #utils.printToServer( json.dumps( {"status":"error", \
                                       #"message":"io error in run query"} ) )

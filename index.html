@@ -52,7 +52,17 @@
                       + "?loc=" + brwsr.visibleRegion()
                       + "&tracks=" + brwsr.visibleTracks();
            }
-           var b = new Browser({
+
+
+            var args = {task: "getTrackData"};
+            var url = "bin/track_data.py?" + dojo.objectToQuery(args);
+
+            dojo.xhrGet({
+                url: url,
+                handleAs: "json",
+                load: function(data,args){
+                    trackInfo = data;
+                    var b = new Browser({
                                    containerID: "GenomeBrowser",
                                    refSeqs: refSeqs,
                                    trackData: trackInfo,
@@ -64,6 +74,13 @@
                                    dataRoot: "data/"
                                });
 
+                },
+                error: function(data,args){
+                    alert("Could not load trackData");
+                }
+            });
+
+           
     /* ]]> */
     </script>
   </head>

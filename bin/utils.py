@@ -4,6 +4,9 @@ import simplejson as json
 import re
 import GlobalConfig
 
+textarea_opener = "<html><body><textarea>"
+textarea_closer = "</textarea></body></html>"
+
 # make this a function, doubtless will be using again
 def fileToJson( filename ) :
     novar = re.compile(r'.*=(.*)', re.M | re.DOTALL)
