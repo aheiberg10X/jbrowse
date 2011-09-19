@@ -70,7 +70,7 @@ foreach my $chromnum (@chroms) {
     my $chrom = "chr$chromnum";
     ($trackkey, $message) = createTrack( $chrom, $donor, $query_name, $linking,
                                        $compress );
-    push( @messages, "$trackkey : $message" );
+    push( @messages, "$chrom : $message" );
     print $OUTPUT "affter chreatTrack for $chrom\n";
 }
 

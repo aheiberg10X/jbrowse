@@ -14,6 +14,10 @@ import time
 
 debugging = False 
 
+def copyIfExists( source, dest ) :
+    if os.path.exists( source ) :
+        shutil.copy( source, dest )
+
 utils.printToServer( 'Content-type: text/json\n\n' )
 #utils.printToServer( utils.textarea_opener )
 
@@ -75,20 +79,25 @@ for thing in os.listdir(t) :
     dest = "%s/data/%s" % (root, trackpath )
     #dest = "%s/data/tracks/chrom_%s/donor_%s/query_%s" % (root,chrom,donor,query_name)
 
-    print "copying (change to moving!!) from %s to %s" % (source,dest)
     if not os.path.exists( dest ) :
         os.makedirs( dest )
+    print "copying (change to moving!!) from %s to %s" % (source,dest)
+
     #copy bam
-    shutil.copy( "%s/out.evidence.bam" % source, \
-                 "%s/%s.bam" % (dest,query_name) )
+    copyIfExists( "%s/out.evidence.bam" % source, \
+                  "%s/%s.bam" % (dest,query_name) )
+
     #copy query
-    shutil.copy( query_loc, "%s/%s.gq" % (dest, query_name) )
+    copyIfExists( query_loc, "%s/%s.gq" % (dest, query_name) )
+
     #copy histogram
-    histogram = "%s/out.hist.txt" % source 
-    shutil.copy( histogram, "%s/%s.hist" % (dest, query_name) )
+    histogram = "%s/out.hist.txt" % source
+    copyIfExists( histogram, \
+                  "%s/%s.hist" % (dest, query_name) )
+
     #copy intervals
-    shutil.copy( "%s/out.evidence.bam.short" % source, \
-                 "%s/%s.intervals" % (dest,query_name) )
+    copyIfExists( "%s/out.evidence.bam.short" % source, \
+                  "%s/%s.intervals" % (dest,query_name) )
 #
 t3 = time.time()
 #print "done moving, took: %f s" % (t3-t2)
