@@ -860,10 +860,13 @@ Browser.prototype.navigateTo = function(loc) {
                         curTracks.push(obj.data);
                     });
 
-                for (var i = 0; i < this.chromList.options.length; i++)
-                if (this.chromList.options[i].text == refName)
-                    this.chromList.selectedIndex = i;
+                for (var i = 0; i < this.chromList.options.length; i++){
+                    if (this.chromList.options[i].text == refName){
+                        this.chromList.selectedIndex = i;
+                    }
+                }
                 this.refSeq = this.allRefs[refName];
+                this.interestingAreas = new InterestingAreas( this.refSeq.start, this.refSeq.end );
                 //go to given refseq, start, end
                 this.view.setLocation(this.refSeq,
                           parseInt(matches[4].replace(/[,.]/g, "")),

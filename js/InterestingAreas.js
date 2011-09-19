@@ -54,10 +54,15 @@ function InterestingAreas( refstart, refend ){
     this.nextRightNode = end;
     this.activeTracks = {sysTrackName: start};
     this.inactiveTracks = {};
-
+    this.refstart = refstart;
+    this.refend = refend;
     //this.addTrackTest();
 
 }
+
+InterestingAreas.prototype.reset = function () {
+    this = new InterestingAreas( this.refstart, this.refend );
+};
 
 
 //interestingAreas should be sorted asc
@@ -119,6 +124,7 @@ InterestingAreas.prototype.addTrack = function( trackKey, interestingAreas ){
     
 };
 
+//Pretty sure this is not even close
 InterestingAreas.prototype.removeTrack = function( trackKey ){
     var trackList = (trackKey in this.activeTracks) ? this.activeTracks : this.inactiveTracks;
     var r = trackList[trackKey];
