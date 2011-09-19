@@ -453,6 +453,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         var tree = new dijit.Tree(
             {id : "tree",
              model : model,
+             style: "",
              onClick :
                 function(item){ 
                     var trackkey = store.getValue(this.selectedItem, 'key');
@@ -510,13 +511,15 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                         var selected = tree.selectedItem;
                         var query_name = selected.name; 
                         var donor_name = selected.donor;
-                        var url = "data/" + sprintf( sprintf( globals.TRACK_TEMPLATE, 
-                                                              globals.DONOR_PREFIX, 
-                                                              globals.QUERY_PREFIX,
-                                                              globals.CHROM_PREFIX ), 
-                                                     brwsr.refSeq.name, 
-                                                     donor_name, 
-                                                     query_name ) + "/" + query_name + ".bam";
+                        var url = "data/" + 
+                                   sprintf( sprintf( globals.TRACK_TEMPLATE, 
+                                                     globals.DONOR_PREFIX, 
+                                                     globals.QUERY_PREFIX,
+                                                     globals.CHROM_PREFIX ), 
+                                            donor_name, 
+                                            query_name,
+                                            brwsr.refSeq.name ) + 
+                                   "/" + query_name + ".bam";
                         //var url = "data/tracks/"+brwsr.refSeq.name+"/query_"+query_name+"/"+query_name+".bam";
                         window.location = url;
                       }
@@ -617,7 +620,17 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
          onClick: function(){
              var host_chrom = brwsr.refSeq.name;
              var query_name = tree.selectedItem.name;
-             var url = "data/tracks/"+host_chrom+"/query_"+query_name+"/"+query_name+".gq";
+             var donor_name = tree.selectedItem.donor;
+             var url = "data/" + 
+                        sprintf( sprintf( globals.TRACK_TEMPLATE, 
+                                          globals.DONOR_PREFIX, 
+                                          globals.QUERY_PREFIX,
+                                          globals.CHROM_PREFIX ), 
+                                 donor_name, 
+                                 query_name,
+                                 brwsr.refSeq.name ) +  
+                        "/" + query_name + ".gq";
+
              dojo.xhrGet({
                  url: url,
                  handleAs: "text",
