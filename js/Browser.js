@@ -455,7 +455,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
              model : model,
              onClick :
                 function(item){ 
-                    var trackkey = store.getValue(item, 'key');
+                    var trackkey = store.getValue(this.selectedItem, 'key');
                     var isVisualized = brwsr.view.isVisualized( trackkey ); //f.length == 1;
                     if( isVisualized ){
                         visualize_button.set('label', 'Recall');
@@ -585,12 +585,12 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         var matches = dojo.filter( brwsr.trackData, tester );
         if( matches.length == 0 ){ alert(" no matches"); }
         else if( matches.length == 1 ){
-           brwsr.viewDndWidget.insertNodes( false, [matches[0]] );
-           brwsr.onVisibleTracksChanged();
+            visualize_button.set('label','Recall');
+            visualize_button.onClick = function(){ recall(tree.selectedItem.key); };
+            brwsr.viewDndWidget.insertNodes( false, [matches[0]] );
+            brwsr.onVisibleTracksChanged();
         }
         else{ alert(" too many matches"); }
-        visualize_button.set('label','Recall');
-        visualize_button.onClick = function(){ recall(tree.selectedItem.name); };
 
     };
 
@@ -605,7 +605,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         brwsr.onVisibleTracksChanged();
         visualize_button.set('label','Visualize');
         visualize_button.onClick = 
-            function(){ visualize(tree.selectedItem.name); };
+            function(){ visualize(tree.selectedItem.key); };
 
     };
 
