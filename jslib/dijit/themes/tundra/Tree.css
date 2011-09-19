@@ -32,7 +32,8 @@
 }
 
 .tundra .dijitTreeRowSelected .dijitTreeLabel {
-	background:#e2ebfe;
+	background: #E67CF9; /*#e2ebfe;*/
+    padding: 3px;
 }
 .tundra .dijitTreeRowHover {
 	/* using a transparent png so that we can still see grid lines, which are (unfortunately) behind the dijitRowNode that we are hovering over */

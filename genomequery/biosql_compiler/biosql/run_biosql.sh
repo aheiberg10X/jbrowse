@@ -19,6 +19,7 @@ src_table_dir="dst"
 low_level_calls="low_level.sh"
 chr_info="chromo_length_info.txt"
 
+echo $input_sql
 $front_end_dir/biosql < $input_sql > $interm_code
 
 if test -f $low_level_calls
@@ -27,7 +28,7 @@ then
 fi
 
 
-for c in {1..23} X Y
+for c in {1..22} X Y
 do
 	chr="chr"$c
 	chr_len=$(grep "^$c\>" $chr_info | cut -f2)
