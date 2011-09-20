@@ -1,2 +1,0 @@
-
-line 7: syntax ErrorThere were 1 errors
