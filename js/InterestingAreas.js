@@ -60,11 +60,6 @@ function InterestingAreas( refstart, refend ){
 
 }
 
-InterestingAreas.prototype.reset = function () {
-    this = new InterestingAreas( this.refstart, this.refend );
-};
-
-
 //interestingAreas should be sorted asc
 InterestingAreas.prototype.addTrack = function( trackKey, interestingAreas ){
     if( interestingAreas == null ){
