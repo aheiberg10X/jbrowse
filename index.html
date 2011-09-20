@@ -56,7 +56,6 @@
 
             var args = {task: "getTrackData"};
             var url = "bin/track_data.py?" + dojo.objectToQuery(args);
-            setTimeout("alert('hello')",1250);
             dojo.xhrGet({
                 url: url,
                 handleAs: "json",
