@@ -27,8 +27,8 @@ then
 	rm $low_level_calls
 fi
 
-
-for c in {1..22} X Y
+for c in {1..1}
+#for c in {1..22} X Y
 do
 	chr="chr"$c
 	chr_len=$(grep "^$c\>" $chr_info | cut -f2)

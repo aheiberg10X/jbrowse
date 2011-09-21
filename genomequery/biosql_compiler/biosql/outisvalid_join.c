@@ -39,9 +39,5 @@ inline int isvalid_join(Join *join_lst, int i, Imported_info *tbl1, Imported_inf
 	t10 = indx2.mindx[mate_indx].loc>0 ;
 	int t11;
 	t11 = t9&&t10 ;
-	int t12;
-	t12 = (strcmp(indx1.tbl[i1].id,"gene1")==0) ;
-	int t13;
-	t13 = t11&&t12 ;
-	return t13;
+	return t11;
 }
