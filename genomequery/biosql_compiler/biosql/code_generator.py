@@ -257,6 +257,13 @@ def parse_commands(lines):
 			src_prefx=''
 			limit=-1
 			direction=-1
+			if i==len(lines)-1: #copy paste from below
+				dst_prefx="out"
+				cmd_nd=i
+				cmd=Command(deepcopy(g), src_prefx, dst_prefx, cmd_type, cmd_st, cmd_nd, limit, direction)
+				ret.append(cmd)
+				g={}
+
 			#cmd=Command({}, '', '', cmd_type, cmd_st, cmd_nd, -1, -1)
 			#ret.append(cmd)
 		elif sp_line[1]=="Input":
@@ -338,7 +345,10 @@ def get_intersect_info(codelines, cmd, cmd_list, bam_file, indx_file, product_di
 	origin1=trace_table(t1, cmd_list)
 	if origin1=="in": #if origin1=="READS":
 		indx_file1=indx_file
-		etype=get_earlier_cmd_type(cmd_lst, t1)
+		if t1=='READS' or t1=='in':
+			etype='bam_single'
+		else:
+			etype=get_earlier_cmd_type(cmd_lst, t1)
 		if etype=="mates":
 			type1="bam_mates"
 		elif etype.count("single")>0:
@@ -358,7 +368,10 @@ def get_intersect_info(codelines, cmd, cmd_list, bam_file, indx_file, product_di
 	origin2=trace_table(t2, cmd_list)
 	if origin2=="in": #if origin2=="READS":
 		indx_file2=indx_file
-		etype=get_earlier_cmd_type(cmd_list, t2)
+		if (t2=='in' or t2=='READS'):
+			etype="bam_single"
+		else:
+			etype=get_earlier_cmd_type(cmd_list, t2)
 		if etype=="mates":
 			type2="bam_mates"
 		elif etype.count("single")>0:

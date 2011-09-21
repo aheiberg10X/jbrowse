@@ -43,10 +43,15 @@ Intervals *mates2intervals(Mates *indx, int len_indx, int *valid_lst, int ttl_va
 Intervals *singles2intervals(Mates *indx, int len_indx, int *valid_lst, int ttl_valid, int *ttl_intrvl){
 	int i=0;
 	int cur_i=0;
+	if(valid_lst==NULL)
+		ttl_valid=len_indx;
 	Intervals *ret=(Intervals*)malloc(sizeof(Intervals)*ttl_valid);
 	int cnt=0;
 	for (i=0;i<ttl_valid;i++){
-		cur_i=valid_lst[i];
+		if (valid_lst==NULL)
+			cur_i=i;
+		else
+			cur_i=valid_lst[i];
 		if (cur_i<0) continue;
 		if(indx[cur_i].loc<0) ioerror("Unmapped read found. Please revise your filtering");
 		ret[cnt].st=indx[cur_i].loc;

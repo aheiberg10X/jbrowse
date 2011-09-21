@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 63
-/svn/!svn/ver/6287/genomequery/biosql_compiler/biosql/front_end
+/svn/!svn/ver/6336/genomequery/biosql_compiler/biosql/front_end
 END
 biosql.h
 K 25
@@ -13,7 +13,7 @@ biosql.y
 K 25
 svn:wc:ra_dav:version-url
 V 72
-/svn/!svn/ver/6287/genomequery/biosql_compiler/biosql/front_end/biosql.y
+/svn/!svn/ver/6336/genomequery/biosql_compiler/biosql/front_end/biosql.y
 END
 biosql_defs.h
 K 25

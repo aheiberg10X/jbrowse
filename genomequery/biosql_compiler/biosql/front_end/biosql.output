@@ -33,7 +33,7 @@ Grammar
 
     6 names: ID
 
-    7 table_args: table_arg COMMA table_args
+    7 table_args: table_args COMMA table_arg
     8           | table_arg
 
     9 table_arg: INTEGER names
@@ -407,16 +407,15 @@ state 22
 state 23
 
     4 table_prototype: table_keyword LPAREN table_args . RPAREN SEMICOLON
+    7 table_args: table_args . COMMA table_arg
 
     RPAREN  shift, and go to state 35
+    COMMA   shift, and go to state 36
 
 
 state 24
 
-    7 table_args: table_arg . COMMA table_args
-    8           | table_arg .
-
-    COMMA  shift, and go to state 36
+    8 table_args: table_arg .
 
     $default  reduce using rule 8 (table_args)
 
@@ -504,15 +503,14 @@ state 35
 
 state 36
 
-    7 table_args: table_arg COMMA . table_args
+    7 table_args: table_args COMMA . table_arg
 
     INTEGER      shift, and go to state 19
     FLOAT        shift, and go to state 20
     CHAR         shift, and go to state 21
     STRING_TYPE  shift, and go to state 22
 
-    table_args  go to state 40
-    table_arg   go to state 24
+    table_arg  go to state 40
 
 
 state 37
@@ -546,7 +544,7 @@ state 39
 
 state 40
 
-    7 table_args: table_arg COMMA table_args .
+    7 table_args: table_args COMMA table_arg .
 
     $default  reduce using rule 7 (table_args)
 

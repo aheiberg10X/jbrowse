@@ -56,7 +56,13 @@ void append_element(Imported_info **lst, Imported_info val, int *n){
 	*n=cnt;
 }
 
-Imported_info *load_table(char *fname, int id_col, int st_col, int nd_col, int chr_col, int *n){
+//fname is a tab separated file whose lines contain the information to 
+//construct an array of Imported_info objects. The location of id, start, end
+//and chr columns are denoted by id_col, st_col, nd_col and chr_col respectively.
+//n is the number of the returned array.
+//The function ignores all entries of the file whose chromosome field does not
+//match the input chr.
+Imported_info *load_table(char *fname, int id_col, int st_col, int nd_col, int chr_col, int *n, char *chr){
 	Imported_info *ret=(Imported_info*)malloc(sizeof(Imported_info)*2);
 	FILE *fp=open_file(fname);
 	char *buf=(char*)malloc(2048);
@@ -81,6 +87,8 @@ Imported_info *load_table(char *fname, int id_col, int st_col, int nd_col, int c
 			col_no++;
 			tmp=strtok(NULL,"\t");
 		}
+		if(strcmp(new_val.chr, chr)!=0) //ignore entries from different chr
+			continue;
 		append_element(&ret, new_val, n);
 	}
 	fclose(fp);

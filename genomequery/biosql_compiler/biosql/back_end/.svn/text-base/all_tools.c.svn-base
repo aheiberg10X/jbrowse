@@ -3,6 +3,14 @@
 #include<string.h>
 #include "all_tools.h"
 
+//It returns 1 if the file exists. 0 otherwise
+int file_exists(char *fname){
+	FILE *fp=fopen(fname, "r");
+	if(fp==NULL) return 0;
+	fclose(fp);
+	return 1;
+}
+
 //it stores vec_len and vec into fname. size is the size of entry of vec
 void store_vec(char *fname, void *vec, size_t size, int vec_len){
 	FILE *fp=fopen(fname, "w");
@@ -154,9 +162,16 @@ void intersect_transaction(char *indx_file1, char *type1, char *valid_lst_file1,
 
 		//tmp1_valid_lst=find_valid_imported(tbl1, ttl_tbl1, &ttl_tmp1_valid);
 		if(valid_lst_file1!=NULL){
-			tmp1_valid_lst=retrieve_vec(valid_lst_file1, sizeof(int), &ttl_tmp1_valid);
+			if(file_exists(valid_lst_file1)){
+				tmp1_valid_lst=retrieve_vec(valid_lst_file1, sizeof(int), &ttl_tmp1_valid);
+			}
+			else{
+				tmp1_valid_lst=NULL; ttl_tmp1_valid=0;
+			}
 			int1=imported2intervals(tbl1, ttl_tbl1, tmp1_valid_lst, ttl_tmp1_valid, &ttl_int1);
-			if(tmp1_valid_lst!=NULL){ free(tmp1_valid_lst); tmp1_valid_lst=NULL; ttl_tmp1_valid=0;}
+			if(tmp1_valid_lst!=NULL){ 
+				free(tmp1_valid_lst); tmp1_valid_lst=NULL; ttl_tmp1_valid=0;
+			}
 		}
 	}
 	else if(strncmp(type1,"bam",3)==0){
@@ -165,7 +180,11 @@ void intersect_transaction(char *indx_file1, char *type1, char *valid_lst_file1,
 		if(strcmp(type1, "bam_mates")==0){
 			//tmp1_valid_lst=find_valid_clones(mate_indx, ttl_reads, strand_indx, len_strand, &ttl_tmp1_valid);
 			if(valid_lst_file1!=NULL){
-				tmp1_valid_lst=retrieve_vec(valid_lst_file1, sizeof(int), &ttl_tmp1_valid);
+				if(strstr(valid_lst_file1,"READS")!=NULL){
+					tmp1_valid_lst=NULL; ttl_tmp1_valid=0;
+				}
+				else
+					tmp1_valid_lst=retrieve_vec(valid_lst_file1, sizeof(int), &ttl_tmp1_valid);
 				int1=mates2intervals(mate_indx, ttl_reads, tmp1_valid_lst, ttl_tmp1_valid, &ttl_int1);
 				if(tmp1_valid_lst!=NULL){ free(tmp1_valid_lst); tmp1_valid_lst=NULL; ttl_tmp1_valid=0;}
 			}
@@ -174,7 +193,11 @@ void intersect_transaction(char *indx_file1, char *type1, char *valid_lst_file1,
 		else{
 			//tmp1_valid_lst=find_valid_reads(mate_indx, ttl_reads, strand_indx, len_strand, &ttl_tmp1_valid, -1, -1);
 			if(valid_lst_file1!=NULL){
-				tmp1_valid_lst=retrieve_vec(valid_lst_file1, sizeof(int), &ttl_tmp1_valid);
+				if(strstr(valid_lst_file1,"READS")!=NULL){
+					tmp1_valid_lst=NULL; ttl_tmp1_valid=0;
+				}
+				else
+					tmp1_valid_lst=retrieve_vec(valid_lst_file1, sizeof(int), &ttl_tmp1_valid);
 				int1=singles2intervals(mate_indx, ttl_reads, tmp1_valid_lst, ttl_tmp1_valid, &ttl_int1);
 				if(tmp1_valid_lst!=NULL){ free(tmp1_valid_lst); tmp1_valid_lst=NULL;ttl_tmp1_valid=0;}
 			}
@@ -189,7 +212,13 @@ void intersect_transaction(char *indx_file1, char *type1, char *valid_lst_file1,
 		tbl2=retrieve_imported(indx_file2, &ttl_tbl2);
 		//tmp2_valid_lst=find_valid_imported(tbl2, ttl_tbl2, &ttl_tmp2_valid);
 		if(valid_lst_file2!=NULL){
-			tmp2_valid_lst=retrieve_vec(valid_lst_file2, sizeof(int), &ttl_tmp2_valid);
+			if(file_exists(valid_lst_file1)){
+				tmp2_valid_lst=retrieve_vec(valid_lst_file2, sizeof(int), &ttl_tmp2_valid);
+			}
+			else{
+				tmp2_valid_lst=NULL; ttl_tmp2_valid=0;
+			}
+
 			int2=imported2intervals(tbl2, ttl_tbl2, tmp2_valid_lst, ttl_tmp2_valid, &ttl_int2);
 			if(tmp2_valid_lst!=NULL){ free(tmp2_valid_lst); tmp2_valid_lst=NULL;ttl_tmp2_valid=0;}
 		}
@@ -200,7 +229,11 @@ void intersect_transaction(char *indx_file1, char *type1, char *valid_lst_file1,
 		if(strcmp(type2, "bam_mates")==0){
 			//tmp2_valid_lst=find_valid_clones(mate_indx, ttl_reads, strand_indx, len_strand, &ttl_tmp2_valid);
 			if(valid_lst_file2!=NULL){
-				tmp2_valid_lst=retrieve_vec(valid_lst_file2, sizeof(int), &ttl_tmp2_valid);
+				if(strstr(valid_lst_file2,"READS")!=NULL){
+					tmp2_valid_lst=NULL; ttl_tmp2_valid=0;
+				}
+				else
+					tmp2_valid_lst=retrieve_vec(valid_lst_file2, sizeof(int), &ttl_tmp2_valid);
 				int2=mates2intervals(mate_indx, ttl_reads, tmp2_valid_lst, ttl_tmp2_valid, &ttl_int2);
 				if(tmp2_valid_lst!=NULL){ free(tmp2_valid_lst); tmp2_valid_lst=NULL;ttl_tmp2_valid=0;}
 			}
@@ -209,7 +242,11 @@ void intersect_transaction(char *indx_file1, char *type1, char *valid_lst_file1,
 		else{
 			//tmp2_valid_lst=find_valid_reads(mate_indx, ttl_reads, strand_indx, len_strand, &ttl_tmp2_valid, -1, -1);
 			if(valid_lst_file2!=NULL){
-				tmp2_valid_lst=retrieve_vec(valid_lst_file2, sizeof(int), &ttl_tmp2_valid);
+				if(strstr(valid_lst_file2,"READS")!=NULL){
+					tmp2_valid_lst=NULL; ttl_tmp2_valid=0;
+				}
+				else
+					tmp2_valid_lst=retrieve_vec(valid_lst_file2, sizeof(int), &ttl_tmp2_valid);
 				int2=singles2intervals(mate_indx, ttl_reads, tmp2_valid_lst, ttl_tmp2_valid, &ttl_int2);
 				if(tmp2_valid_lst!=NULL){ free(tmp2_valid_lst); tmp2_valid_lst=NULL;ttl_tmp2_valid=0;}
 			}
@@ -546,7 +583,7 @@ void parse_and_call_intersect_transaction(char **argv, int argc){
 			ioerror("mode is not supported");
 	 }
 	
-	if(mode==1 || mode==2){
+	if(mode==1 || mode==2 || mode==4 || mode==5){
 		FILE *histfp=fopen(hist_file,"w");
 		print_histogram(histfp, histinfo.mhist, histinfo.chromo_length);
 		fclose(histfp);
@@ -596,7 +633,7 @@ void parse_and_call_mate_transaction(char **argv, int argc){
 	sprintf(out_meta_evidence,"%s.ev.bit",dst_prefx);
 	sprintf(out_regions,"%s.regs.txt",dst_prefx);
 	sprintf(out_evidence,"%s.evidence.bam",dst_prefx);
-	sprintf(out_evidence,"%s.evidence_reduced.bam",dst_prefx);
+	sprintf(out_evidence_reduced,"%s.evidence.bam.short",dst_prefx);
 	sprintf(hist_file,"%s.hist.txt",dst_prefx);
 
 	Hist_info histinfo;
@@ -787,7 +824,7 @@ void parse_and_call_single_range_transaction(char **argv, int argc){
 }
 
 void parse_and_call_load_table(char **argv, int argc){
-	if(argc!=8) ioerror("usage: all_tools load_table <table_src> <output_prefx> <id_column> <chr_column> <start_column> <end_column>");
+	if(argc!=9) ioerror("usage: all_tools load_table <table_src> <output_prefx> <id_column> <chr_column> <start_column> <end_column> <chr>");
 	char *table_fname=argv[2];
 	char *outpt_prefx=argv[3];
 	int id_col=atoi(argv[4]);
@@ -795,12 +832,13 @@ void parse_and_call_load_table(char **argv, int argc){
 	int st_col=atoi(argv[6]);
 	int nd_col=atoi(argv[7]);
 	char *out_fname=malloc(2048);
+	char *chr=argv[8];
 	
 	sprintf(out_fname,"%s.table",outpt_prefx);
 	
 	Imported_info *tbl;
 	int ttl_tbl;
-	tbl=load_table(table_fname, id_col, st_col, nd_col, chr_col, &ttl_tbl);
+	tbl=load_table(table_fname, id_col, st_col, nd_col, chr_col, &ttl_tbl, chr);
 
 	store_imported(out_fname, tbl, ttl_tbl);
 

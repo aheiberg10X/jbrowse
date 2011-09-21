@@ -152,7 +152,9 @@ inline int is_valid_single(Mates *indx, int i, long *strand_indx, int strand_len
 //construct an array of Imported_info objects. The location of id, start, end
 //and chr columns are denoted by id_col, st_col, nd_col and chr_col respectively.
 //n is the number of the returned array.
-Imported_info *load_table(char *fname, int id_col, int st_col, int nd_col, int chr_col, int *n);
+//The function ignores all entries of the file whose chromosome field does not
+//match the input chr.
+Imported_info *load_table(char *fname, int id_col, int st_col, int nd_col, int chr_col, int *n, char *chr);
 
 //it destroys tbl and releases the memory that is reserved by the strings
 //of its entries.

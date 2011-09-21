@@ -121,20 +121,20 @@ names: ID{
 }
 ;
 
-table_args: table_arg COMMA table_args {
+table_args: table_args COMMA table_arg {
 //arguments need to appear in output in the order that the user enders them.
 
 	//char *tmp_str=malloc(1024);
 	if(strcmp(cur_owner->name, "READS")!=0){
-		if(strcmp($1->type,"integer")==0)
-			//sprintf(tmp_str, "loaded_param int %s",$1->name);
-			emit(&emit_lst, "loaded_param", "int", $1->name, NULL,NULL);
-		else if(strcmp($1->type,"string")==0)
-			//sprintf(tmp_str, "loaded_param char* %s",$1->name);
-			emit(&emit_lst, "loaded_param", "char*", $1->name, NULL,NULL);
+		if(strcmp($3->type,"integer")==0)
+			//sprintf(tmp_str, "loaded_param int %s",$3->name);
+			emit(&emit_lst, "loaded_param", "int", $3->name, NULL,NULL);
+		else if(strcmp($3->type,"string")==0)
+			//sprintf(tmp_str, "loaded_param char* %s",$3->name);
+			emit(&emit_lst, "loaded_param", "char*", $3->name, NULL,NULL);
 		else
-			//sprintf(tmp_str, "loaded_param %s %s",$1->type, $1->name);
-			emit(&emit_lst, "loaded_param", $1->type, $1->name, NULL,NULL);
+			//sprintf(tmp_str, "loaded_param %s %s",$3->type, $3->name);
+			emit(&emit_lst, "loaded_param", $3->type, $3->name, NULL,NULL);
 		//squeeze_node(emit_lst, "loaded_param", tmp_str);
 	}
 	//free(tmp_str);
