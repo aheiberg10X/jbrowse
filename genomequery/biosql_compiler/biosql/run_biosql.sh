@@ -1,12 +1,7 @@
-#!/bin/bash
-
 if [ $# -ne 2 ] ; then
 	echo 'usage: ./run_biosql.sh <biosql_code> <donor>'
 	exit 
 fi
-
-cd ../genomequery/biosql_compiler/biosql
-rm -rf dst/chr*
 
 input_sql=$1
 bam_prefx=../../../donors/$2/chr
@@ -18,6 +13,8 @@ back_end_dir="back_end"
 src_table_dir="dst"
 low_level_calls="low_level.sh"
 chr_info="chromo_length_info.txt"
+#bam_prefx="NA18507/chr"
+#indx_prefx="NA18507/chr"
 
 $front_end_dir/biosql < $input_sql > $interm_code
 
