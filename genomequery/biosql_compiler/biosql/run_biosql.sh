@@ -1,10 +1,18 @@
+#!/bin/bash
+
 if [ $# -ne 2 ] ; then
 	echo 'usage: ./run_biosql.sh <biosql_code> <donor>'
 	exit 
 fi
+echo "biosql home:"
+echo $BIOSQL_HOME
+echo "donor dir:"
+echo $DONOR_DIR
+cd $BIOSQL_HOME
+rm -rf dst/chr*
 
 input_sql=$1
-bam_prefx=../../../donors/$2/chr
+bam_prefx=$DONOR_DIR/$2/chr
 indx_prefx=$bam_prefix
 interm_code="bytecode.txt"
 products_dir_prefx="dst"

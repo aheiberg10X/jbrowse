@@ -1,23 +1,47 @@
 K 25
 svn:wc:ra_dav:version-url
 V 53
-/svn/!svn/ver/6159/genomequery/biosql_compiler/biosql
+/svn/!svn/ver/6340/genomequery/biosql_compiler/biosql
+END
+genes.txt
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/6336/genomequery/biosql_compiler/biosql/genes.txt
+END
+q2.txt
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/6330/genomequery/biosql_compiler/biosql/q2.txt
+END
+chromo_length_info.txt
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/6329/genomequery/biosql_compiler/biosql/chromo_length_info.txt
 END
 run_biosql.sh
 K 25
 svn:wc:ra_dav:version-url
 V 67
-/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/run_biosql.sh
+/svn/!svn/ver/6329/genomequery/biosql_compiler/biosql/run_biosql.sh
 END
 code_generator.py
 K 25
 svn:wc:ra_dav:version-url
 V 71
-/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/code_generator.py
+/svn/!svn/ver/6336/genomequery/biosql_compiler/biosql/code_generator.py
+END
+index_all.sh
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/6329/genomequery/biosql_compiler/biosql/index_all.sh
 END
 makefile
 K 25
 svn:wc:ra_dav:version-url
 V 62
-/svn/!svn/ver/6158/genomequery/biosql_compiler/biosql/makefile
+/svn/!svn/ver/6332/genomequery/biosql_compiler/biosql/makefile
 END

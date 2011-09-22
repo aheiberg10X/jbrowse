@@ -1,0 +1,11 @@
+table READS (string id, string read_str, integer length, string
+qvals,string chromo, integer location, char strand, string
+match_descr, string mate_chromo, integer mate_loc, char mate_strand);
+
+table genes (string annot_id, string chr, integer begin, integer end);
+
+H2=select id from READS where location>0 and location < 1000
+
+H3=select * from INTERSECT genes,H2
+
+select * from H3 where chr=="chr1" and strand=='F' and location>0 and mate_loc<1000 and mate_loc>0

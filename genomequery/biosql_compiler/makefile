@@ -1,8 +1,7 @@
 LEX=flex
 LDFLAGS=-lfl
 
-#INCLUDES =  -I. -I /usr/include/sys
-INCLUDES = -I.
+INCLUDES =  -I. -I /usr/include/sys
 
 biosql: biosql.c lex.yy.c
 	$(CC) $^ $(INCLUDES) $(LDFLAGS) -lm -o $@
