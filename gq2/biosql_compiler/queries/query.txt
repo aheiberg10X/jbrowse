@@ -1,6 +1,0 @@
-table READS (string id, string read_str, integer length, string qvals, string chromo, integer location, char strand, string match_descr, string mate_chromo, integer mate_loc, char mate_strand);
-H1=select count from READS where location>=0 and mate_loc>=0 and ((mate_loc-location>1000 and mate_loc-location<2000000) or (location-mate_loc>1000 and location-mate_loc<2000000)) ###locate and count all pairs of reads whose distance is
-#between 1000 and 2000000. Note that we don't specify the chromosome because
-##chr1 is all we have as of now.
-select * from H1 where countvec>12 ###find all areas with count at least 12
-

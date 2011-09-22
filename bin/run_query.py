@@ -25,6 +25,8 @@ fields = cgi.FieldStorage()
 query = fields.getvalue("query_box")
 query_name = fields.getvalue("query_name");
 donor = fields.getvalue("query_donor")
+linking = fields.getvalue("query_linking");
+linking = "linking"
 
 root = GlobalConfig.ROOT_DIR
 
@@ -106,10 +108,11 @@ print "starting bam2ncl"
 pop = Popen(["./bam_to_json_paired_cgi.pl", \
              donor, \
              query_name, \
-             "linking"], \
+             linking], \
             stdin=PIPE, stdout=PIPE, stderr=PIPE)
 (out, err) = pop.communicate()
-
+print err
+print out
 t4 = time.time()
 print "done with bam2ncl, took: %f s" % (t4-t3)
 print "returning %s" % out

@@ -41,6 +41,7 @@ var Browser = function(params) {
     dojo.require("dijit.tree.dndSource");
     dojo.require("dijit.tree.TreeStoreModel");
     dojo.require("dojox.data.FileStore");
+    dojo.require("dijit.Menu");
     // end my stuff
 
     var refSeqs = params.refSeqs;
@@ -336,41 +337,11 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 handleAs: "json",
                 load: function(data,ioargs){
                     if( data["status"] == "ok" ){
-                        //refresh track data, this first request is a kludge:
-                        //when site is initially loaded and first query run, 
-                        //just one xhrGet didn't load the modified trackInfo.js
-                        
-                        //TODO TRACKDATA
-                        //all this ballyhoo will be unnecessary
-                        //have run_query return the trackData information
-                        //for the new track, add it to brwsr.trackData
-                        //dojo.xhrGet({
-                        //url: "data/trackInfo.js",
-                        //handleAs: "json",
-                        //load: function(data,args){
-                        //var a =1;
-                        //},
-                        //error: function(data,args){
-                        //var a = 1;
-                        //}
-                        //});
-                        //
-                        //dojo.xhrGet({
-                        //url: "data/trackInfo.js",
-                        //handleAs: "json",
-                        //load: function(data,args){
-                        //brwsr.trackData = data;
-                        //},
-                        //error: function(data,args){
-                        //alert("trackINfo not successfully reloaded");
-                        //}
-                        //});
-                        // end ballyhoo
                         entry = data["trackData"];
-                        brwsr.trackData.push( entry );
                         if( entry['key'] != trackkey ){
                             alert( 'trackkeys do not line up' );
                         }
+                        brwsr.trackData.push( entry );
                         brwsr.tracks.push( trackkey );
                         alert( data["message"] );
                         enableCallback();
@@ -483,7 +454,23 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     };
 
     var tree = makeTree();
+  
     tree.placeAt( explorer_cpane.domNode ); 
+
+    var pMenu = new dijit.Menu({
+                targetNodeIds: ["tree"]
+            });
+    
+    pMenu.addChild(new dijit.MenuItem({
+        label: "Remove Element ",
+        iconClass: "dijitEditorIcon dijitEditorIconCut",
+        onClick: function(item) {
+            alert("you clicked delete");
+        }
+    }));
+
+    pMenu.startup();
+    pMenu.bindDomNode(dojo.byId("tree"));
 
     var refreshTree = function(){
         dijit.byId("tree").model.store.clearOnClose = true;
