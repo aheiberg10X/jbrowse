@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 53
-/svn/!svn/ver/6340/genomequery/biosql_compiler/biosql
+/svn/!svn/ver/6505/genomequery/biosql_compiler/biosql
 END
 genes.txt
 K 25
@@ -25,7 +25,7 @@ run_biosql.sh
 K 25
 svn:wc:ra_dav:version-url
 V 67
-/svn/!svn/ver/6329/genomequery/biosql_compiler/biosql/run_biosql.sh
+/svn/!svn/ver/6505/genomequery/biosql_compiler/biosql/run_biosql.sh
 END
 code_generator.py
 K 25

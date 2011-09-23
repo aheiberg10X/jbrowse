@@ -4,16 +4,9 @@ if [ $# -ne 2 ] ; then
 	echo 'usage: ./run_biosql.sh <biosql_code> <donor>'
 	exit 
 fi
-echo "biosql home:"
-echo $BIOSQL_HOME
-echo "donor dir:"
-echo $DONOR_DIR
-cd $BIOSQL_HOME
-rm -rf dst/chr*
 
 input_sql=$1
-bam_prefx=$DONOR_DIR/$2/chr
-indx_prefx=$bam_prefix
+donor=$2
 interm_code="bytecode.txt"
 products_dir_prefx="dst"
 front_end_dir="front_end"
@@ -21,8 +14,11 @@ back_end_dir="back_end"
 src_table_dir="dst"
 low_level_calls="low_level.sh"
 chr_info="chromo_length_info.txt"
-#bam_prefx="NA18507/chr"
-#indx_prefx="NA18507/chr"
+bam_prefx="$DONOR_DIR/$donor/chr"
+indx_prefx="$DONOR_DIR/$donor/chr"
+
+cd $BIOSQL_HOME
+rm -rf $src_table_dir/chr*
 
 $front_end_dir/biosql < $input_sql > $interm_code
 
@@ -32,7 +28,7 @@ then
 fi
 
 
-for c in {1..23} X Y
+for c in {1..1} #{1..23} X Y
 do
 	chr="chr"$c
 	chr_len=$(grep "^$c\>" $chr_info | cut -f2)

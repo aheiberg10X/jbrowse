@@ -1,4 +1,4 @@
-SAMLOC=/home/christos/downloads/samtools-0.1.6
+#SAMLOC=/home/christos/downloads/samtools-0.1.6
 SAMPRFX=-I$(SAMLOC)
 SAMSFX=-lm -lz -L$(SAMLOC) -lbam
 CC=gcc -pg -g
