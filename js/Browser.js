@@ -31,6 +31,7 @@ var Browser = function(params) {
     dojo.require("dijit.form.Form");
     dojo.require("dijit.form.Button");
     dojo.require("dijit.form.TextBox");
+    dojo.require("dijit.form.Textarea");
     dojo.require("dojox.form.FileInput");
     dojo.require("dijit.form.CheckBox");
     dojo.require("dojo.io.iframe");
@@ -295,7 +296,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     query_box_p.innerHTML = "Query<br />";
     query_div.appendChild( query_box_p );
 
-    var query_box = new dijit.form.TextBox(
+    var query_box = new dijit.form.Textarea(
                         {id : "query_box",
                          name: "query_box",
                          style: "height: 12em; width: 90%"}
@@ -310,12 +311,13 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                          type: "hidden"}
                     ).placeAt( query_div );
 
-    var host_chrom = new dijit.form.TextBox(
-                        {id: "host_chrom",
-                         name: "host_chrom",
-                         value: brwsr.refSeq.name,
-                         type: "hidden"}
-                     ).placeAt( query_div );        
+    //deprecated
+    //var host_chrom = new dijit.form.TextBox(
+    //{id: "host_chrom",
+    //name: "host_chrom",
+    //value: brwsr.refSeq.name,
+    //type: "hidden"}
+    //).placeAt( query_div );        
     
     var runQuery = function( disableCallback, enableCallback ){
         var donor = dojo.byId("query_donor").value;
