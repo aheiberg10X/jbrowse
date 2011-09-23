@@ -228,60 +228,50 @@ sub createTrack {
     my $sorter = NCLSorter->new( sub { $jsonGen->addFeature($_[0]) },
                                  $startIndex, $endIndex);
 
-    if( $bam_linking  ) {
 
-        if( $stream ) {
-            my $callback = sub {
-                my ($callone,$calltwo) = @_;
-                my ($absleft,$absright) = ($callone->[0], $calltwo->[1]);
-                push( @$callone, $callone->[2]-1 ? "reverse" : "forward" );
-                push( @$calltwo, $calltwo->[2]-1 ? "reverse" : "forward" );
-                my $feature = [$absleft,$absright,0,[$callone,$calltwo]];
-                #can somehow merge addFeature and updateBookmarks?  
-                $sorter->addSorted($feature);
-                updateBookmarks( $jsonGen,
-                                 \$cur_left,
-                                 \$cur_right,
-                                 \$featureCount,
-                                 $feature );
-            };
 
-            my $streamer = PairStreamer->new( $callback );
-#
-            my $fetch_callback = sub { 
-                passAlignmentToStreamer( $_[0], $streamer );
-            };
-            #print "starting stream...\n";
-            #$index->fetch($bam,
-                          #$tid,
-                          #$start,
-                          #$end,
-                          #$fetch_callback);
-            #$bam->fetch($tid,$start,$end,$fetch_callback);
-            #print "done streaming\n";
+    open( FINT, '<', $interval_file );
+    my $line = <FINT>;
+    my @splt = split('\t', $line);i
+    my $len = scalar(@splt);
+    print $OUTPUT "splt is @splt and length is $len";
+    my $is_single_reads = $len < 6;
+    if( $is_single_reads ){
+        print $OUTPUT "single reads, not linking\n";
+        my $single_callback = sub{
+            my $feature = shift;
+            updateBookmarks( $jsonGen,
+                             \$cur_left, 
+                             \$cur_right, 
+                             \$featureCount,
+                             $feature );
+            $sorter->addSorted( $feature );
+        };
+        do{
+            my $feat = makeSingleFeature( $line );
+            $single_callback->( $feat );
         }
-        else{
-
-            my $callback = sub {
-                my $feature = shift;
-                updateBookmarks( $jsonGen,
-                                 \$cur_left, 
-                                 \$cur_right, 
-	                         \$featureCount,
-                                 $feature );
-                $sorter->addSorted( $feature ); 
-            };
-
-            print $OUTPUT "linkingi\n";
-
-            open( FINT, '<', $interval_file );
-            while( <FINT> ) {
-                my $feat = makeFeature( $_ );
-                $callback->( $feat );
-            }
-            
-        }
+        while( $line = <FINT> );
     }
+    else {
+        print $OUTPUT "linkingi\n";
+        my $paired_callback = sub {
+            my $feature = shift;
+            updateBookmarks( $jsonGen,
+                             \$cur_left, 
+                             \$cur_right, 
+                             \$featureCount,
+                             $feature );
+            $sorter->addSorted( $feature ); 
+        };
+        do {
+            my $feat = makePairedFeature( $line );
+            $paired_callback->( $feat );
+        }
+        while( $line = <FINT> ); 
+    }
+    close FINT;
+    
 
     if( $featureCount <= 0 ){
     	return ($key, "featureCount = 0");
@@ -322,7 +312,15 @@ sub convertStrand {
     return shift eq 'F' ? (1,"forward") : (-1,"reverse");
 }
 
-sub makeFeature {
+sub makeSingleFeature {
+    my $intervals = shift;
+    my @s = split( '\t', $intervals );
+    my ($strand,$style) = convertStrand($s[2]);
+    my ($ll,$rr) = (int($s[0]), int($s[1]));
+    return [$ll,$rr,$strand,$style];
+}
+
+sub makePairedFeature {
     my $intervals = shift;
     my @s = split( '\t', $intervals );
     my ($lstrand,$lstyle) = convertStrand($s[2]);
