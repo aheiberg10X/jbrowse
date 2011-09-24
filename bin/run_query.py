@@ -60,7 +60,7 @@ fuq.close()
 
 print "popping run_biosql.sh"
 t1 = time.time()
-pop = Popen(["../genomequery/biosql_compiler/biosql/run_biosql.sh", \
+pop = Popen(['bash', "../genomequery/biosql_compiler/biosql/run_biosql.sh", \
              query_loc, \
              donor ], \
             stdin=PIPE, stdout=PIPE, stderr=PIPE)
