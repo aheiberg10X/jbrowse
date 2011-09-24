@@ -590,6 +590,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         var isVisualized = brwsr.view.isVisualized( trackkey );
         //var c = dojo.byId( 'track_'+track_name );
         if( isVisualized ){
+            brwsr.viewDndWidget.delItem( 'track_'+trackkey );
             brwsr.view.zoomContainer.removeChild( 
                 dojo.byId( 'track_'+trackkey )
             );

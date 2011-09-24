@@ -1,5 +1,3 @@
-#!/bin/bash
-
 if [ $# -ne 2 ] ; then
 	echo 'usage: ./run_biosql.sh <biosql_code> <donor>'
 	exit 
