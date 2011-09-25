@@ -87,7 +87,8 @@ def makeItem( path ) :
         item = {'name' : name, \
                 'parentDir' : parent, \
                 'directory' : is_dir, \
-                'path' : path }
+                'path' : path,
+                'prefix' : prefix}
 
         if prefix == QUERY_PREFIX : 
             assert parent_prefix == DONOR_PREFIX
