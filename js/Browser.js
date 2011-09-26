@@ -398,19 +398,19 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     //                        Explorer Stuff
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-   var explorer_bc = new dijit.layout.BorderContainer(
+   /*var explorer_bc = new dijit.layout.BorderContainer(
            {id:"explorer_bc",
             title: "Explorer",
             style: "background-color: #efefef; border-style: none solid none none; border-color: #929292",
             splitter: "true"
 
-           }).placeAt(accordion);
+           }).placeAt(accordion);*/
     
     var explorer_cpane = dijit.layout.ContentPane(
             {id : "explorer_cpane",
              region : "top",
-             style : "overflow: scroll; background-color: #efefef; height: 90%;"}
-        ).placeAt( explorer_bc.domNode );
+             style : "overflow: hidden; background-color: #efefef; height: 70%;"}
+        ).placeAt( accordion ); //explorer_bc.domNode );
 
     var store = new dojox.data.FileStore( 
                 {id : "store",
