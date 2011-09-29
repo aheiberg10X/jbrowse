@@ -71,3 +71,8 @@ st_node *get_previous_node(st_node *lst_node);
 
 //it generates a new temporary variable
 char *get_newtemp();
+
+//It opens the file that contains the parsed tables and it loads the table and the respective
+//parameters to symbl_lst. If name!=READS, it also populates emit_lst with the proper commands
+void load_table(st_node **symbl_lst, st_node **emit_lst, char *parsed_table_file, char *name);
+

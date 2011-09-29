@@ -17,6 +17,7 @@ st_node *where_lst=NULL;
 st_node *emit_lst=NULL;
 int nextstat=1; //keep count of the lines of 
 
+char *parsed_table_file;
 
 %}
 
@@ -60,7 +61,9 @@ int nextstat=1; //keep count of the lines of
 %token  WHERE
 %token  COUNT
 %token  TABLE
-%token  INTERSECT
+%token  MAPJOIN
+%token	IMPORT
+%token	USE
 
 %type <string> names
 %type <entry> table_keyword
@@ -87,7 +90,9 @@ int nextstat=1; //keep count of the lines of
 
 
 %%
-program: table_prototypes assigned_selects select_statement
+program: table_source import_tables assigned_selects select_statement
+|
+table_prototypes
 ;
 
 table_prototypes: table_prototype table_prototypes
@@ -95,9 +100,9 @@ table_prototypes: table_prototype table_prototypes
 ;
 
 table_prototype: table_keyword LPAREN table_args RPAREN SEMICOLON{cur_owner=NULL;
-	if(strcmp($1->name, "READS")!=0){
+	//if(strcmp($1->name, "READS")!=0){
 		emit(&emit_lst, "end_load_table", NULL, NULL, NULL,NULL);
-	}
+	//}
 }
 ;
 
@@ -106,9 +111,9 @@ table_keyword: TABLE names{
 		$$=create_node($2, "table", "table", NULL);
 		cur_owner=$$;
 		add_node(&lst, $$);
-		if(strcmp($2, "READS")!=0){
+		//if(strcmp($2, "READS")!=0){
 			emit(&emit_lst, "load_table", $$->name, NULL, NULL,NULL);
-		}
+		//}
 	}
 	else symerror("Conflict with name tables");
 }
@@ -124,31 +129,26 @@ names: ID{
 table_args: table_args COMMA table_arg {
 //arguments need to appear in output in the order that the user enders them.
 
-	//char *tmp_str=malloc(1024);
-	if(strcmp(cur_owner->name, "READS")!=0){
+	//if(strcmp(cur_owner->name, "READS")!=0){
 		if(strcmp($3->type,"integer")==0)
-			//sprintf(tmp_str, "loaded_param int %s",$3->name);
 			emit(&emit_lst, "loaded_param", "int", $3->name, NULL,NULL);
 		else if(strcmp($3->type,"string")==0)
-			//sprintf(tmp_str, "loaded_param char* %s",$3->name);
 			emit(&emit_lst, "loaded_param", "char*", $3->name, NULL,NULL);
 		else
-			//sprintf(tmp_str, "loaded_param %s %s",$3->type, $3->name);
 			emit(&emit_lst, "loaded_param", $3->type, $3->name, NULL,NULL);
-		//squeeze_node(emit_lst, "loaded_param", tmp_str);
-	}
+	//}
 	//free(tmp_str);
 }
 
 |table_arg{
-	if(strcmp(cur_owner->name, "READS")!=0){
+	//if(strcmp(cur_owner->name, "READS")!=0){
 		if(strcmp($1->type,"integer")==0)
 			emit(&emit_lst, "loaded_param", "int", $1->name, NULL,NULL);
 		else if(strcmp($1->type,"string")==0)
 			emit(&emit_lst, "loaded_param", "char*", $1->name, NULL,NULL);
 		else
 			emit(&emit_lst, "loaded_param", $1->type, $1->name, NULL,NULL);
-	}
+	//}
 }
 ;
 
@@ -173,6 +173,17 @@ table_arg: INTEGER names{
 	else symerror("Conflicting attribute names");
 	}
 		
+;
+
+
+table_source: USE names{
+	parsed_table_file=strdup($2);
+}
+
+import_tables: import_tables import_tables
+|IMPORT names SEMICOLON{
+	load_table(&lst, &emit_lst, parsed_table_file, $2);
+}
 ;
 
 assigned_selects: assigned_select assigned_selects
@@ -213,7 +224,7 @@ select_statement: SELECT select_args FROM from_arg WHERE where_args{
 	select_lst=NULL;
 
 }
-| SELECT select_args FROM INTERSECT from_args{
+| SELECT select_args FROM MAPJOIN from_args{
 	
 	squeeze_node(emit_lst, "Input", "begin_intersect"); //add a flag to help with code generation
 
@@ -684,4 +695,62 @@ char *get_newtemp(){
 	char *ret=(char *)malloc(sizeof(char)*(50));
 	sprintf(ret, "t%d",cnt++);
 	return ret;
+}
+
+//It opens the file that contains the parsed tables and it loads the table and the respective
+//parameters to symbl_lst. If name!=READS, it also populates emit_lst with the proper commands
+void load_table(st_node **symbl_lst, st_node **emit_lst, char *parsed_table_file, char *name){
+	FILE *fp=fopen(parsed_table_file, "r");
+	if(fp==NULL) ioerror("Cannot open the file of parsed_tables");
+	char *buf=malloc(2048);
+	char *tok;
+	int table_found=0;
+	char *type;
+	char *pname;
+	st_node *nd;
+	if (fgets(buf, 2048, fp)==NULL) ioerror("Can't read the first line");
+	while(fgets(buf, 2048, fp)!=NULL){
+		if (strstr(buf, " load_table")!=NULL && strstr(buf, name)!=NULL){//the table was located
+			table_found=1;
+			if(lookup(*symbl_lst, name, NULL, NULL, NULL)==NULL){
+				nd=create_node(name, "table", "table", NULL);
+				cur_owner=nd;
+				add_node(symbl_lst, nd);
+				if(strcmp(name,"READS")!=0)
+					emit(emit_lst, "load_table", name, NULL, NULL,NULL);
+			}
+			else symerror("Conflict with table names");
+		}
+		else if(strstr(buf,"loaded_param")!=NULL && table_found){
+			tok=strtok(buf, " "); //the line No
+			tok=strtok(NULL, " "); //the "loaded_param" keyword
+			tok=strtok(NULL, " "); //the type
+			type=tok;
+			tok=strtok(NULL, " "); //the parameter name
+			pname=tok;
+			//pname[strlen(pname)-1]='\0'; //get rid of '\n'
+			if (strcmp(type, "int")==0)
+				nd=check_and_create(*symbl_lst, pname, "integer", "attribute", cur_owner);
+			else if(strcmp(type, "float")==0)
+				nd=check_and_create(*symbl_lst, pname, "float", "attribute", cur_owner);
+			else if(strcmp(type, "char")==0)
+				nd=check_and_create(*symbl_lst, pname, "char", "attribute", cur_owner);
+			else if(strcmp(type, "char*")==0)
+				nd=check_and_create(*symbl_lst, pname, "string", "attribute", cur_owner);
+			else symerror("Unknown type");
+			if(nd!=NULL) add_node(symbl_lst, nd);
+			else symerror("Conflicting attribute names");
+			if(strcmp(name, "READS")!=0)
+				emit(emit_lst, "loaded_param", type, pname, NULL,NULL);
+		}
+		else if(strstr(buf, "end_load_table")!=NULL && table_found){
+			table_found=0;
+			if(strcmp(name, "READS")!=0)
+				emit(emit_lst, "end_load_table", NULL, NULL, NULL,NULL);
+			free(buf);
+			fclose(fp);
+			return;
+		}
+	}
+	symerror("Cannot import a table with the given name");
 }
