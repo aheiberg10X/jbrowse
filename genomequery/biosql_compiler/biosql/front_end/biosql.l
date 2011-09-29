@@ -16,7 +16,7 @@ constChar	"'"([^"\"""\'""\\"])"'"
 constString	"\""([^"\"""\'""\\"\n])*"\""
 select	select|SELECT
 from	from|FROM
-intersect intersect|INTERSECT
+mapjoin mapjoin|MAPJOIN
 where	where|WHERE
 table	table|TABLE
 count	count|COUNT
@@ -27,6 +27,8 @@ integer integer|INTEGER
 float	float|FLOAT
 char	char|CHAR
 string_type string|STRING
+import	import|IMPORT
+use		use
 name		([a-z]|[A-Z])+([0-9]|_|[a-z]|[A-Z])*
 comment #.*\n
 
@@ -74,11 +76,18 @@ comment #.*\n
 	return FROM;
 
 }
-{intersect}	{
+{mapjoin}	{
 	lineNo=line;//printf("where\n");
 	yylval.string=(char*)malloc(sizeof(yytext));
 	strcpy(yylval.string,yytext);
-	return INTERSECT;
+	return MAPJOIN;
+}
+
+{import} {
+	lineNo=line;//printf("where\n");
+	yylval.string=(char*)malloc(sizeof(yytext));
+	strcpy(yylval.string,yytext);
+	return IMPORT;
 }
 
 {where}	{
@@ -158,6 +167,13 @@ comment #.*\n
 	strcpy(yylval.string,yytext);
 	return NOT;
 
+}
+
+{use}	{
+	lineNo=line;//printf("or\n");
+	yylval.string=(char*)malloc(sizeof(yytext));
+	strcpy(yylval.string,yytext);
+	return USE;
 }
 
 
