@@ -1,0 +1,6 @@
+table READS (string id, string read_str, integer length, string
+qvals,string chromo, integer location, char strand, string
+match_descr, string mate_chromo, integer mate_loc, char mate_strand);
+
+table ANNOT (string annot_id, string chr, integer begin , integer end);
+table genes (string annot_id, string chr, char ornt, integer begin, integer end);
