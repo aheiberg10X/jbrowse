@@ -1,0 +1,26 @@
+Compilation completed without errors
+1. load_table READS 
+2. loaded_param char* id 
+3. loaded_param char* read_str 
+4. loaded_param int length 
+5. loaded_param char* qvals 
+6. loaded_param char* chromo 
+7. loaded_param int location 
+8. loaded_param char strand 
+9. loaded_param char* match_descr 
+10. loaded_param char* mate_chromo 
+11. loaded_param int mate_loc 
+12. loaded_param char mate_strand 
+13. end_load_table 
+14. load_table ANNOT 
+15. loaded_param char* annot_id 
+16. loaded_param char* chr 
+17. loaded_param int begin 
+18. loaded_param int end 
+19. end_load_table 
+20. load_table genes 
+21. loaded_param char* annot_id 
+22. loaded_param char* chr 
+23. loaded_param int begin 
+24. loaded_param int end 
+25. end_load_table 
