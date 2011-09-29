@@ -503,9 +503,9 @@ void print_reduced_rd_list(Mates *indx, int len_indx, long *strand_indx, int str
 		i=rd_lst[j];
 		loc=indx[i].loc;
 		len=indx[i].read_len;
-		strand=get_strand(strand_indx, strand_len, mate_indx);
+		strand=get_strand(strand_indx, strand_len, i);
 		mate_indx=indx[i].mate_indx;
-		if(mate_indx<i) continue; //don't print pairs twice.
+		if(mate_indx<i && mate_flag) continue; //don't print pairs twice.
 		fprintf(fp, "%d\t%d\t%c\t",loc, loc+len-1, strand);
 		if(mate_flag){
 			if(mate_indx>0){
