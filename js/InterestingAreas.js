@@ -12,24 +12,16 @@ function IANode( trackKey, locs ){
     this.nextType = null;
 }   
 
-IANode.prototype.setNext = function( ianode ){
-    this.next = ianode;
-};
-IANode.prototype.setNextType = function( ianode ){
-    this.nextType = ianode;
-};
-
 IANode.prototype.belongsTo = function( trackKey ){
     return this.trackKey == trackKey;
 }; 
 
-IANode.prototype.disconnect = function( ianode ){
-    ianode.prev.n
-    r.next = null;
-    r.prev = null;
-    var n = r.nextType;
-    r.nextType = null;
-    r = n;
+//is this enough to get javascript to garbage collect?
+//we worry about meta pointers nextRightNode, insideRightNode, and nextLeftNode in removeTrack
+IANode.prototype.disconnect = function(){
+    this.next = null;
+    this.prev = null;
+    this.nextType = null;
 };
 
 // IANode
@@ -37,27 +29,28 @@ IANode.prototype.disconnect = function( ianode ){
 
 
 ///////////////////////////////////////////////////
-//  Interesting Areas
+//  Interesting Area
+//  A doubly-linked list of IANodes, arranged from left to right by position on the genome (no overlap by definition)
+//  The Browser.js will call getNextRight and getNextLeftSite to get a position on the chromosome to pan to
+//  This position is made available by mainting nextLeftNode, nextRightNode, and insideRightNode
+//  These are pointers to IANodes in the list, and are updated by updateViewFrame (called by Browser.js onCoarseMove() )
+//  A two IANodes called start and stop bookend the linked list
 function InterestingAreas( refstart, refend ){
     var sysTrackName = "systrack";
-    var start = new IANode( sysTrackName, [refstart,refstart] );
-    var end = new IANode( sysTrackName, [refend,refend] );
-    start.next = end;
-    end.prev = start;
-    start.nextType = end;
+    this.start = new IANode( sysTrackName, [refstart,refstart] );
+    this.end = new IANode( sysTrackName, [refend,refend] );
+    this.start.next = this.end;
+    this.end.prev = this.start;
+    this.start.nextType = this.end;
 
-    this.firstNode = start;
     //this.currentNode = start;    
-    this.insideLeftNode = start;
-    this.insideRightNode = end;
-    this.nextLeftNode = start;
-    this.nextRightNode = end;
-    this.activeTracks = {sysTrackName: start};
+    this.insideRightNode = this.end;
+    this.nextLeftNode = this.start;
+    this.nextRightNode = this.end;
+    this.activeTracks = {sysTrackName: this.start};
     this.inactiveTracks = {};
     this.refstart = refstart;
     this.refend = refend;
-    //this.addTrackTest();
-
 }
 
 //interestingAreas should be sorted asc
@@ -80,7 +73,7 @@ InterestingAreas.prototype.addTrack = function( trackKey, interestingAreas ){
     this.activeTracks[trackKey] = head; 
 
     //integrate into big list
-    var p1 = this.firstNode;
+    var p1 = this.start;
     var p2 = p1.next;
     while( head != null ){
         //console.log(p1,p2,head);
@@ -115,18 +108,51 @@ InterestingAreas.prototype.addTrack = function( trackKey, interestingAreas ){
             }
         }
     }
-    //this.updateViewFrame()    
+    var shouldbedone = 1;
+    //this.updateViewFrame();
     
 };
 
+InterestingAreas.prototype.disconnect = function( r, lastNonType ){
+    if( r == this.insideRightNode ){
+        this.insideRightNode = this.getNextValidRight(r);
+    }
+    if( r == this.nextRightNode ){
+        this.nextRightNode = this.getNextValidRight(r);
+    }
+    if( r == this.nextLeftNode ){
+        this.nextLeftNode = lastNonType;
+    }
+    r.disconnect();
+};
+
 //Pretty sure this is not even close
-InterestingAreas.prototype.removeTrack = function( trackKey ){
-    var trackList = (trackKey in this.activeTracks) ? this.activeTracks : this.inactiveTracks;
-    var r = trackList[trackKey];
+InterestingAreas.prototype.removeTrack = function( trackkey ){
+    this.makeInactive( trackkey );
+    //var trackList = (trackkey in this.activeTracks) ? this.activeTracks : this.inactiveTracks;
+    var r = this.inactiveTracks[trackkey];
     if( r == null ){ return; }
-    var lastNonType = r.prev;
     while( r != null ){
-        if( ! r.prev.belongsTo(trackKey) && lastNonType != r.prev ){            
+        var lastNonType = r.prev;
+        var n;
+        while(r.next == r.nextType){
+            n = r.next
+            this.disconnect(r, lastNonType);            
+            r = n;
+        }
+        lastNonType.next = r.next;
+        r.next.prev = lastNonType;
+        n = r.nextType;
+        this.disconnect(r, lastNonType);
+        r = n;
+    }
+    var shouldbedone = 1;
+};
+
+
+/////////////////////////////////////////////////////////////
+ /*   while( r != null ){
+        if( ! r.prev.belongsTo(trackkey) && lastNonType != r.prev ){            
             lastNonType.next = r.prev;
             r.prev.prev = lastNonType;
             lastNonType = r.prev;
@@ -137,9 +163,9 @@ InterestingAreas.prototype.removeTrack = function( trackKey ){
         }
         r = r.nextType;
     }
-    delete trackList[trackKey];
+    delete trackList[trackkey];
     return;
-};
+};*/
 
 //can generalize these guys with a some kind of toggle class?
 InterestingAreas.prototype.makeActive = function( trackKey ){
@@ -148,7 +174,7 @@ InterestingAreas.prototype.makeActive = function( trackKey ){
 };
 
 InterestingAreas.prototype.makeInactive = function( trackKey ){
-    this.inactiveTracks[trackKey] = this.inactiveTracks[trackKey];
+    this.inactiveTracks[trackKey] = this.activeTracks[trackKey];
     delete this.activeTracks[trackKey];
 };
 
@@ -216,10 +242,6 @@ InterestingAreas.prototype.updateViewFrame = function( left, right ){
         p = p.prev;
     }
     this.nextLeftNode = p;
-    this.insideLeftNode = this.getNextValidRight( this.nextLeftNode );
-    //if( !(left <= this.insideLeftNode.leftLoc && this.insideLeftNode.leftLoc <= right) ){
-    //this.insideLeftNode = null;
-    //}
     return;
 };
 
@@ -228,10 +250,6 @@ InterestingAreas.prototype.updateViewFrame = function( left, right ){
 
 
 InterestingAreas.prototype.getNextRightSite = function( viewFrameLeft, viewFrameRight){
-    //if( !(viewFrameLeft <= this.insideRightNode.leftLoc && this.insideRightNode.leftLoc <= viewFrameRight) ){
-    //return this.nextRightNode.leftLoc;
-    //}
-    //else{ 
     var insideRightNodeRunsOffRight = this.insideRightNode.leftLoc <= viewFrameRight && this.insideRightNode.rightLoc > viewFrameRight;
     if( this.nextRightNode.trackKey == "systrack" ){
         return -1; 
@@ -242,30 +260,20 @@ InterestingAreas.prototype.getNextRightSite = function( viewFrameLeft, viewFrame
     else{
         return viewFrameRight + (viewFrameRight-viewFrameLeft)/2;
     }
-    //}
 };
 
 InterestingAreas.prototype.getNextLeftSite = function( viewFrameLeft, viewFrameRight ){
-    //if( this.insideLeftNode == null ){
-    //return this.nextLeftNode.leftLoc;
-    //}
-    //else{
-    //var insideLeftNodeRunsOffLeft = this.insideLeftNode.rightLoc >= viewFrameLeft && this.insideLeftNode.leftLoc < viewFrameLeft;
-    //var insideRightNodeRunsOffLeft = this.insideRightNode.leftLoc < viewFrameLeft && this.insideRightNode.rightLoc >=  viewFrameLeft;
-    //var insideLeftNodeRunsOffLeft = this.insideLeftNode.leftLoc < viewFrameLeft && this.insideLeftNode.rightLoc >= viewFrameLeft;
     var nextLeftNodeRunsOffLeft = this.nextLeftNode.leftLoc < viewFrameLeft && this.nextLeftNode.rightLoc >= viewFrameLeft;    
 
     if( this.nextLeftNode.trackKey == "systrack" ){
         return -1;
     }
-    //else if( !(insideRightNodeRunsOffLeft || insideLeftNodeRunsOffLeft) && this.nextLeftNode.trackKey != "systrack"){
     else if( !nextLeftNodeRunsOffLeft ){
         return this.nextLeftNode.rightLoc;
     }
     else{
         return viewFrameLeft - (viewFrameRight-viewFrameLeft)/2;    
     }
-    //}
 };
 
 InterestingAreas.prototype.getNextOfType = function( trackKey ){
@@ -274,7 +282,7 @@ InterestingAreas.prototype.getNextOfType = function( trackKey ){
 
 ////////////// Testing and Debugging //////////////////////
 InterestingAreas.prototype.logNodes = function(){
-    var n = this.firstNode;
+    var n = this.start
     while( n != null ){
         console.log( n );
         n = n.next;

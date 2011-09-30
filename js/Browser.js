@@ -425,7 +425,9 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                       rootLabel : "Donors" }
                     );       
 
-    var pMenu = new dijit.Menu();
+    var pMenu = new dijit.Menu( {leftClickToOpen: true}
+                );
+    
     var visualize_menuitem =     
         new dijit.MenuItem({
             label: "Visualize",
@@ -449,16 +451,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             }
         });
     pMenu.addChild( recall_menuitem) ;
-    pMenu.addChild(
-        new dijit.MenuItem({
-            label: "Delete",
-            prefix: "query_",
-            iconClass: "dijitEditorIcon dijitEditorIconCut",
-            hidden: false,
-            onClick: function(e) {
-                var item = tree.rightClickedItem;
-                deleteQuery( item.donor, item.name ); 
-        }}));
     pMenu.addChild(
         new dijit.MenuItem({
             label: "Download",
@@ -511,7 +503,17 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 });
             }
         }));
-    
+    pMenu.addChild(
+        new dijit.MenuItem({
+            label: "Delete",
+            prefix: "query_",
+            iconClass: "dijitEditorIcon dijitEditorIconCut",
+            hidden: false,
+            onClick: function(e) {
+                var item = tree.rightClickedItem;
+                deleteQuery( item.donor, item.name ); 
+        }}));
+
     var secondDlg = new dijit.Dialog({
                     id : "query_dialog",
                     title: "New Query",
@@ -533,12 +535,13 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 secondDlg.show();      //deleteQuery( item.donor, item.name ); 
         }}));
 
+    pMenu.startup();
     var makeTree = function(){
         var tree = new dijit.Tree(
             {id : "tree",
              model : model,
              style: "",
-             onMouseDown : 
+        /*     onMouseDown : 
                 function(e){
                     var selected = dijit.getEnclosingWidget(e.target).item;
                     this.rightClickedItem = selected;
@@ -551,10 +554,25 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                         visualize_menuitem.hidden = false;
                         recall_menuitem.hidden = true;
                     }
-                },
+        //pMenu._openMyself(e);
+                },*/
 
              onClick :
-                function(item){ 
+                function(item,e){ 
+                    
+                    var selected = item; //dijit.getEnclosingWidget(e.target).item;
+                    this.rightClickedItem = selected;
+                    var isVisualized = brwsr.view.isVisualized( selected.key );
+                    if( isVisualized ){ 
+                        visualize_menuitem.hidden = true;
+                        recall_menuitem.hidden = false;
+                    }
+                    else { 
+                        visualize_menuitem.hidden = false;
+                        recall_menuitem.hidden = true;
+                    }
+
+                    pMenu._openMyself(item);
                     var trackkey = store.getValue(this.selectedItem, 'key');
                     var isVisualized = brwsr.view.isVisualized( trackkey ); //f.length == 1;
                     //if( isVisualized ){
@@ -574,19 +592,16 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                     //}
                     //else{
                     //dojo.forEach( buttons, toggler("disabled",false) );
-                    //}
 
                 }
             })
         tree.placeAt( explorer_cpane.domNode ); 
-        pMenu.startup();
         pMenu.bindDomNode(dojo.byId("tree"));
         return tree;
     };
 
     var tree = makeTree();
   
-
 
     //pMenu.bindDomNode(dojo.byId("tree"));
 
@@ -599,6 +614,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             dojo.attr(child.domNode, 'hidden', (treeItem.prefix != child.prefix || child.hidden));
         } 
     });
+
 
     var refreshTree = function(){
         dijit.byId("tree").model.store.clearOnClose = true;
@@ -722,6 +738,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             brwsr.view.zoomContainer.removeChild( 
                 dojo.byId( 'track_'+trackkey )
             );
+            brwsr.interestingAreas.removeTrack( trackkey );
+            //brwsr.interestingAreas = new InterestingAreas( brwsr.refSeq.start, brwsr.refSeq.end );
         }
         brwsr.onVisibleTracksChanged();
         //visualize_button.set('label','Visualize');
