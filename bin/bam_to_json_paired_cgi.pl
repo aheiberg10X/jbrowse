@@ -116,7 +116,7 @@ sub createTrack {
     #my $bamFile = "$targetdir/$query_name.bam";
 
     my $interval_file = "$targetdir/$query_name.intervals";
-    if( ! -e $interval_file ){ return ($key, "No interval file"); }
+    if( ! -e $interval_file ){ return ($key, "Nothing to visualize"); }
 
     my $bam_histogram_filename = "$targetdir/$query_name.hist";
     $bam_linking = $bam_linking eq "linking";
