@@ -1,0 +1,30 @@
+Compilation completed without errors
+1. load_table genes 
+2. loaded_param char* annot_id 
+3. loaded_param char* chr 
+4. loaded_param char ornt 
+5. loaded_param int begin 
+6. loaded_param int end 
+7. end_load_table 
+8. Input = READS 
+9. t0 = location > 0 
+10. t1 = location < 1000 
+11. t2 = t0 && t1 
+12. return_arg : id 
+13. result_table : H2 
+14. begin_intersect
+15. Input = genes 
+16. Input = H2 
+17. end_intersect 
+18. result_table : H3 
+19. Input = H3 
+20. t3 = (strcmp( chr , "chr1" )==0) 
+21. t4 = strand == 'F' 
+22. t5 = t3 && t4 
+23. t6 = location > 0 
+24. t7 = t5 && t6 
+25. t8 = mate_loc < 1000 
+26. t9 = t7 && t8 
+27. t10 = mate_loc > 0 
+28. t11 = t9 && t10 
+29. return_arg : * 
