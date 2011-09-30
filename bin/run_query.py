@@ -32,7 +32,7 @@ root = GlobalConfig.ROOT_DIR
 
 sys.stderr = open("%s/query_error.txt" % GlobalConfig.DEBUG_DIR,'w')
 sys.stdout = open("%s/query_output.txt" % GlobalConfig.DEBUG_DIR,'w')
-
+print "fields", fields
 if debugging :
     query_name = "q2"
     donor = "NA18507"
