@@ -23,9 +23,10 @@ utils.printToServer( 'Content-type: text/json\n\n' )
 
 fields = cgi.FieldStorage()
 query = fields.getvalue("query_box")
-query_name = fields.getvalue("query_name");
+query_name = fields.getvalue("query_name")
 donor = fields.getvalue("query_donor")
-linking = fields.getvalue("query_linking");
+chromnum = fields.getvalue("query_chrom")
+linking = fields.getvalue("query_linking")
 linking = "linking"
 
 root = GlobalConfig.ROOT_DIR
@@ -33,6 +34,8 @@ root = GlobalConfig.ROOT_DIR
 sys.stderr = open("%s/query_error.txt" % GlobalConfig.DEBUG_DIR,'w')
 sys.stdout = open("%s/query_output.txt" % GlobalConfig.DEBUG_DIR,'w')
 print "fields", fields
+
+
 if debugging :
     query_name = "q2"
     donor = "NA18507"
@@ -60,9 +63,11 @@ fuq.close()
 
 print "popping run_biosql.sh"
 t1 = time.time()
-pop = Popen(['bash', "../genomequery/biosql_compiler/biosql/run_biosql.sh", \
+#chrom is 1..22 X Y
+pop = Popen(['bash', "../genomequery/biosql_compiler/biosql/run_biosql_single.sh", \
              query_loc, \
-             donor ], \
+             donor, \
+             chromnum], \
             stdin=PIPE, stdout=PIPE, stderr=PIPE)
 (out, err) = pop.communicate()
 sys.stdout.write( out )
@@ -70,36 +75,31 @@ sys.stderr.write( err )
 t2 = time.time()
 print "done with run_biosql, took: %f s" % (t2-t1)
 
-t = '%s/genomequery/biosql_compiler/biosql/dst' % root
-for thing in os.listdir(t) :
-    if thing.startswith("chr") :
-        chrom = thing
-    else :
-        continue
-    source = "%s/%s" % (t,chrom)
-    trackpath = GlobalConfig.TRACK_TEMPLATE % (donor, query_name, chrom)
-    dest = "%s/data/%s" % (root, trackpath )
-    #dest = "%s/data/tracks/chrom_%s/donor_%s/query_%s" % (root,chrom,donor,query_name)
+chrom = "chr%s" % chromnum
+source = '%s/genomequery/biosql_compiler/biosql/dst/%s' % (root,chrom)
+trackpath = GlobalConfig.TRACK_TEMPLATE % (donor, query_name, chrom)
+dest = "%s/data/%s" % (root, trackpath )
+#dest = "%s/data/tracks/chrom_%s/donor_%s/query_%s" % (root,chrom,donor,query_name)
 
-    if not os.path.exists( dest ) :
-        os.makedirs( dest )
-    print "copying (change to moving!!) from %s to %s" % (source,dest)
+if not os.path.exists( dest ) :
+    os.makedirs( dest )
+print "copying (change to moving!!) from %s to %s" % (source,dest)
 
-    #copy bam
-    copyIfExists( "%s/out.evidence.bam" % source, \
-                  "%s/%s.bam" % (dest,query_name) )
+#copy bam
+copyIfExists( "%s/out.evidence.bam" % source, \
+              "%s/%s.bam" % (dest,query_name) )
 
-    #copy query
-    copyIfExists( query_loc, "%s/%s.gq" % (dest, query_name) )
+#copy query
+copyIfExists( query_loc, "%s/%s.gq" % (dest, query_name) )
 
-    #copy histogram
-    histogram = "%s/out.hist.txt" % source
-    copyIfExists( histogram, \
-                  "%s/%s.hist" % (dest, query_name) )
+#copy histogram
+histogram = "%s/out.hist.txt" % source
+copyIfExists( histogram, \
+              "%s/%s.hist" % (dest, query_name) )
 
-    #copy intervals
-    copyIfExists( "%s/out.evidence.bam.short" % source, \
-                  "%s/%s.intervals" % (dest,query_name) )
+#copy intervals
+copyIfExists( "%s/out.evidence.bam.short" % source, \
+              "%s/%s.intervals" % (dest,query_name) )
 #
 t3 = time.time()
 #print "done moving, took: %f s" % (t3-t2)
@@ -107,6 +107,7 @@ t3 = time.time()
 print "starting bam2ncl"
 pop = Popen(["./bam_to_json_paired_cgi.pl", \
              donor, \
+             chrom, \
              query_name, \
              linking], \
             stdin=PIPE, stdout=PIPE, stderr=PIPE)

@@ -44,6 +44,7 @@ var Browser = function(params) {
     dojo.require("dojox.data.FileStore");
     dojo.require("dijit.Menu");
     dojo.require("dijit.Dialog");
+    dojo.require("dijit.ProgressBar");
     // end my stuff
 
     var refSeqs = params.refSeqs;
@@ -269,6 +270,69 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                          style: "height: 12em; width: 90%"}
                     ).placeAt( query_box_p );
 
+    //hard coding this for now
+    //var query_box = new dijit.form.TextBox(
+    //{id : "query_chrom",
+    //name: "query_chrom",
+    //value: brwsr.refSeq.name.substring(3), 
+    //type: "hidden"}
+    //).placeAt( query_box_p );
+
+
+    //TODO: runQuery that is able to update a status bar
+    //will have to be such that we return from run_query.py with
+    //one chrom done.  Then in load we could recurse
+    //to do the remaining ones. Could shoot off multiple in parallel
+    //by doing multiple XHR requests in one go
+    brwsr.stopQuery = false;
+    var queryChromosomes = function( donor, chroms, trackkey, progress_inc, messages ){
+        var args = {"query_donor" : donor, "query_chrom" : chroms[0]};
+        var url = "bin/run_query.py?" + dojo.objectToQuery(args);
+        //TODO: security security SECURITY!! could manually pass in supposedly inaccessible donor name
+        var xhrArgs = {
+            url: url,
+            form: dojo.byId("query_form"),
+            handleAs: "json",
+            load: function(data,ioargs){
+                if( data["status"] == "ok" ){
+                    var progress = progress_bar.get("progress");
+                    progress_bar.update({'progress': progress + progress_inc});                        
+                    messages.push(data["message"]);
+                    var entry = data["trackData"];
+                    if( entry['key'] != trackkey ){
+                        alert( 'internal: trackkeys do not line up' );
+                    }
+                    
+                    if( dojo.indexOf( brwsr.tracks, trackkey ) == -1 ){
+                        brwsr.trackData.push( entry );
+                        brwsr.tracks.push( trackkey );
+                        refreshTree();
+                    }
+
+                    if( chroms.length > 1 && !brwsr.stopQuery ){
+                        var n = chroms.slice(1);
+                        queryChromosomes( donor, n, trackkey, progress_inc, messages);
+                    }
+                    else{
+                        alert( messages.join('\n') );
+                        progress_bar.update({'progress': 0});
+                    }
+                }
+                else {
+                    alert(data["message"]);
+                        progress_bar.update({'progress': 0});
+                }
+            },
+            error: function(error) {
+                alert(error);
+                progress_bar.update({'progress': 0});
+            }
+        };
+        //Call the asynchronous xhrPost
+        var deferred = dojo.xhrPost(xhrArgs);
+    }
+
+    //TODO: won't need to do the disabling thing, correct?
     var runQuery = function( disableCallback, enableCallback ){
         if( tree.clickedItem.prefix != brwsr.globals["DONOR_PREFIX"] ){
             alert("Trying to execute invalid option 'runQuery' on something other than a donor genome");
@@ -286,42 +350,11 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             alert( "There is already a query with that name" );
         }
         else {
-            var args = {"query_donor" : donor};
-            var url = "bin/run_query.py?" + dojo.objectToQuery(args);
-            //TODO: security security SECURITY!! could manually pass in inaccessible donor name
-            var xhrArgs = {
-                url: url,
-                form: dojo.byId("query_form"),
-                handleAs: "json",
-                load: function(data,ioargs){
-                    if( data["status"] == "ok" ){
-                        entry = data["trackData"];
-                        if( entry['key'] != trackkey ){
-                            alert( 'trackkeys do not line up' );
-                        }
-                        brwsr.trackData.push( entry );
-                        brwsr.tracks.push( trackkey );
-                        alert( data["message"] );
-                        enableCallback();
-                        refreshTree();
-                    }
-                    else{
-                        alert( data["message"] );
-                        enableCallback();
-                    }
-                    secondDlg.hide();
-                },
-                error: function(error) {
-                    alert(error);
-                    enableCallback();
-                    secondDlg.hide();
-                }
-            };
-            //Call the asynchronous xhrPost
-            var deferred = dojo.xhrPost(xhrArgs);
-            disableCallback();
+            secondDlg.hide();
+            chroms = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,'X','Y']; 
+            var messages = [];
+            queryChromosomes( donor, chroms, trackkey, 1.0/chroms.length * 100, messages );
         }
-
     };
 
     var query_button = new dijit.form.Button(
@@ -354,20 +387,23 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     //                        Explorer Stuff
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-   /*var explorer_bc = new dijit.layout.BorderContainer(
+    var explorer_bc = new dijit.layout.BorderContainer(
            {id:"explorer_bc",
             title: "Explorer",
-            style: "background-color: #efefef; border-style: none solid none none; border-color: #929292",
-            splitter: "true"
+            style: "width: 20%; background-color: #efefef; border-style: none solid none none; border-color: #929292",
+    //splitter: "true",
+            region: "left"
 
-           }).placeAt(accordion);*/
+           }).placeAt(parent);
    
-    //holds everything 
+    //holds 1) Tree
+    //      2) Progress/status bar 
     var explorer_cpane = dijit.layout.ContentPane(
             {id : "explorer_cpane",
-             region : "left",
-             style : "width: 18%; background-color: #efefef; border-style: none solid none none; border-color: #929292;"} //overflow: hidden; background-color: #efefef; height: 70%;"}
-        ).placeAt( parent ); //explorer_bc.domNode );
+             region : "top",
+             style : "height: 100%; background-color: #efefef; border-style: none solid none none; border-color: #929292;"} //overflow: hidden; background-color: #efefef; height: 70%;"}
+        ).placeAt(explorer_bc.domNode );
+
 
 
     //interacts with filestore_dojotree to building working tree.  
@@ -502,7 +538,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         var tree = new dijit.Tree(
             {id : "tree",
              model : model,
-             style: "",
+             style: "height: 500px; background-color: #00FF00;",
              onClick :
                 function(selected,e){ 
                     this.clickedItem = selected;
@@ -612,6 +648,21 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         brwsr.onVisibleTracksChanged();
 
     };
+
+    var status_cpane = dijit.layout.ContentPane(
+            {id : "status_cpane",
+             region : "bottom",
+             style : "background-color: #efffff; border-style: none solid none none; border-color: #929292;"} //overflow: hidden; background-color: #efefef; height: 70%;"}
+        ).placeAt(explorer_bc.domNode );
+
+
+    var progress_bar = dijit.ProgressBar(
+            {id: "progress_bar",
+             style: "width: 100%; background-color:#FF0000;",
+             hidden: true
+            }
+            ).placeAt( status_cpane.domNode );
+
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     //            Some Helper functions
