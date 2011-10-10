@@ -54,8 +54,9 @@ if( $profiling ){
 #print "<html><body><textarea>\n";  #place a json response inside here"
 
 my $donor = $ARGV[0];
-my $query_name = $ARGV[1];
-my $linking = $ARGV[2];
+my $chrom = $ARGV[1];
+my $query_name = $ARGV[2];
+my $linking = $ARGV[3];
 
 #for building our response to server
 my ($trackkey, $message);
@@ -64,15 +65,14 @@ my @messages = ();
 my $compress = 0;
 
 #HERE IS WHERE WE CAN MULTI THREAD
-my @chroms = qw/1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y/;
-foreach my $chromnum (@chroms) {
-    print $OUTPUT "printing chrom $chromnum\n";
-    my $chrom = "chr$chromnum";
-    ($trackkey, $message) = createTrack( $chrom, $donor, $query_name, $linking,
-                                       $compress );
-    push( @messages, "$chrom : $message" );
-    print $OUTPUT "affter chreatTrack for $chrom\n";
-}
+#my @chroms = qw/1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y/;
+#foreach my $chromnum (@chroms) {
+print $OUTPUT "printing chrom $chrom\n";
+($trackkey, $message) = createTrack( $chrom, $donor, $query_name, $linking,
+                                   $compress );
+push( @messages, "$chrom : $message" );
+print $OUTPUT "affter chreatTrack for $chrom\n";
+#}
 
 my $ext = ($compress ? "jsonz" : "json");
 my $new_entry_json = 

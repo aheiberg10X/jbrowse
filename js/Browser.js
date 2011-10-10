@@ -44,13 +44,14 @@ var Browser = function(params) {
     dojo.require("dojox.data.FileStore");
     dojo.require("dijit.Menu");
     dojo.require("dijit.Dialog");
+    dojo.require("dijit.ProgressBar");
     // end my stuff
 
     var refSeqs = params.refSeqs;
 
     this.trackData = params.trackData;
 
-    var globals = params.globals;
+    this.globals = params.globals;
     this.deferredFunctions = [];
     this.dataRoot = params.dataRoot;
     var dataRoot;
@@ -240,47 +241,12 @@ var Browser = function(params) {
 
 Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     
-    var accordion = new dijit.layout.AccordionContainer(
-        {id: "accordion",  //7 
-	     title: "accordion",
-         region: "left",
-         style: "width: 20%; background-color:#0000FF; border-style: none solid none none; border-color: #929292",
-         splitter: "false"
-        }).placeAt(parent);
-
-    //var form_pane =  new dijit.layout.ContentPane( //new dojox.layout.ExpandoPane(
-    //{id: "form_pane", //8
-    //title: "Manage",
-    ////region: "bottom",
-    //style: "background-color:#efefef;",
-    ////splitter: "true"
-    //}).placeAt(accordion);
-
    ///////////////////////////////////////////////////////////////////////////////////////////////////////
    //                     Query Stuff
    ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    var query_bc = new dijit.layout.BorderContainer(
-        {id:"query_bc", //9
-         title: "Query",
-         //region: "top",
-         style: "background-color: #efefef; border-style: none solid none none; border-color: #929292",
-         //splitter: "true",
-         selected: "true"
-        });
-//.placeAt(accordion);
-
-    var query_cpane = new dijit.layout.ContentPane( 
-        {id : "query_cpane",
-         title : "Query",
-         region : "center",
-         layoutPriority: "0",
-         style : "background-color: #efefef"
-        }).placeAt(query_bc);
-
     var query_div = document.createElement("div");
     query_div.id = "query_div";
-    query_cpane.domNode.appendChild( query_div );
 
     var query_name_p = document.createElement("p");
     query_name_p.id = "query_name_p";
@@ -304,25 +270,74 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                          style: "height: 12em; width: 90%"}
                     ).placeAt( query_box_p );
 
-    //TODO : make it a drop down
-    var query_donor = new dijit.form.TextBox(
-                        {id: "query_donor",
-                         name: "query_donor",
-                         value: "NA18507",
-        //globals.root_dir + "/genomequery/biosql_compiler/biosql/indexing/indexed/evidence.dist.1000.1M.5.sorted.bam",
-                         type: "hidden"}
-                    ).placeAt( query_div );
-
-    //deprecated
-    //var host_chrom = new dijit.form.TextBox(
-    //{id: "host_chrom",
-    //name: "host_chrom",
-    //value: brwsr.refSeq.name,
+    //hard coding this for now
+    //var query_box = new dijit.form.TextBox(
+    //{id : "query_chrom",
+    //name: "query_chrom",
+    //value: brwsr.refSeq.name.substring(3), 
     //type: "hidden"}
-    //).placeAt( query_div );        
-    
+    //).placeAt( query_box_p );
+
+
+    //TODO: runQuery that is able to update a status bar
+    //will have to be such that we return from run_query.py with
+    //one chrom done.  Then in load we could recurse
+    //to do the remaining ones. Could shoot off multiple in parallel
+    //by doing multiple XHR requests in one go
+    brwsr.stopQuery = false;
+    var queryChromosomes = function( donor, chroms, trackkey, progress_inc, messages ){
+        var args = {"query_donor" : donor, "query_chrom" : chroms[0]};
+        var url = "bin/run_query.py?" + dojo.objectToQuery(args);
+        //TODO: security security SECURITY!! could manually pass in supposedly inaccessible donor name
+        var xhrArgs = {
+            url: url,
+            form: dojo.byId("query_form"),
+            handleAs: "json",
+            load: function(data,ioargs){
+                if( data["status"] == "ok" ){
+                    var progress = progress_bar.get("progress");
+                    progress_bar.update({'progress': progress + progress_inc});                        
+                    messages.push(data["message"]);
+                    var entry = data["trackData"];
+                    if( entry['key'] != trackkey ){
+                        alert( 'internal: trackkeys do not line up' );
+                    }
+                    
+                    if( dojo.indexOf( brwsr.tracks, trackkey ) == -1 ){
+                        brwsr.trackData.push( entry );
+                        brwsr.tracks.push( trackkey );
+                        refreshTree();
+                    }
+
+                    if( chroms.length > 1 && !brwsr.stopQuery ){
+                        var n = chroms.slice(1);
+                        queryChromosomes( donor, n, trackkey, progress_inc, messages);
+                    }
+                    else{
+                        alert( messages.join('\n') );
+                        progress_bar.update({'progress': 0});
+                    }
+                }
+                else {
+                    alert(data["message"]);
+                        progress_bar.update({'progress': 0});
+                }
+            },
+            error: function(error) {
+                alert(error);
+                progress_bar.update({'progress': 0});
+            }
+        };
+        //Call the asynchronous xhrPost
+        var deferred = dojo.xhrPost(xhrArgs);
+    }
+
+    //TODO: won't need to do the disabling thing, correct?
     var runQuery = function( disableCallback, enableCallback ){
-        var donor = dojo.byId("query_donor").value;
+        if( tree.clickedItem.prefix != brwsr.globals["DONOR_PREFIX"] ){
+            alert("Trying to execute invalid option 'runQuery' on something other than a donor genome");
+        }
+        var donor = tree.clickedItem.name;  //dojo.byId("query_donor").value;
         var query_name =  dojo.byId("query_name").value;
         var trackkey = donor + "/" + query_name;
         if( dojo.byId("query_box").value == "" ){
@@ -335,39 +350,11 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             alert( "There is already a query with that name" );
         }
         else {
-            var xhrArgs = {
-                url: "bin/run_query.py",
-                form: dojo.byId("query_form"),
-                handleAs: "json",
-                load: function(data,ioargs){
-                    if( data["status"] == "ok" ){
-                        entry = data["trackData"];
-                        if( entry['key'] != trackkey ){
-                            alert( 'trackkeys do not line up' );
-                        }
-                        brwsr.trackData.push( entry );
-                        brwsr.tracks.push( trackkey );
-                        alert( data["message"] );
-                        enableCallback();
-                        refreshTree();
-                    }
-                    else{
-                        alert( data["message"] );
-                        enableCallback();
-                    }
-                    secondDlg.hide();
-                },
-                error: function(error) {
-                    alert(error);
-                    enableCallback();
-                    secondDlg.hide();
-                }
-            };
-            //Call the asynchronous xhrPost
-            var deferred = dojo.xhrPost(xhrArgs);
-            disableCallback();
+            secondDlg.hide();
+            chroms = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,'X','Y']; 
+            var messages = [];
+            queryChromosomes( donor, chroms, trackkey, 1.0/chroms.length * 100, messages );
         }
-
     };
 
     var query_button = new dijit.form.Button(
@@ -376,8 +363,10 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                              style: "align-text: right;",
                              onClick: 
                                  function(){
-                                    buttons = [query_button,
-                                               query_box, query_name];
+                                     //TODO: maybe a user still wants to browse around while query runs
+                                     //      need to have query progess bar run in background and allow
+                                     //      further interaction
+                                    var buttons = [query_button,query_box,query_name]
                                     var disableCallback = function() {
                                         dojo.forEach( buttons, toggler("disabled",true) );
                                     };
@@ -398,20 +387,27 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     //                        Explorer Stuff
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-   /*var explorer_bc = new dijit.layout.BorderContainer(
+    var explorer_bc = new dijit.layout.BorderContainer(
            {id:"explorer_bc",
             title: "Explorer",
-            style: "background-color: #efefef; border-style: none solid none none; border-color: #929292",
-            splitter: "true"
+            style: "width: 20%; background-color: #efefef; border-style: none solid none none; border-color: #929292",
+    //splitter: "true",
+            region: "left"
 
-           }).placeAt(accordion);*/
-    
+           }).placeAt(parent);
+   
+    //holds 1) Tree
+    //      2) Progress/status bar 
     var explorer_cpane = dijit.layout.ContentPane(
             {id : "explorer_cpane",
              region : "top",
-             style : "overflow: hidden; background-color: #efefef; height: 70%;"}
-        ).placeAt( accordion ); //explorer_bc.domNode );
+             style : "height: 100%; background-color: #efefef; border-style: none solid none none; border-color: #929292;"} //overflow: hidden; background-color: #efefef; height: 70%;"}
+        ).placeAt(explorer_bc.domNode );
 
+
+
+    //interacts with filestore_dojotree to building working tree.  
+    //This depends entirely on specific directory structure and naming
     var store = new dojox.data.FileStore( 
                 {id : "store",
                  url : "bin/filestore_dojotree.py",
@@ -425,8 +421,9 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                       rootLabel : "Donors" }
                     );       
 
-    var pMenu = new dijit.Menu( {leftClickToOpen: true}
-                );
+    ///////////////////////////////////
+    //  Menu Stuff
+    var pMenu = new dijit.Menu( {leftClickToOpen: true} );
     
     var visualize_menuitem =     
         new dijit.MenuItem({
@@ -434,7 +431,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             prefix: "query_",
             hidden: false,
             onClick: function(e) {
-                var item = tree.rightClickedItem;
+                var item = tree.clickedItem;
                 trackkey = item.key;
                 visualize(trackkey);
             }
@@ -446,7 +443,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             prefix: "query_",
             hidden: true,
             onClick: function(e) {
-                var item = tree.rightClickedItem;
+                var item = tree.clickedItem;
                 recall( item.key );
             }
         });
@@ -457,7 +454,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             prefix: "query_",
             hidden: false,
             onClick: function(e) {
-                var selected = tree.rightClickedItem;
+                var selected = tree.clickedItem;
                 var query_name = selected.name; 
                 var donor_name = selected.donor;
                 var url = "data/" + 
@@ -478,7 +475,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             prefix: "query_",
             hidden: false,
             onClick: function(e) {
-                var item = tree.rightClickedItem;
+                var item = tree.clickedItem;
                 var host_chrom = brwsr.refSeq.name;
                 var query_name = item.name;
                 var donor_name = item.donor;
@@ -510,7 +507,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             iconClass: "dijitEditorIcon dijitEditorIconCut",
             hidden: false,
             onClick: function(e) {
-                var item = tree.rightClickedItem;
+                var item = tree.clickedItem;
                 deleteQuery( item.donor, item.name ); 
         }}));
 
@@ -528,40 +525,23 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             prefix: "donor_",
             hidden: false,
             onClick: function(e) {
-                var item = tree.rightClickedItem;
-                var stuff = query_form;
-                //secondDlg.attr( "content", query_form ) ; //"content", "Hey, I wasn't there before, I was added at " + new Date() + "!");
-               
+                //TODO: clear query_name and query_box
                 secondDlg.show();      //deleteQuery( item.donor, item.name ); 
         }}));
 
     pMenu.startup();
+
+    //call this whenever somehting is added or deleted, will rebuild directory
+    //could find nothing more elegant than rebuilding the whole damn thing
+    //each time.
     var makeTree = function(){
         var tree = new dijit.Tree(
             {id : "tree",
              model : model,
-             style: "",
-        /*     onMouseDown : 
-                function(e){
-                    var selected = dijit.getEnclosingWidget(e.target).item;
-                    this.rightClickedItem = selected;
-                    var isVisualized = brwsr.view.isVisualized( selected.key );
-                    if( isVisualized ){ 
-                        visualize_menuitem.hidden = true;
-                        recall_menuitem.hidden = false;
-                    }
-                    else { 
-                        visualize_menuitem.hidden = false;
-                        recall_menuitem.hidden = true;
-                    }
-        //pMenu._openMyself(e);
-                },*/
-
+             style: "height: 500px; background-color: #00FF00;",
              onClick :
-                function(item,e){ 
-                    
-                    var selected = item; //dijit.getEnclosingWidget(e.target).item;
-                    this.rightClickedItem = selected;
+                function(selected,e){ 
+                    this.clickedItem = selected;
                     var isVisualized = brwsr.view.isVisualized( selected.key );
                     if( isVisualized ){ 
                         visualize_menuitem.hidden = true;
@@ -572,27 +552,12 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                         recall_menuitem.hidden = true;
                     }
 
+                    //hack to make left click work on tree
+                    //openOnLeftClick: true | is insufficient for whatever reason
+                    //when dealing with dijit.Trees
                     pMenu._openMyself(item);
                     var trackkey = store.getValue(this.selectedItem, 'key');
                     var isVisualized = brwsr.view.isVisualized( trackkey ); //f.length == 1;
-                    //if( isVisualized ){
-                    //visualize_button.set('label', 'Recall');
-                    //visualize_button.onClick = 
-                    //function(){ recall(trackkey); }; 
-                    //}
-                    //else{
-                    //visualize_button.set('label', 'Visualize');
-                    //visualize_button.onClick = 
-                    //function(){ visualize(trackkey); };
-                    //}   
-                    //var buttons = [view_query_button, delete_button,
-                    //visualize_button, download_button];
-                    //if( store.getValue( item,'directory' ) ){
-                    //dojo.forEach( buttons, toggler("disabled",true) );
-                    //}
-                    //else{
-                    //dojo.forEach( buttons, toggler("disabled",false) );
-
                 }
             })
         tree.placeAt( explorer_cpane.domNode ); 
@@ -601,10 +566,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     };
 
     var tree = makeTree();
-  
-
-    //pMenu.bindDomNode(dojo.byId("tree"));
-
+ 
+    //selective presentation of menu children depending on the tree.clickedItem 
     dojo.connect(pMenu, "_openMyself", this, function(e){
         var treeItem = dijit.getEnclosingWidget(e.target).item;
 
@@ -615,7 +578,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         } 
     });
 
-
+    //code stolen from Google
+    //don't know if it is over/under kill
     var refreshTree = function(){
         dijit.byId("tree").model.store.clearOnClose = true;
         dijit.byId("tree").model.store.close();
@@ -624,57 +588,9 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
         dijit.byId("tree").destroyRecursive();
         tree =  makeTree();
-        //tree.placeAt( explorer_cpane.domNode );
-        // 
     };
 
-    //var explorer_button_pane = dijit.layout.ContentPane(
-    //{id : "explorer_button_pane",
-    //region : "bottom",
-    //style : "background-color: #efefef; height: 10%;"}
-    //).placeAt( explorer_bc.domNode );
-
-    //var download_button = new dijit.form.Button(
-    ////{id: "download_button",
-    //label: "Download",
-    //style: "margin-top: 0px;",
-    //onClick: function(){
-    //var selected = tree.selectedItem;
-    //var query_name = selected.name; 
-    //var donor_name = selected.donor;
-    //var url = "data/" + 
-    ///sprintf( sprintf( globals.TRACK_TEMPLATE, 
-    //globals.DONOR_PREFIX, 
-    //globals.QUERY_PREFIX,
-    //globals.CHROM_PREFIX ), 
-    //donor_name, 
-    //query_name,
-    //brwsr.refSeq.name ) + 
-    //"/" + query_name + ".bam";
-    ////var url = "data/tracks/"+brwsr.refSeq.name+"/query_"+query_name+"/"+query_name+".bam";
-    ///window.location = url;
-    //}
-    ////}).placeAt( explorer_button_pane.domNode );
-    //
-    //var delete_button = new dijit.form.Button(
-    //{id: "delete_button", 
-    //label: "Delete", 
-    //style: "margin-top: 0px;",
-    //onClick: function(){ deleteSubmit(brwsr); }
-    //}).placeAt( explorer_button_pane.domNode );
-    // 
-    //var deleteSubmit = function(brwsr) {
-    ////alert("remeberg doing reset as apache.sh");
-    //brwsr.chromList.options[brwsr.chromList.selectedIndex].value;
-    //var current_chrom = brwsr.refSeq.name;
-    //var selected = tree.selectedItem;
-    //var query_name = selected.name;
-    //var trackkey = selected.key;
-    //var donor = selected.donor;
-
     var deleteQuery = function( donor, query_name ){
-                //var args = {chrom: current_chrom,
-        //delete_track: tracks_in_trash};
         var args = {donor: donor, query_name: query_name};
         var url = "bin/remove_track.py?" + dojo.objectToQuery(args);
         var trackkey = donor +'/'+ query_name;
@@ -692,7 +608,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                         brwsr.tracks.splice(ix,1);
                         brwsr.trackData.splice(ix,1);
                     }
-
                 }
                 else{       
                     alert(data["message"]);
@@ -706,14 +621,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         var deferred = dojo.xhrPost(xhrArgs);
     };
 
-   
-    //onClick behavior controled by the tree 
-    //var visualize_button = new dijit.form.Button(
-    //{id: "visualize_button", 
-    //label: "Visualize", 
-    //style: "margin-top: 0px;"
-    //}).placeAt( explorer_button_pane.domNode );
-    
     var visualize = function(trackkey){
         var tester = function(item){
             return item["key"] == trackkey;
@@ -727,60 +634,36 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             brwsr.onVisibleTracksChanged();
         }
         else{ alert(" too many matches"); }
-
     };
 
     var recall = function(trackkey){
         var isVisualized = brwsr.view.isVisualized( trackkey );
-        //var c = dojo.byId( 'track_'+track_name );
         if( isVisualized ){
             brwsr.viewDndWidget.delItem( 'track_'+trackkey );
             brwsr.view.zoomContainer.removeChild( 
                 dojo.byId( 'track_'+trackkey )
             );
             brwsr.interestingAreas.removeTrack( trackkey );
-            //brwsr.interestingAreas = new InterestingAreas( brwsr.refSeq.start, brwsr.refSeq.end );
         }
         brwsr.onVisibleTracksChanged();
-        //visualize_button.set('label','Visualize');
-        //visualize_button.onClick = 
-        //function(){ visualize(tree.selectedItem.key); };
 
     };
 
-    //var view_query_button = new dijit.form.Button(
-    //{id: "view_query_button", 
-    //label: "View Text", 
-    //style: "margin-top: 0px;",
-    ////disabled: "true",
-    //onClick: function(){
-    //var host_chrom = brwsr.refSeq.name;
-    //var query_name = tree.selectedItem.name;
-    //var donor_name = tree.selectedItem.donor;
-    ///var url = "data/" + 
-    //sprintf( sprintf( globals.TRACK_TEMPLATE, 
-    //globals.DONOR_PREFIX, 
-    //globals.QUERY_PREFIX,
-    //globals.CHROM_PREFIX ), 
-    //donor_name, 
-    //query_name,
-    //brwsr.refSeq.name ) +  
-    ////"/" + query_name + ".gq";
-    //
-    ////dojo.xhrGet({
-    //url: url,
-    //handleAs: "text",
-    //load: function(data,args){
-    //alert(data);
-    //},
-    //error: function(data,args){
-    //alert("trouble retrieving the generating query");
-    //}
-    //});
-    //}
-    //}).placeAt( explorer_button_pane.domNode );
+    var status_cpane = dijit.layout.ContentPane(
+            {id : "status_cpane",
+             region : "bottom",
+             style : "background-color: #efffff; border-style: none solid none none; border-color: #929292;"} //overflow: hidden; background-color: #efefef; height: 70%;"}
+        ).placeAt(explorer_bc.domNode );
 
-   
+
+    var progress_bar = dijit.ProgressBar(
+            {id: "progress_bar",
+             style: "width: 100%; background-color:#FF0000;",
+             hidden: true
+            }
+            ).placeAt( status_cpane.domNode );
+
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     //            Some Helper functions
     ///////////////////////////////////////////////////////////////////////////////////////////////////////// 
