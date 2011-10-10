@@ -538,7 +538,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         var tree = new dijit.Tree(
             {id : "tree",
              model : model,
-             style: "height: 500px; background-color: #00FF00;",
+             style: "height: 500px; background-color: #efefef;",
              onClick :
                 function(selected,e){ 
                     this.clickedItem = selected;
@@ -658,8 +658,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     var progress_bar = dijit.ProgressBar(
             {id: "progress_bar",
-             style: "width: 100%; background-color:#FF0000;",
-             hidden: true
+             style: "width: 100%; color:#FF0000;" 
             }
             ).placeAt( status_cpane.domNode );
 
