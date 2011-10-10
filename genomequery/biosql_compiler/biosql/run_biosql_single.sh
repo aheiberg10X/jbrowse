@@ -46,7 +46,6 @@ if test ! -d $products_dir
     then
         mkdir $products_dir
 fi
-echo "USING MOFOCKING SINGLE RUN BIOSQL"
 python code_generator.py $interm_code $products_dir $front_end_dir $back_end_dir $src_table_dir $bam_file $indx_file $chr $chr_len >> $low_level_calls
 
 
