@@ -284,7 +284,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     //one chrom done.  Then in load we could recurse
     //to do the remaining ones. Could shoot off multiple in parallel
     //by doing multiple XHR requests in one go
-    brwsr.stopQuery = false;
+    brwsr.running_query = false;
     var queryChromosomes = function( donor, chroms, trackkey, progress_inc, messages ){
         var args = {"query_donor" : donor, "query_chrom" : chroms[0]};
         var url = "bin/run_query.py?" + dojo.objectToQuery(args);
@@ -309,13 +309,14 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                         refreshTree();
                     }
 
-                    if( chroms.length > 1 && !brwsr.stopQuery ){
+                    if( chroms.length > 1 && brwsr.running_query ){
                         var n = chroms.slice(1);
                         queryChromosomes( donor, n, trackkey, progress_inc, messages);
                     }
                     else{
                         alert( messages.join('\n') );
                         progress_bar.update({'progress': 0});
+                        setRunningQuery( false );
                     }
                 }
                 else {
@@ -353,6 +354,13 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             secondDlg.hide();
             chroms = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,'X','Y']; 
             var messages = [];
+            if( brwsr.running_query ){
+                alert("Already a query running. Should not have been possible to get a query dialog");
+                return;
+            }
+            setRunningQuery( true );
+            alert("Your query is running. The progress bar will increment when the results for a new chromosome are ready");
+
             queryChromosomes( donor, chroms, trackkey, 1.0/chroms.length * 100, messages );
         }
     };
@@ -519,15 +527,15 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 });
        
 
-    pMenu.addChild(
-        new dijit.MenuItem({
+    var query_menuitem = new dijit.MenuItem({
             label: "New Query",
             prefix: "donor_",
             hidden: false,
             onClick: function(e) {
                 //TODO: clear query_name and query_box
                 secondDlg.show();      //deleteQuery( item.donor, item.name ); 
-        }}));
+        }});
+    pMenu.addChild( query_menuitem );
 
     pMenu.startup();
 
@@ -550,6 +558,13 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                     else { 
                         visualize_menuitem.hidden = false;
                         recall_menuitem.hidden = true;
+                    }
+
+                    if( brwsr.running_query ){
+                        query_menuitem.hidden = true;
+                    }
+                    else {
+                        query_menuitem.hidden = false;
                     }
 
                     //hack to make left click work on tree
@@ -652,15 +667,35 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     var status_cpane = dijit.layout.ContentPane(
             {id : "status_cpane",
              region : "bottom",
-             style : "background-color: #efffff; border-style: none solid none none; border-color: #929292;"} //overflow: hidden; background-color: #efefef; height: 70%;"}
+             style : "background-color: #efefef; border-style: none solid none none; border-color: #929292;"}
         ).placeAt(explorer_bc.domNode );
 
 
     var progress_bar = dijit.ProgressBar(
             {id: "progress_bar",
-             style: "width: 100%; color:#FF0000;" 
+             style: "width: 100%;" 
             }
             ).placeAt( status_cpane.domNode );
+
+    var stop_button = dijit.form.Button(
+            {id: "stop_button",
+             label: "Stop",
+             style: "",
+             disabled: true,
+             onClick: 
+                function(){
+                    setRunningQuery( false );
+                    progress_bar.update({'progress': 0});                        
+                }
+            }
+            ).placeAt( status_cpane.domNode );
+            
+
+    var setRunningQuery = function( tf ){
+        brwsr.running_query = tf;
+        stop_button.set( "disabled", !tf )
+    };
+
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
