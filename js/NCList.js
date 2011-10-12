@@ -91,6 +91,13 @@ NCList.prototype.iterHelper = function(arr, from, to, fun, finish,
                                        inc, searchIndex, testIndex, path, maxRender) {
 
     if( maxRender <= 0 ){ 
+        //somehow need to construct a feature placed at the correct
+        //coordinates so it appears directly below the last feature
+        //OR
+        //could we used (to,from) to achieve a big long feature
+        //also need to figure out such a thing would be drawn
+        //there was a dashed pattern somewhere, just used that?
+        //fun( [], ["dot","dot","dot"] );
         return; 
     }
     var keepIterating = true;

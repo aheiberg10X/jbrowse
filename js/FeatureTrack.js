@@ -147,7 +147,7 @@ FeatureTrack.prototype.setViewInfo = function(genomeView, numBlocks,
     this.setLabel(this.key);
 };
 
-FeatureTrack.prototype.fillHist = function(blockIndex, block,leftBase, rightBase,stripeWidth) {
+FeatureTrack.prototype.fillHist = function(blockIndex, block, leftBase, rightBase,stripeWidth) {
     // bases in each histogram bin that we're currently rendering
     var bpPerBin = (rightBase - leftBase) / this.numBins;
     var pxPerCount = 2;
@@ -155,7 +155,7 @@ FeatureTrack.prototype.fillHist = function(blockIndex, block,leftBase, rightBase
     for (var i = 0; i < this.histStats.length; i++) {
         if (this.histStats[i].bases >= bpPerBin) {
             //console.log("bpPerBin: " + bpPerBin + ", histStats bases: " + this.histStats[i].bases + ", mean/max: " + (this.histStats[i].mean / this.histStats[i].max));
-            logScale = ((this.histStats[i].mean / this.histStats[i].max) < .01);
+            logScale = ((this.histStats[i].mean / this.histStats[i].max) < .05);
             pxPerCount = 100 / (logScale
                                 ? Math.log(this.histStats[i].max)
                                 : this.histStats[i].max);
@@ -368,8 +368,15 @@ FeatureTrack.prototype.fillFeatures = function(blockIndex, block,
             //return;
             return true;
         }
-
-        var featDiv = curTrack.renderFeature(feature, uniqueId, block, scale, containerStart, containerEnd);
+        
+        var featDiv;
+        if( uniqueId == 'dot,dot,dot' ){
+            featDiv = document.createElement("div");
+            featDiv.innerHTML = "..."
+        }
+        else {
+            featDiv = curTrack.renderFeature(feature, uniqueId, block, scale, containerStart, containerEnd);
+        }
         if( featDiv != null ){
             block.appendChild(featDiv);
             return true;

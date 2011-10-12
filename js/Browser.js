@@ -48,9 +48,7 @@ var Browser = function(params) {
     // end my stuff
 
     var refSeqs = params.refSeqs;
-
     this.trackData = params.trackData;
-
     this.globals = params.globals;
     this.deferredFunctions = [];
     this.dataRoot = params.dataRoot;
@@ -525,7 +523,13 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                     style: "width: 500px; height: 500px",
                     content: query_form
                 });
-       
+      
+    var pleasewait_menuitem = new dijit.MenuItem({
+        label: "(Please wait for the current query to finish)",
+        hidden: true,
+        disabled: true
+    });
+    pMenu.addChild( pleasewait_menuitem );
 
     var query_menuitem = new dijit.MenuItem({
             label: "New Query",
@@ -562,9 +566,11 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
                     if( brwsr.running_query ){
                         query_menuitem.hidden = true;
+                        pleasewait_menuitem.hidden = false;
                     }
                     else {
                         query_menuitem.hidden = false;
+                        pleasewait_menuitem.hidden = true;
                     }
 
                     //hack to make left click work on tree
