@@ -143,8 +143,8 @@ sub createTrack {
 
     my $bad_bam = 0;
 
-    my @bamHeaders = ("start", "end", "strand","subfeatures");
-    my @subfeatureHeaders = ("start","end","strand","type");
+    my @bamHeaders = ("start", "end", "strand","subfeatures", "depth");
+    my @subfeatureHeaders = ("start","end","strand","type", "depth");
 
     my %style = ("class" => $cssClass,
                  "subfeature_classes" => $subfeatureClasses,

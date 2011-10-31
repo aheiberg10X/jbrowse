@@ -53,7 +53,7 @@ FeatureTrack.prototype.loadSuccess = function(trackInfo) {
     this.count = trackInfo.featureCount;
     this.fields = {};
     for (var i = 0; i < trackInfo.headers.length; i++) {
-	this.fields[trackInfo.headers[i]] = i;
+	    this.fields[trackInfo.headers[i]] = i;
     }
     this.subFields = {};
     if (trackInfo.subfeatureHeaders) {
@@ -109,19 +109,20 @@ FeatureTrack.prototype.loadSuccess = function(trackInfo) {
     if (! trackInfo.urlTemplate) {
         this.onFeatureClick = function(event) {
             event = event || window.event;
-	    if (event.shiftKey) return;
-	    var elem = (event.currentTarget || event.srcElement);
+            if (event.shiftKey) return;
+            var elem = (event.currentTarget || event.srcElement);
             //depending on bubbling, we might get the subfeature here
             //instead of the parent feature
             if (!elem.feature) elem = elem.parentElement;
             if (!elem.feature) return; //shouldn't happen; just bail if it does
             var feat = elem.feature;
-	    alert("clicked on feature\nstart: " + feat[fields["start"]] +
-	          ", end: " + feat[fields["end"]] +
-	          ", strand: " + feat[fields["strand"]] +
-	          ", label: " + feat[fields["name"]] +
-	          ", ID: " + feat[fields["id"]]);
-        };
+            alert("clicked on feature\nstart: " + feat[fields["start"]] +
+                  ", end: " + feat[fields["end"]] +
+                  ", strand: " + feat[fields["strand"]] +
+                  ", label: " + feat[fields["name"]] +
+                  ", ID: " + feat[fields["id"]] + 
+                  ", depth: " + feat[fields["depth"]]);
+            };
     }
 
     this.setLoaded();
@@ -357,26 +358,19 @@ FeatureTrack.prototype.fillFeatures = function(blockIndex, block,
     }
 
     var curTrack = this;
-    var featCallback = function(feature, path) {
+    var featCallback = function(feature, path, depth) {
         //uniqueId is a stringification of the path in the NCList where
         //the feature lives; it's unique across the top-level NCList
         //(the top-level NCList covers a track/chromosome combination)
         var uniqueId = path.join(",");
         //console.log("ID " + uniqueId + (layouter.hasSeen(uniqueId) ? " (seen)" : " (new)"));
-        if (layouter.hasSeen(uniqueId)) {
+        if (layouter.hasSeen(uniqueId) && uniqueId != "dot,dot,dot" ) {
             //console.log("this layouter has seen " + uniqueId);
             //return;
             return true;
         }
-        
-        var featDiv;
-        if( uniqueId == 'dot,dot,dot' ){
-            featDiv = document.createElement("div");
-            featDiv.innerHTML = "..."
-        }
-        else {
-            featDiv = curTrack.renderFeature(feature, uniqueId, block, scale, containerStart, containerEnd);
-        }
+        feature[curTrack.fields["depth"]] = depth;
+        var featDiv = curTrack.renderFeature(feature, uniqueId, block, scale, containerStart, containerEnd);
         if( featDiv != null ){
             block.appendChild(featDiv);
             return true;
@@ -389,9 +383,10 @@ FeatureTrack.prototype.fillFeatures = function(blockIndex, block,
     var startBase = goLeft ? rightBase : leftBase;
     var endBase = goLeft ? leftBase : rightBase;
 
-
+    var fourth = (rightBase - leftBase) / 4;
     this.features.iterate(startBase, endBase, featCallback,
                           function () {
+                              featCallback( [leftBase+fourth,rightBase-fourth,0,[]], ["dot","dot","dot"], -1 );
                               block.style.backgroundColor = "";
                               curTrack.heightUpdate(layouter.totalHeight,
                                                     blockIndex);
@@ -481,7 +476,7 @@ FeatureTrack.prototype.renderFeature = function(feature, uniqueId, block, scale,
                                           featureEnd,
                                           levelHeight);
 
-    if( top > (this.glyphHeight + 2) * this.maxRender ){
+    if( top > (this.glyphHeight + 2) * this.maxRender && uniqueId != "dot,dot,dot" ){
         return null;
     }
     else{

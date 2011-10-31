@@ -117,7 +117,7 @@ var Browser = function(params) {
 
             var sliderDiv = document.createElement("div");
             sliderPane.appendChild( sliderDiv );
-            brwsr.maxRender = 50;            
+            brwsr.maxRender = 5;            
             absMaxRender = 300;
             //remember: want to have slider at the top mean render 0
             var slider = new dijit.form.VerticalSlider(
