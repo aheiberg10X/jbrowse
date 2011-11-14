@@ -35,25 +35,6 @@ sys.stderr = open("%s/query_error.txt" % GlobalConfig.DEBUG_DIR,'w')
 sys.stdout = open("%s/query_output.txt" % GlobalConfig.DEBUG_DIR,'w')
 print "fields", fields
 
-
-if debugging :
-    query_name = "q2"
-    donor = "NA18507"
-    query = '''table READS (string id, string read_str, integer length, string
-qvals,string chromo, integer location, char strand, string
-match_descr, string mate_chromo, integer mate_loc, char mate_strand);
-
-table genes (integer end, integer begin, string chr, string annot_id); #oposite order than what it appears
-
-H2=select id from READS where location>0 and location < 1000
-
-H3=select * from INTERSECT genes,H2
-
-select * from H3 where chr=="chr1" and strand=='F' and location>0 and mate_loc<1000 and mate_loc>0 and id=="gene1"''' 
-    print "query_name: %s" % query_name
-    print "donor: %s" % donor
-    print "query: %s" % query
-
 query_loc = "%s/user_query.txt" % GlobalConfig.UPLOAD_DIR 
 print "writing query to %s" % query_loc 
 

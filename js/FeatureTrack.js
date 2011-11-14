@@ -386,7 +386,7 @@ FeatureTrack.prototype.fillFeatures = function(blockIndex, block,
     var fourth = (rightBase - leftBase) / 4;
     this.features.iterate(startBase, endBase, featCallback,
                           function () {
-                              featCallback( [leftBase+fourth,rightBase-fourth,0,[]], ["dot","dot","dot"], -1 );
+                              //featCallback( [leftBase+fourth,rightBase-fourth,0,[]], ["dot","dot","dot"], -1 );
                               block.style.backgroundColor = "";
                               curTrack.heightUpdate(layouter.totalHeight,
                                                     blockIndex);

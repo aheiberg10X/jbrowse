@@ -34,6 +34,7 @@ var Browser = function(params) {
     dojo.require("dijit.form.Textarea");
     dojo.require("dojox.form.FileInput");
     dojo.require("dijit.form.CheckBox");
+    dojo.require("dijit.form.ValidationTextBox");
     dojo.require("dojo.io.iframe");
     dojo.require("dojox.layout.ExpandoPane");
     dojo.require("dijit.layout.AccordionContainer");
@@ -251,10 +252,12 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     query_name_p.innerHTML = "Name<br />";
     query_div.appendChild( query_name_p );
 
-    var query_name = new dijit.form.TextBox(
+    var query_name = new dijit.form.ValidationTextBox(
                         {id: "query_name",
                          label: "Query Name",
-                         name: "query_name"}
+                         name: "query_name",
+                         regExp: '\\w+',
+                         invalidMessage: 'Only alphanumeric characters' }
                      ).placeAt( query_name_p );
 
     var query_box_p = document.createElement("p");
@@ -283,7 +286,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     //to do the remaining ones. Could shoot off multiple in parallel
     //by doing multiple XHR requests in one go
     brwsr.running_query = false;
-    var queryChromosomes = function( donor, chroms, trackkey, progress_inc, messages ){
+    var queryChromosomes = function( donor, chroms, trackkey, progress_chrom, messages ){
         var args = {"query_donor" : donor, "query_chrom" : chroms[0]};
         var url = "bin/run_query.py?" + dojo.objectToQuery(args);
         //TODO: security security SECURITY!! could manually pass in supposedly inaccessible donor name
@@ -294,7 +297,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             load: function(data,ioargs){
                 if( data["status"] == "ok" ){
                     var progress = progress_bar.get("progress");
-                    progress_bar.update({'progress': progress + progress_inc});                        
+                    progress_bar.update({'indeterminate': true, 'label': "Chroms [1.."+progress_chrom+"] complete"});
                     messages.push(data["message"]);
                     var entry = data["trackData"];
                     if( entry['key'] != trackkey ){
@@ -309,22 +312,38 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
                     if( chroms.length > 1 && brwsr.running_query ){
                         var n = chroms.slice(1);
-                        queryChromosomes( donor, n, trackkey, progress_inc, messages);
+                        queryChromosomes( donor, n, trackkey, progress_chrom+1, messages);
                     }
                     else{
                         alert( messages.join('\n') );
-                        progress_bar.update({'progress': 0});
+                        dojo.attr(progress_bar.domNode, 'hidden', true);
+                        dojo.style(dijit.byId('stop_button').domNode, {
+                              visibility: 'hidden',
+                              display: 'none'
+                        });
                         setRunningQuery( false );
                     }
                 }
                 else {
                     alert(data["message"]);
-                        progress_bar.update({'progress': 0});
+                    dojo.attr(progress_bar.domNode, 'hidden', true);
+                    dojo.style(dijit.byId('stop_button').domNode, {
+                          visibility: 'hidden',
+                          display: 'none'
+                    });
+                    dojo.attr(stop_button.domNode, 'hidden', true);
+                    //progress_bar.update({'progress': 0});
                 }
             },
             error: function(error) {
                 alert(error);
-                progress_bar.update({'progress': 0});
+                dojo.attr(progress_bar.domNode, 'hidden', true);
+                    dojo.style(dijit.byId('stop_button').domNode, {
+                          visibility: 'hidden',
+                          display: 'none'
+                    });
+                dojo.attr(stop_button.domNode, 'hidden', true);
+                //progress_bar.update({'progress': 0});
             }
         };
         //Call the asynchronous xhrPost
@@ -357,31 +376,34 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 return;
             }
             setRunningQuery( true );
-            alert("Your query is running. The progress bar will increment when the results for a new chromosome are ready");
+            alert("Your query is running. The progress bar indicates the completed chromosomes (which can be visualized).  Do not refresh.");
 
-            queryChromosomes( donor, chroms, trackkey, 1.0/chroms.length * 100, messages );
+            dojo.attr(progress_bar.domNode, 'hidden', false);
+            dojo.style(dijit.byId('stop_button').domNode, {
+                  visibility: 'visible',
+                  display: 'block'
+            });
+            progress_bar.update({'indeterminate': true, 'label': 'Working on chr1...'});
+            queryChromosomes( donor, chroms, trackkey, 1, messages );
         }
     };
 
     var query_button = new dijit.form.Button(
-                            {id: "query_button", 
-                             label: "Run Query",
-                             style: "align-text: right;",
-                             onClick: 
-                                 function(){
-                                     //TODO: maybe a user still wants to browse around while query runs
-                                     //      need to have query progess bar run in background and allow
-                                     //      further interaction
-                                    var buttons = [query_button,query_box,query_name]
-                                    var disableCallback = function() {
-                                        dojo.forEach( buttons, toggler("disabled",true) );
-                                    };
-                                    var enableCallback = function(){ 
-                                        dojo.forEach( buttons, toggler("disabled",false) );
-                                    };
-                                    runQuery(disableCallback,enableCallback);
-                                }
-                       }).placeAt( query_div );
+            {id: "query_button", 
+             label: "Run Query",
+             style: "align-text: right;",
+             onClick: runQuery 
+        //function(){
+        //var buttons = [query_button,query_box,query_name]
+        //var disableCallback = function() {
+        //dojo.forEach( buttons, toggler("disabled",true) );
+        //};
+        //var enableCallback = function(){ 
+        //dojo.forEach( buttons, toggler("disabled",false) );
+        //};
+        //runQuery(disableCallback,enableCallback);
+        //}
+       }).placeAt( query_div );
  
     var query_form = new dijit.form.Form(
                          {id: "query_form",
@@ -679,7 +701,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     var progress_bar = dijit.ProgressBar(
             {id: "progress_bar",
-             style: "width: 100%;" 
+             style: "width: 100%;" ,
             }
             ).placeAt( status_cpane.domNode );
 
@@ -687,15 +709,25 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             {id: "stop_button",
              label: "Stop",
              style: "",
-             disabled: true,
              onClick: 
                 function(){
                     setRunningQuery( false );
-                    progress_bar.update({'progress': 0});                        
+                    dojo.attr(progress_bar.domNode, 'hidden', true);
+                    dojo.style(dijit.byId('stop_button').domNode, {
+                          visibility: 'hidden',
+                          display: 'none'
+                    });
+                    //progress_bar.update({'indeterminate': true, label: '0/23'});       
+
                 }
             }
             ).placeAt( status_cpane.domNode );
             
+    dojo.attr(progress_bar.domNode, 'hidden', true);
+    dojo.style(dijit.byId('stop_button').domNode, {
+          visibility: 'hidden',
+          display: 'none'
+    });
 
     var setRunningQuery = function( tf ){
         brwsr.running_query = tf;
