@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<errno.h>
 #include "all_tools.h"
 
 //it stores n entries of tble to fname. Since each entry of tbl contains
@@ -111,7 +112,7 @@ void destroy_imported(Imported_info *tbl, int ttl_tbl){
 //It returns an array of indexes to those entries of tbl each of which
 //satisfies the isvalid_imported test. ttl_valid is the length of the
 //returned array.
-int *find_valid_imported(Imported_info *tbl, int ttl_tbl, int *ttl_valid){
+/*int *find_valid_imported(Imported_info *tbl, int ttl_tbl, int *ttl_valid){
 	int *ret;
 	int cnt=0;
 	int i=0;
@@ -129,7 +130,7 @@ int *find_valid_imported(Imported_info *tbl, int ttl_tbl, int *ttl_valid){
 	}
 	*ttl_valid=cnt;
 	return ret;
-}
+}*/
 
 //It prints to fname those entries of tbl that are located in valid_lst.
 //ttl_tbl is the length of the table, ttl_valid is the length of the valid_lst

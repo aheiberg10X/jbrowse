@@ -10,6 +10,7 @@
 	int line=1;
 %}
 
+dot		\.
 digit	[0-9]
 number	{digit}+
 constChar	"'"([^"\"""\'""\\"])"'"
@@ -29,12 +30,26 @@ char	char|CHAR
 string_type string|STRING
 import	import|IMPORT
 use		use
+mates	mates|MATES
 name		([a-z]|[A-Z])+([0-9]|_|[a-z]|[A-Z])*
 comment #.*\n
 
 %%
 {comment} {lineNo=line++; /*printf("comment line: %s\n",yytext);*/}
 
+{dot}	{
+	lineNo=line;
+	yylval.string=(char*)malloc(sizeof(yytext));
+	strcpy(yylval.string,yytext);
+	return DOT;
+}
+{mates}	{
+	lineNo=line;
+	yylval.string=(char*)malloc(sizeof(yytext));
+	strcpy(yylval.string,yytext);
+	return MATES;
+
+}
 {constChar}	{
 	lineNo=line;
 	yylval.string=(char*)malloc(sizeof(yytext));

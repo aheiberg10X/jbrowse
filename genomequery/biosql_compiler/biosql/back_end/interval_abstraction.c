@@ -67,7 +67,7 @@ Intervals *singles2intervals(Mates *indx, int len_indx, int *valid_lst, int ttl_
 //For every entry i of imp that is in valid_lst it creates in interval with st=start, nd=end and rd1=i. The
 //returned array has a length of ttl_intrvl.
 //if valid_lst is NULL, it creates intervals for the entire imp
-Intervals *imported2intervals(Imported_info *imp, int len, int *valid_lst, int ttl_valid, int *ttl_intrvl){
+/*Intervals *imported2intervals(Imported_info *imp, int len, int *valid_lst, int ttl_valid, int *ttl_intrvl){
 	int i=0;
 	int cur_i=0;
 	if (valid_lst==NULL) //consider all entries of imp
@@ -92,7 +92,7 @@ Intervals *imported2intervals(Imported_info *imp, int len, int *valid_lst, int t
 	return ret;
 }
 
-
+*/
 
 /*lst is a pointer to an array of pointers of Intervals of length n.
 The function appends val to lst while it updates n*/
@@ -269,7 +269,7 @@ void collect_evidence(int *evidence, int *ttl_evidence, Intervals *intrvl_lst, i
 //The function returns the areas that are covered by at least a number of intervals.
 //Intrvl_list is an array of Intervals sorted by starting location. ttl_intrvl is the length
 //of that array. Min_cov is the minimum coverage of clones that is desired for an area to be reported.
-Intrevidence min_interval_coverage(Mates *indx, int len_indx, Intervals *intrvl_lst, int ttl_intrvl, int min_cov){
+Intrevidence min_interval_coverage(Intervals *intrvl_lst, int ttl_intrvl, int min_cov){
 	int coverage=0;
 	int first_intrvl=-1; //the first interval of intrvl_lst that covers a region
 	int last_intrvl=0; //the last intervlal of intrvl_lst that covers a region.
@@ -356,7 +356,7 @@ Intrevidence min_interval_coverage(Mates *indx, int len_indx, Intervals *intrvl_
 //number of intervals.
 //Intrvl_list is an array of Intervals sorted by starting location. ttl_intrvl is the length
 //of that array. Min_cov is the minimum coverage of clones that is desired for an area to be reported.
-Intrevidence max_interval_coverage(Mates *indx, int len_indx, Intervals *intrvl_lst, int ttl_intrvl, int max_cov){
+Intrevidence max_interval_coverage(Intervals *intrvl_lst, int ttl_intrvl, int max_cov){
 	int coverage=0;
 	int first_intrvl=-1; //the first interval of intrvl_lst that covers a region
 	int last_intrvl=0; //the last intervlal of intrvl_lst that covers a region.
@@ -548,7 +548,7 @@ Join *join_intervals(Intervals *int1, Intervals *int2, int ttl_int1, int ttl_int
 //The joined quantities are either imported tables or an imported table
 //and a set of reads. The input contains all possible pointers and the
 //ones that is redundant needs to be NULL.
-void filter_join_list(Join **join_lst, int *ttl_join, Imported_info *tbl1, int ttl_tbl1, Imported_info *tbl2, int ttl_tbl2, Mates *mate_indx, int ttl_reads, long *strand_indx, int strand_len){
+/*void filter_join_list(Join **join_lst, int *ttl_join, Imported_info *tbl1, int ttl_tbl1, Imported_info *tbl2, int ttl_tbl2, Mates *mate_indx, int ttl_reads, long *strand_indx, int strand_len){
 	int cnt=*ttl_join;
 	Join *ret=NULL;
 	int ttl_ret=0;
@@ -573,12 +573,12 @@ void filter_join_list(Join **join_lst, int *ttl_join, Imported_info *tbl1, int t
 	free(*join_lst);
 	*join_lst=ret;
 	return;
-}
+}*/
 
 //The function returns a list of the uniq indx1 or indx2 of the values of the join_lst. If 
-//both type1 and type2 are non NULL, it chooses the side that has type as "bam*". Otherwise
-//it choose indx from the non NULL side. If type is not "bam_mates", the return list is sorted.
-int* isolate_join_indexes(Join *join_lst, int ttl_join, int *len_rd_lst, char *type1, char *type2){
+//side==1 then it isolates all indx1 while if side==2 it isolates all indx2. The returned
+//array is sorted.
+int* isolate_join_indexes(Join *join_lst, int ttl_join, int *len_rd_lst, int side){
 
 	inline int int_cmp(const void *a, const void *b){return (*(int*)a-*(int*)b);} //for the qsort
 
@@ -592,19 +592,15 @@ int* isolate_join_indexes(Join *join_lst, int ttl_join, int *len_rd_lst, char *t
 	long *vec=initialize_bitvector(ttl_bits, &vec_len);
 	int i=0;
 	for(i=0;i<ttl_join;i++){
-		if(type1==NULL) val=join_lst[i].indx2;
-		else if(type2==NULL) val=join_lst[i].indx1;
-		else if(strncmp(type1, "bam", 3)==0) val=join_lst[i].indx1;
-		else if(strncmp(type2, "bam", 3)==0) val=join_lst[i].indx2;
+		if(side==1) val=join_lst[i].indx1;
+		else if(side==2) val=join_lst[i].indx2;
+		else ioerror("Wrong value of size");
 		if (val<0) ioerror("Cannot isolate negative index values");
 		if (already_visited(vec, vec_len, val)) continue;
 		currently_printing(vec, vec_len, val); //mark val-th bit of vec
 		ret[cnt++]=val;
 	}
-	if (type1==NULL || type2==NULL)
-		qsort(ret, cnt, sizeof(int), int_cmp);
-	else if(strcmp(type1, "bam_mates")!=0 && strcmp(type2, "bam_mates")!=0)
-		qsort(ret, cnt, sizeof(int), int_cmp);
+	qsort(ret, cnt, sizeof(int), int_cmp);
 	*len_rd_lst=cnt;
 	return ret;
 }

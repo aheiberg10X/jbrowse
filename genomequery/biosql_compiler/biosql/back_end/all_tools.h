@@ -15,7 +15,7 @@ inline char get_strand(long *strand_indx, int strand_len, int pos);
 /*It returns an array of integers of length n. The array contains all indices 
 of indx whose clones succeed the is_valid() test.
 */
-int *find_valid_clones(Mates *indx, int ttl_reads, long *strand_indx, int strand_len, int *n);
+//int *find_valid_clones(Mates *indx, int ttl_reads, long *strand_indx, int strand_len, int *n);
 
 //Checks if the clone with one end on indx[i] satisfies the input condition(???)
 //Returns 1 on success, 0 on failure. In case the clone is dangling it returns -1.
@@ -97,18 +97,18 @@ Intervals *singles2intervals(Mates *indx, int len_indx, int *valid_lst, int ttl_
 
 //For every entry i of imp that is in valid_lst it creates in interval with st=start, nd=end and rd1=i. The
 //returned array has a length of ttl_intrvl.
-Intervals *imported2intervals(Imported_info *imp, int len, int *valid_lst, int ttl_valid, int *ttl_intrvl);
+/////Intervals *imported2intervals(Imported_info *imp, int len, int *valid_lst, int ttl_valid, int *ttl_intrvl);
 
 //The function returns the areas that are covered by at least a number of intervals.
 //Intrvl_list is an array of Intervals sorted by starting location. ttl_intrvl is the length
 //of that array. Min_cov is the minimum coverage of clones that is desired for an area to be reported.
-Intrevidence min_interval_coverage(Mates *indx, int len_indx, Intervals *intrvl_lst, int ttl_intrvl, int min_cov);
+Intrevidence min_interval_coverage(Intervals *intrvl_lst, int ttl_intrvl, int min_cov);
 
 //The function returns the areas that are covered by at most a positive 
 //number of intervals.
 //Intrvl_list is an array of Intervals sorted by starting location. ttl_intrvl is the length
 //of that array. Min_cov is the minimum coverage of clones that is desired for an area to be reported.
-Intrevidence max_interval_coverage(Mates *indx, int len_indx, Intervals *intrvl_lst, int ttl_intrvl, int max_cov);
+Intrevidence max_interval_coverage(Intervals *intrvl_lst, int ttl_intrvl, int max_cov);
 
 //int1 and int2 are the arrays of intervals to be intersected of length ttl_int1, ttl_int2 respectively. valid_lst1, valid_lst2 are going to contain
 //the (unique) non negative rd values of the intersected intervals.
@@ -122,16 +122,16 @@ Join *join_intervals(Intervals *int1, Intervals *int2, int ttl_int1, int ttl_int
 //The joined quantities are either imported tables or an imported table
 //and a set of reads. The input contains all possible pointers and the
 //ones that is redundant needs to be NULL.
-void filter_join_list(Join **join_lst, int *ttl_join, Imported_info *tbl1, int ttl_tbl1, Imported_info *tbl2, int ttl_tbl2, Mates *mate_indx, int ttl_reads, long *strand_indx, int strand_len);
+/*void filter_join_list(Join **join_lst, int *ttl_join, Imported_info *tbl1, int ttl_tbl1, Imported_info *tbl2, int ttl_tbl2, Mates *mate_indx, int ttl_reads, long *strand_indx, int strand_len);*/
 
 //The function returns 1 if join_lst[i] satisfies the customizable condition.
 //If any of tbl1, tbl2, mate_indx are not necessary, they should be NULL
-inline int isvalid_join(Join *join_lst, int i, Imported_info *tbl1, Imported_info *tbl2, Mates *mate_indx, long *strand_indx, int strand_len);
+//inline int isvalid_join(Join *join_lst, int i, Imported_info *tbl1, Imported_info *tbl2, Mates *mate_indx, long *strand_indx, int strand_len);
+inline int isvalid_join(Join *join_lst, int i, Mates *mate_indx1, long *strand_indx1, Mates *mate_indx2, long *strand_indx2, Imported_info *imp1, Imported_info *imp2);
 
-//The function returns a list of the uniq indx1 or indx2 of the values of the join_lst. If 
-//both type1 and type2 are non NULL, it chooses the side that has type as "bam*". Otherwise
-//it choose indx from the non NULL side. If type is not "bam_mates", the return list is sorted.
-int* isolate_join_indexes(Join *join_lst, int ttl_join, int *len_rd_lst, char *type1, char *type2);
+//The function returns a sorted list of the uniq indx1 or indx2 of the values 
+//of the join_lst according to the value of the side.
+int* isolate_join_indexes(Join *join_lst, int ttl_join, int *len_rd_lst, int side);
 
 /////file single_reads.c
 
@@ -139,7 +139,7 @@ int* isolate_join_indexes(Join *join_lst, int ttl_join, int *len_rd_lst, char *t
 //min_loc and max_loc and satisfy the is_valid_single function. n is the length
 //of the returned array;
 //if min_loc<==-1 max_loc==-1 the entire chromosome is considered.
-int *find_valid_reads(Mates *indx, int ttl_reads, long *strand_indx, int strand_len, int *n, long min_loc, long max_loc);
+//int *find_valid_reads(Mates *indx, int ttl_reads, long *strand_indx, int strand_len, int *n, long min_loc, long max_loc);
 
 //Checks if the read indx[i] satisfies the input condition(???)
 //Returns 1 on success, 0 on failure. In case the clone is dangling it returns -1.
@@ -163,7 +163,7 @@ void destroy_imported(Imported_info *tbl, int ttl_tbl);
 //It returns an array of indexes to those entries of tbl each of which
 //satisfies the is_valid_imported test. ttl_valid is the length of the
 //returned array.
-int *find_valid_imported(Imported_info *tbl, int ttl_tbl, int *ttl_valid);
+//int *find_valid_imported(Imported_info *tbl, int ttl_tbl, int *ttl_valid);
 
 //It prints to fname those entries of tbl that are located in valid_lst.
 //ttl_tbl is the length of the table, ttl_valid is the length of the valid_lst
@@ -208,3 +208,15 @@ void search_range(Treenode *intrvl_tree, int rng_st, int rng_nd, Intervals **ret
 
 //it releases all memory taken by the input interval tree.
 void destroy_intrvl_tree(Treenode *root);
+
+//create an interval from the data of read_indx[i]
+inline Intervals get_rd_interval(Mates *read_indx, int i);
+
+//create an interval from the data of read_indx[i]
+inline Intervals get_imported_interval(Imported_info *tbl, int cur_i);
+
+//it returns an upper or lower bound for the coverage queries. if up_low==0 the
+//returned coverage is a lower bound and if up_low==1 the returned coverage is
+//an upper bound.
+int get_interval_coverage_param(int *up_low);
+

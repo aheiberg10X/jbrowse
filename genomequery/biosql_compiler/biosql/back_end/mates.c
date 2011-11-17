@@ -24,6 +24,22 @@ typedef struct{
 	long *just_printed; //a bitmap with ones on the index locations of those reads that have been already printed.
 	int len_just_printed;
 } print_reads_t;
+
+
+//For performance purposes I declare this function (originally defined in defs)
+//as static and I copy it here.
+static inline void update_histogram_solo(Mult_hist *mhist, int pos, int chromo_len){
+	//int bin_range=chromo_len/ttl_bins;
+	//int i=pos/bin_range;
+	int bin_range;
+	int i,j;
+	for (i=0;i<(mhist->ttl_histograms);i++){
+		bin_range=chromo_len/(mhist->ttl_bins[i]);
+		j=pos/bin_range;
+		mhist->hist[i][j]+=1;
+	}
+}
+
 //It reads the index and the bas info from mate file. ttl_reads is the length of the index table. ttl_groups is the length of the 
 //Ins_len_groups table
 Mates *get_mate_index(char *mate_file, int *ttl_reads){
@@ -68,144 +84,7 @@ long *get_strand_index(char *mate_file, int *len){
 	fread(ret, sizeof(long), *len, fp);
 	return ret;
 }
-//Checks if the clone with one end on indx[i] has a distance within med+min_dist_mult*sv and med+max_dist_mult*sv
-//Returns 1 on success, 0 on failure. In case the clone is dangling it returns -1.
-/*inline int valid_distance(Mates *indx, int i, int min_dist, int max_dist){
-	int dist;
-	int mate_indx=indx[i].mate_indx;
-	//int grp_i=0;
-	//int min_dist, max_dist;
-	if(mate_indx<0 || indx[i].loc<0) return -1;
-	if(indx[mate_indx].loc<0) return -1;
-	if (indx[i].loc<indx[mate_indx].loc)
-		dist=indx[mate_indx].loc + indx[mate_indx].read_len-indx[i].loc;
-	else
-		dist=indx[i].loc + indx[i].read_len-indx[mate_indx].loc;
-	//fprintf(stderr, "dist: %d len: %d old_dist: %d min_dist: %d\n",dist, indx[i].read_len, indx[mate_indx].loc-indx[i].loc,min_dist);
 
-	/////////////dist=indx[i].loc-indx[mate_indx].loc;
-	//printf(">dist len: %d sd: %d min_dist: %d max_dist: %d\n", grps[grp_i].len, grps[grp_i].sd, min_dist, max_dist);
-	if(dist<0) ioerror("Negative Distance");///////////dist=-dist;
-	if (min_dist<=dist && dist<=max_dist) return 1;
-	else return 0;
-}*/
-
-//checks if the clone with one end on indx[i] follows the orientation implied by lstrand and rstrand. 
-//It returns 1 on FAILURE 0 on success -1 if the clone has a dangling end and -2 if it has a large insert size.
-/*inline int invalid_orientation(Mates *indx, int i, long *strand_indx, int strand_len, char lstrand, char rstrand){
-	int mate_indx=indx[i].mate_indx;
-	int dist;
-	if (mate_indx<0 || indx[i].loc<0) return -1;
-	if(indx[mate_indx].loc < 0 ) return -1;
-	if (indx[i].loc<indx[mate_indx].loc)
-		dist=indx[mate_indx].loc + indx[mate_indx].read_len-indx[i].loc;
-	else
-		dist=indx[i].loc + indx[i].read_len-indx[mate_indx].loc;
-	if(dist>1000000) return -2;
-	char st1=get_strand(strand_indx, strand_len, i);
-	char st2=get_strand(strand_indx, strand_len, mate_indx);
-	//printf("st1: %c i: %d st2: %c mate: %d\n",st1, i, st2, mate_indx);
-	if (i<mate_indx){
-		if(st1==lstrand && st2==rstrand) return 0; else return 1;
-	}
-	else{
-		if(st1==rstrand && st2==lstrand) return 0; else return 1;
-	}
-}*/
-
-//checks if the clone with one end on indx[i] falls within [reg_st, reg_nd] and
-//its mate is dangling. It returns 1 on success, 0 otherwise
-/*inline int dangling_end(Mates *indx, int i, int reg_st, int reg_nd){
-	int mate_indx=indx[i].mate_indx;
-	if (mate_indx>=0 || indx[i].loc<0) return 0; //return 0 if either the 
-		//current end is dangling or the mate maps somewhere.
-	if (!clone_overlaps_with_region(reg_st, reg_nd, indx[i].loc, indx[i].loc+indx[i].read_len-1)) return 0; //clone out of region
-	else return 1;
-}*/
-
-
-
-/*It returns an array of integers of length n. The array contains all indices of indx whose clones
-succeed the valid_distance test.
-*/
-/*int *find_dist_valid_clones(Mates *indx, int ttl_reads, int min_dist, int max_dist, int *n){
-	int i=0;
-	int *ret;
-	///stupid method: First iterate indx to find n and then iterate indx again to populate ret
-	int cnt=0;
-	time_t t1=time(NULL);
-	for (i=0;i<ttl_reads;i++){
-		if(valid_distance(indx, i, min_dist, max_dist)>0) cnt+=1;
-	}
-	ret=(int*)malloc(sizeof(int)*(cnt+1));
-	cnt=0;
-	for (i=0;i<ttl_reads;i++){
-		if(valid_distance(indx, i, min_dist, max_dist)>0){
-			ret[cnt]=i;
-			//printf("cnt: %d i: %d loc: %d mate: %d test:%d \n",cnt, i, indx[i].loc, indx[i].mate_indx, valid_distance(indx, i, min_dist, max_dist));
-			cnt+=1;
-		}
-	}
-	//exit(0);
-	(*n)=cnt;
-	time_t t2=time(NULL);
-	fprintf(stderr, "valid clones time: %lf cnt: %d\n",difftime(t2,t1), cnt);
-	return ret;
-}*/
-
-/*It returns an array of integers of length n. The array contains all indices of indx whose clones 
-succeed the invalid_orientation test.
-*/
-/*int *find_ornt_invalid_clones(Mates *indx, int ttl_reads, long *strand_indx, int strand_len, char left_strand, char right_strand, int *n){
-	int i=0;
-	int *ret;
-	///stupid method: First iterate indx to find n and then iterate indx again to populate ret
-	int cnt=0;
-	time_t t1=time(NULL);
-	for (i=0;i<ttl_reads;i++){
-		if(invalid_orientation(indx, i, strand_indx, strand_len, left_strand, right_strand)>0) cnt+=1;
-	}
-	ret=(int*)malloc(sizeof(int)*(cnt+1));
-	cnt=0;
-	for (i=0;i<ttl_reads;i++){
-		if(invalid_orientation(indx, i, strand_indx, strand_len, left_strand, right_strand)>0){
-			ret[cnt]=i;
-			//printf("cnt: %d i: %d loc: %d mate: %d test:%d \n",cnt, i, indx[i].loc, indx[i].mate_indx, invalid_orientation(indx, i, strand_indx, strand_len, left_strand, right_strand));
-			//exit(0);
-			cnt+=1;
-		}
-	}
-	(*n)=cnt;
-	time_t t2=time(NULL);
-	fprintf(stderr, "valid clones time: %lf cnt: %d\n",difftime(t2,t1), cnt);
-	return ret;
-}*/
-
-/*It returns an array of integers of length n. The array contains all indices 
-of indx whose clones succeed the dangling_end test for the region [reg_st, reg_nd].
-*/
-/*int *find_dangling_clones(Mates *indx, int ttl_reads, int reg_st, int reg_nd, int *n){
-	int i=0;
-	int *ret;
-	///stupid method: First iterate indx to find n and then iterate indx again to populate ret
-	int cnt=0;
-	time_t t1=time(NULL);
-	for (i=0;i<ttl_reads;i++){
-		if(dangling_end(indx, i, reg_st, reg_nd)) cnt+=1;
-	}
-	ret=(int*)malloc(sizeof(int)*(cnt+1));
-	cnt=0;
-	for (i=0;i<ttl_reads;i++){
-		if(dangling_end(indx, i, reg_st, reg_nd)){
-			ret[cnt]=i;
-			cnt+=1;
-		}
-	}
-	(*n)=cnt;
-	time_t t2=time(NULL);
-	fprintf(stderr, "valid clones time: %lf cnt: %d\n",difftime(t2,t1), cnt);
-	return ret;
-}*/
 /*Find the min index of valid_lst for which a clone of indx has loc in the 
 range between region_st and region_nd. prev_valid_indx_start is the previous
 value that this function returned.
@@ -227,8 +106,6 @@ int get_starting_point(Mates *indx, int *valid_lst, int prev_valid_indx_start, i
 			st=loc2;
 			nd=loc1/*+indx[valid_lst[i]].read_len*/;
 		}
-		//st=min(indx[valid_lst[i]].loc,indx[indx[valid_lst[i]].mate_indx].loc);
-		//nd=max(indx[valid_lst[i]].loc,indx[indx[valid_lst[i]].mate_indx].loc);
 		if( (region_st<=st && st<=region_nd) || (st<region_st && nd > region_st))
 			return i;
 	}
@@ -446,7 +323,7 @@ void print_rd_list(Mates *indx, int len_indx, int *rd_lst, int len_rd_lst, char 
 	samfile_t *fp=samopen(inpt_bam_file, "rb",NULL);
 	bam_header_t *bhr=fp->header;
 	samfile_t *outfp;
-	if(outfp!=NULL)
+	if(outfile!=NULL)
 		outfp=samopen(outfile, "wb", bhr);
 	if (len_rd_lst<=0) {
 		if(outfp!=NULL) samclose(outfp); 
@@ -522,63 +399,7 @@ void print_reduced_rd_list(Mates *indx, int len_indx, long *strand_indx, int str
 }
 
 	
-
-/*int main(int argc, char **argv){
-	if(argc!=7) ioerror("usage: ./discordant_coverage <indexed_mate_file> <bam_file> <min_clone_coverage> distance|orientation|dangling <min_dist|left_strand|region_start> <max_dist|right_strand|region_end>\n");
-	char *indx_file=argv[1];
-	char *bam_file=argv[2];
-	int min_clones=atoi(argv[3]);
-	char *mode=argv[4];
-	int min_dist, max_dist;
-	char lstrand, rstrand;
-
-	//MatesGroups *mg;
-	Mates *mate_indx;
-	long *strand_indx;
-	int len_strand;
-	//Ins_len_groups *groups;
-	int ttl_reads; //, ttl_groups;
-	int *valid_lst, ttl_valid;
-	int reg_st, reg_nd;
-	//mg=get_index(indx_file, &ttl_reads, &ttl_groups);
-	mate_indx=get_mate_index(indx_file, &ttl_reads);
-	strand_indx=get_strand_index(indx_file, &len_strand);
-	
-	//mate_indx=mg->mates;
-	//groups=mg->groups;
-	printf(">chrom chr1\n");
-	if (strcmp(mode, "distance")==0){
-		min_dist=atoi(argv[5]);
-		max_dist=atoi(argv[6]);
-		valid_lst=find_dist_valid_clones(mate_indx, ttl_reads, min_dist, max_dist, &ttl_valid);
-	}
-	else if(strcmp(mode, "orientation")==0){
-		lstrand=argv[5][0];
-		rstrand=argv[6][0];
-		if (lstrand=='+' || lstrand=='f') lstrand='F';
-		if (lstrand=='-' || lstrand=='r') lstrand='R';
-		if (rstrand=='+' || rstrand=='f') rstrand='F';
-		if (rstrand=='-' || rstrand=='r') rstrand='R';
-		valid_lst=find_ornt_invalid_clones(mate_indx, ttl_reads, strand_indx, len_strand, lstrand, rstrand, &ttl_valid);
-	}
-	else if (strcmp(mode, "dangling")==0){
-		reg_st=atoi(argv[5]);
-		reg_nd=atoi(argv[6]);
-		valid_lst=find_dangling_clones(mate_indx, ttl_reads, reg_st, reg_nd, &ttl_valid);
-		print_entire_vld_list(mate_indx, ttl_reads, valid_lst, ttl_valid, bam_file, "dangling_reads.bam");
-		return 0;
-	}
-	else ioerror("Mode should be either \"distance\" or \"orientation\"");
-
-	clone_coverage(mate_indx, ttl_reads, valid_lst, ttl_valid, bam_file, min_clones);
-	free(mate_indx);
-	//free(mg->groups);
-	//free(mg);
-	return 0;
-}*/
-
-
-int *find_valid_clones(Mates *indx, int ttl_reads, long *strand_indx, int strand_len, int *n){
+/*int *find_valid_clones(Mates *indx, int ttl_reads, long *strand_indx, int strand_len, int *n){
 	int i=0;
 	int *ret;
 	///stupid method: First iterate indx to find n and then iterate indx again to populate ret
@@ -598,4 +419,6 @@ int *find_valid_clones(Mates *indx, int ttl_reads, long *strand_indx, int strand
 	(*n)=cnt;
 	time_t t2=time(NULL);
 	return ret;
-}
+}*/
+
+

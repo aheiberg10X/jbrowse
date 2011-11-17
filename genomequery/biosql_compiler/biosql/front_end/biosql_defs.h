@@ -37,6 +37,10 @@ void add_node_to_array(st_node **lst, int *n, st_node *newnode);
 //owner, it creates one. Otherwise it returns NULL
 st_node *check_and_create(st_node *lst, char *name, char *type, char *kind, st_node *cur_owner);
 
+//it checks whether a node with the given name appears in from_lst. It
+//returns 1 on success, 0 otherwise.
+int is_in_from_lst(st_node **from_lst, int len_from_lst, char *name);
+
 //It returns that node of lst where the name matches and the owner is one
 //of the tables of tbl_lst. Both lists contain pointers to the same objects.
 st_node *lookup_mult_tables(st_node **tbl_lst, int len_tbl_lst, st_node *lst, char *name);
@@ -49,7 +53,7 @@ void check_and_copy_from_mult(st_node **lst, st_node *arg_lst, st_node **from_ls
 
 //It replicates all properties of lst whose owner is a table in the from_lst
 //and cur_owner is the owner of the new attributes.
-void replicate_args(st_node **from_lst, int len_from_lst, st_node *lst, st_node *cur_owner);
+void replicate_args(st_node **from_lst, int len_from_lst, st_node **lst, st_node *cur_owner);
 
 //it adds to em_lst an st_node whose name is the concatenation of str1...4 
 //and also increases nextstat.
@@ -76,3 +80,5 @@ char *get_newtemp();
 //parameters to symbl_lst. If name!=READS, it also populates emit_lst with the proper commands
 void load_table(st_node **symbl_lst, st_node **emit_lst, char *parsed_table_file, char *name);
 
+//if nd==NULL it calls symerror with msg and name as parameters
+void check_for_symerror(st_node *nd, char *msg, char *name);

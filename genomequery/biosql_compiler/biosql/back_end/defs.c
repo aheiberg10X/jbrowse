@@ -343,7 +343,7 @@ Mult_hist create_histogram(){
 	return ret;
 }
 
-inline void update_histogram_solo(Mult_hist *mhist, int pos, int chromo_len){
+static inline void update_histogram_solo(Mult_hist *mhist, int pos, int chromo_len){
 	//int bin_range=chromo_len/ttl_bins;
 	//int i=pos/bin_range;
 	int bin_range;
