@@ -244,8 +244,12 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
    //                     Query Stuff
    ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    var dialog_div = document.createElement("div");
+    dialog_div.id = "dialog_div";
+    
     var query_div = document.createElement("div");
     query_div.id = "query_div";
+    dialog_div.appendChild( query_div );
 
     var query_name_p = document.createElement("p");
     query_name_p.id = "query_name_p";
@@ -271,20 +275,62 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                          style: "height: 12em; width: 90%"}
                     ).placeAt( query_box_p );
 
-    //hard coding this for now
-    //var query_box = new dijit.form.TextBox(
-    //{id : "query_chrom",
-    //name: "query_chrom",
-    //value: brwsr.refSeq.name.substring(3), 
-    //type: "hidden"}
-    //).placeAt( query_box_p );
+    var query_button = new dijit.form.Button(
+            {id: "query_button", 
+             label: "Run Query",
+             style: "align-text: right;",
+             onClick: runQuery 
+       }).placeAt( query_div );
+ 
+    var query_form = new dijit.form.Form(
+                         {id: "query_form",
+                          encType : "multipart/form-data"},
+                     query_div )
+        
+    var upload_div = document.createElement("div");
+    upload_div.id = "upload_div";
+    dialog_div.appendChild( upload_div );
+
+    var interval_table_p = document.createElement("p");
+    interval_table_p.id = "interval_table_p";
+    interval_table_p.innerHTML = "New Interval Table?<br />";
+    interval_table_p.style.cssText = "padding-top: 100px";
+    upload_div.appendChild( interval_table_p );
 
 
-    //TODO: runQuery that is able to update a status bar
-    //will have to be such that we return from run_query.py with
-    //one chrom done.  Then in load we could recurse
-    //to do the remaining ones. Could shoot off multiple in parallel
-    //by doing multiple XHR requests in one go
+    var interval_table = document.createElement("input");
+    interval_table.type = "file";
+    interval_table.id = "interval_table";
+    interval_table.name = "interval_table";
+    interval_table.style.cssText = "border-top: 10px;";
+    upload_div.appendChild( interval_table );
+    
+    var upload_button = new dijit.form.Button(
+            {id: "upload_button", 
+             label: "Upload",
+             style: "align-text: right;",
+             onClick: function(){ 
+                 dojo.io.iframe.send({
+                     url: "bin/upload_interval_table.py",
+                     method: "post",
+                     handleAs: "json",
+                     form: dojo.byId("upload_form"),
+                     load: function(data,ioArgs) {
+                         alert(data['message']);
+                     },
+                     error: function(response, ioArgs){
+                         alert(response);
+                     }        
+                 });
+            }
+       }).placeAt( upload_div );
+
+    var upload_form = new dijit.form.Form(
+                          {id: "upload_form",
+                           method: "post",
+                           encType : "multipart/form-data"},
+                      upload_div );
+
     brwsr.running_query = false;
     var queryChromosomes = function( donor, chroms, trackkey, progress_chrom, messages ){
         var args = {"query_donor" : donor, 
@@ -389,27 +435,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         }
     };
 
-    var query_button = new dijit.form.Button(
-            {id: "query_button", 
-             label: "Run Query",
-             style: "align-text: right;",
-             onClick: runQuery 
-        //function(){
-        //var buttons = [query_button,query_box,query_name]
-        //var disableCallback = function() {
-        //dojo.forEach( buttons, toggler("disabled",true) );
-        //};
-        //var enableCallback = function(){ 
-        //dojo.forEach( buttons, toggler("disabled",false) );
-        //};
-        //runQuery(disableCallback,enableCallback);
-        //}
-       }).placeAt( query_div );
- 
-    var query_form = new dijit.form.Form(
-                         {id: "query_form",
-                          encType : "multipart/form-data"},
-                     query_div )
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -544,7 +569,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                     id : "query_dialog",
                     title: "New Query",
                     style: "width: 500px; height: 500px",
-                    content: query_form
+                    content: dialog_div
                 });
       
     var pleasewait_menuitem = new dijit.MenuItem({

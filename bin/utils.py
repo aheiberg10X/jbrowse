@@ -34,6 +34,9 @@ def chromKeyer( chrom ) :
     else :
         return chrom
 
+#normally we'll have a file setup so we can print debug info
+#and we'll point stdout to this file for convenience
+#but eventually we'll want to to print to true stdout (the server)
 def printToServer( s ) :
     temp = sys.stdout
     sys.stdout = sys.__stdout__
