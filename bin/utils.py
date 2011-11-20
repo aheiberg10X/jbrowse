@@ -43,6 +43,10 @@ def printToServer( s ) :
     print s
     sys.stdout = temp
 
+def printPayload( json_data ) :
+    wrapped = textarea_opener + json_data + textarea_closer
+    printToServer( wrapped )
+
 #WATCH OUT WHAT IF name HAS AN UNDERSCORE IN IT NATURALLY?
 def unprefix( name ) :
     splt = name.split('_',1)

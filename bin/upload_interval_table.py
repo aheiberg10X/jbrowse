@@ -24,8 +24,9 @@ fileitem = fields["interval_table"]
 if fileitem.filename :
     fn = os.path.basename(fileitem.filename)
     open(fn, 'w').write( fileitem.file.read() )
-    utils.printToServer("{'status':'OK','message':'Uploaded!'}")
+    json_data = "{'status':'OK','message':'Uploaded!'}"
 else :
-    utils.printToServer("{'status':'ERROR','message':'Uploading went awry'}")
+    json_data = "{'status':'ERROR','message':'Uploading went awry'}"
 
+utils.printToServer( json_data );
 test.close()

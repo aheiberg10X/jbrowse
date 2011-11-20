@@ -275,17 +275,22 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                          style: "height: 12em; width: 90%"}
                     ).placeAt( query_box_p );
 
-    var query_button = new dijit.form.Button(
-            {id: "query_button", 
-             label: "Run Query",
-             style: "align-text: right;",
-             onClick: runQuery 
-       }).placeAt( query_div );
- 
-    var query_form = new dijit.form.Form(
-                         {id: "query_form",
-                          encType : "multipart/form-data"},
-                     query_div )
+         //var track_manager_form = document.createElement("form");
+        ////track_manager_form.id = "track_manager_form";
+        ////track_manager_form.method = "post";
+        ////track_manager_form.enctype = "multipart/form-data";
+        ////track_manager_form.innerHTML = '<h3>BAM</h3>' +
+        ////'<div id="bam_controls">' +
+        ////'<p id="bamfile">BAM File</p>' +
+        ////'<p id="bamhistogram">Histogram Data (opt)</p>' +
+        //'<input type="checkbox" name="display_linking" id="display_linking" value="1" checked=true/>Display Links<br/>' +
+        ////'<input type="hidden" name="refseqName" id="refseqName" value="'+brwsr.refSeq.name+'" />' +
+        ////
+        ////'</div>' +
+        //'<h3>Region</h3>'+
+        //'<div id="region_controls">' +
+        //'<p id="regionfile">File</p>' +
+        //'</div>';
         
     var upload_div = document.createElement("div");
     upload_div.id = "upload_div";
@@ -304,7 +309,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     interval_table.name = "interval_table";
     interval_table.style.cssText = "border-top: 10px;";
     upload_div.appendChild( interval_table );
-    
+
     var upload_button = new dijit.form.Button(
             {id: "upload_button", 
              label: "Upload",
@@ -321,15 +326,15 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                      error: function(response, ioArgs){
                          alert(response);
                      }        
-                 });
-            }
-       }).placeAt( upload_div );
+                })
+             }
+         }).placeAt( upload_div );
 
     var upload_form = new dijit.form.Form(
-                          {id: "upload_form",
-                           method: "post",
-                           encType : "multipart/form-data"},
-                      upload_div );
+            {id: "upload_form",
+                method: "post",
+        encType : "multipart/form-data"},
+        upload_div );
 
     brwsr.running_query = false;
     var queryChromosomes = function( donor, chroms, trackkey, progress_chrom, messages ){
@@ -398,7 +403,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     }
 
     //TODO: won't need to do the disabling thing, correct?
-    var runQuery = function( disableCallback, enableCallback ){
+    var runQuery = function(){
         if( tree.clickedItem.prefix != brwsr.globals["DONOR_PREFIX"] ){
             alert("Trying to execute invalid option 'runQuery' on something other than a donor genome");
         }
@@ -434,6 +439,18 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             queryChromosomes( donor, chroms, trackkey, 1, messages );
         }
     };
+
+   var query_button = new dijit.form.Button(
+            {id: "query_button", 
+             label: "Run Query",
+             style: "align-text: right;",
+             onClick: runQuery
+       }).placeAt( query_div );
+ 
+    var query_form = new dijit.form.Form(
+                         {id: "query_form",
+                          encType : "multipart/form-data"},
+                     query_div );
 
 
 
