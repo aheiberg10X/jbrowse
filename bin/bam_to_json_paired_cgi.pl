@@ -88,6 +88,8 @@ sub createTrack {
     print $OUTPUT "template: $template\n";
     my $targetdir = sprintf( "$DATA_DIR/$template", $donor, $query_name, $host_chrom );
     print $OUTPUT "targetdir: $targetdir\n";
+    $bam_linking = $bam_linking eq "linking";
+    print $OUTPUT "bam_linking: $bam_linking\n";
 
     my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $key);
     $key = "$donor/$query_name";
@@ -98,7 +100,6 @@ sub createTrack {
     if( ! -e $interval_file ){ return ($key, "Nothing to visualize"); }
 
     my $bam_histogram_filename = "$targetdir/$query_name.hist";
-    $bam_linking = $bam_linking eq "linking";
 
     my $pregen_histograms;
     if( defined $bam_histogram_filename ){

@@ -7,6 +7,11 @@ use strict;
 use warnings;
 
 use NCList;
+# I could not figure out what LazyNCList was doing
+# So I created LazyNCList2 to do what needed to be done
+# It is waaaaay simpler and by inspection yielding the same results
+# Maybe it's not optimizing the data for the js rendering???
+use LazyNCList;
 use LazyNCList2;
 use JSON 2;
 use IO::File;

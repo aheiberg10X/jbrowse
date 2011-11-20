@@ -13,7 +13,7 @@ class Table:
 							#join
 		self.kind='regular' #mapjoin vs interval vs regular
 		self.interval_code_files=[]
-		self.filtering_file=[]
+		self.filtering_cmd=[]
 	
 tables={} #it is indexed by table_name and contains Table objects
 tables["READS"]=Table() #(None, 0)
@@ -309,11 +309,11 @@ def call_read_filtering(tbl_out, tbl_in, products_dir, back_end_dir, indx_file, 
 			valid_in=''
 		print '%s/all_tools filter_reads %s %s %s'%(back_end_dir, indx_file, valid_dst, valid_in)
 
-def call_imported_filtering(tbl_out, tbl_in, products_dir, back_end_dir, init_tbl):
+def call_imported_filtering(tbl_out, tbl_in, products_dir, back_end_dir, init_tbl, c_file):
 	tbl_indx=products_dir+'/'+init_tbl+'.table'
 	valid_dst=products_dir+'/'+tbl_out+'.vld'
 	valid_in=products_dir+'/'+tbl_in+'.vld'
-	cf=back_end_dir+'/%s.%s.%s'%(tbl_dst, tbl_in, 'isvalid_imported.c')
+	cf=back_end_dir+'/%s.%s.%s'%(tbl_out, tbl_in, 'isvalid_imported.c')
 	target_cf=back_end_dir+'/isvalid_imported.c'
 	deflt_cf=back_end_dir+'/default.isvalid_imported.c'
 	if c_file.count(cf)>0:
@@ -332,7 +332,7 @@ def call_filter_intervals(back_end_dir, products_dir, tbl_in, tbl_out, c_file):
 	dst_valid=products_dir+'/'+tbl_out+'.vld'
 	dst_reg=products_dir+'/'+tbl_out+'.reg'
 	intrvl=products_dir+'/'+tbl_in+'.intrvl'
-	cf=back_end_dir+'/%s.%s.%s'%(tbl_dst, tbl_in, 'get_interval_coverage_param.c')
+	cf=back_end_dir+'/%s.%s.%s'%(tbl_out, tbl_in, 'get_interval_coverage_param.c')
 	target_cf=back_end_dir+'/get_interval_coverage_param.c'
 	deflt_cf=back_end_dir+'/default.get_interval_coverage_param.c'
 	if c_file.count(cf)>0:
@@ -382,6 +382,9 @@ def get_isolate_join_outpt(join_table, dst_table, side, back_end_dir, products_d
 	dst_valid=products_dir+'/'+dst_table+'@%d.vld'%side
 	return '%s/all_tools isolate_join %s %d %s\n'%(back_end_dir,join_table, side, dst_valid)
 
+#tbl_in: source of valid lst
+#tbl_dst: interval table
+#target_tbl: the return table of the current sql statement (i.e. target_tbl=select *....)
 def call_reads2intervals(back_end_dir, products_dir, indx_file, tbl_in, tbl_dst,target_tbl, c_file):
 	valid=products_dir+'/'+tbl_in+'.vld'
 	dst=products_dir+'/'+tbl_dst+'.intrvl'
@@ -395,6 +398,10 @@ def call_reads2intervals(back_end_dir, products_dir, indx_file, tbl_in, tbl_dst,
 	print 'make'
 	print '%s/all_tools reads2intervals %s %s %s'%(back_end_dir, indx_file, valid, dst)
 
+#tbl_in=source of valid lst
+#init_table=the imported table of interest
+#tbl_dst: interval table
+#target_tbl: the return table of the current sql statement (i.e. target_tbl=select *....)
 def call_imported2intervals(back_end_dir, products_dir, tbl_in, init_table, tbl_dst, target_tbl, c_file):
 	tbl_indx=products_dir+'/'+init_table+'.table'
 	dst=products_dir+'/'+tbl_dst+'.intrvl'
@@ -492,23 +499,42 @@ def get_init_imported_name(tbl_in, origin_paths):
 	return init_table
 
 def genomequery_calls(newtable, tbl_name, c_files, cur_input, back_end_dir, products_dir, bam_file, indx_file, chromo, chromo_len):
-	if newtable.kind=='READS' and tables[cur_input[-1]].kind=='READS': #case of read filtering
+	if len(newtable.filtering_cmd)>1: ioerror("Too many filtering commands")
+	if newtable.filtering_cmd.count("read_filtering")>0: #case of read filtering
+		#if newtable.kind=='READS' and tables[cur_input[-1]].kind=='READS': #case of read filtering
 		call_read_filtering(tbl_name, cur_input[-1], products_dir, back_end_dir, indx_file, c_files)
 		output_cmd=output_reads(tbl_name, tbl_name, products_dir, back_end_dir, indx_file, bam_file, chromo_len)
-	elif newtable.kind=='imported' and tables[cur_input[-1]].kind=='imported':
+	elif newtable.filtering_cmd.count("import_filtering")>0: #case of import_filtering
+		#elif newtable.kind=='imported' and tables[cur_input[-1]].kind=='imported':
 		init_tbl=newtable.origin_path[-1].split('.')[-1]
-		print_imported_filtering(tbl_name, cur_input[-1], products_dir, init_table)
-		output_cmd=output_imported(tbl_in, init_tbl, tbl_out, back_end_dir, products_dir)
-	elif newtable.kind=='interval' and tables[cur_input[-1]].kind=='READS': #case of rd2interval
-		call_reads2intervals(back_end_dir, products_dir, indx_file, cur_input[-1], tbl_name, tbl_name, c_files)
+		call_imported_filtering(tbl_name, cur_input[-1], products_dir, back_end_dir, init_tbl, c_files)
+		output_cmd=output_imported(cur_input[-1], init_tbl, tbl_name, back_end_dir, products_dir)
+	elif newtable.filtering_cmd.count('interval_filtering')>0: # and len(cur_input)==1: #case of filter_interval
+		call_filter_intervals(back_end_dir, products_dir, cur_input[-1], tbl_name, c_files)
+		type1=get_table_type(cur_input[-1])
+		if type1=='reads':
+			output_cmd=output_reads(cur_input[-1], tbl_name, products_dir, back_end_dir, indx_file, bam_file, chromo_len)
+		elif type1=='imported':
+			init_tbl=newtable.origin_path[-1].split('.')[-1]
+			output_cmd=output_imported(cur_input[-1], init_tbl, tbl_name, back_end_dir, products_dir)
+		else:
+			ioerror('Unknown type of interval origin')
+	elif newtable.filtering_cmd.count('join_filtering')>0:
+	#elif newtable.kind=='mapjoin' and len(cur_input)==1: #case of join filtering
+		tbl1,tbl2=get_join_inputs(tbl_name)
+		call_filter_join(back_end_dir, products_dir, cur_input[0], tbl1, tbl2, tbl_name, indx_file, c_files)
+		type1=get_table_type(tbl1)
+		type2=get_table_type(tbl2)
+		output_cmd=get_join_output(tbl_name, products_dir, back_end_dir, indx_file, bam_file, chromo_len, type1, type2)
+
+	if newtable.kind=='interval' and tables[cur_input[-1]].kind=='READS': #case of rd2interval
+		call_reads2intervals(back_end_dir, products_dir, indx_file, tbl_name, tbl_name, tbl_name, c_files)
 	elif newtable.kind=='interval' and tables[cur_input[-1]].kind=='imported': #case of imported2interval
-		tbl_in=cur_table[-1]
+		tbl_in=cur_input[-1]
 		init_table=get_init_imported_name(tbl_in, newtable.origin_path)
 		call_imported2intervals(back_end_dir, products_dir, tbl_in, init_table, tbl_name, tbl_name, c_files)
-	elif tables[cur_input[-1]].kind=='interval' and len(cur_input)==1: #case of filter_interval
-		call_filter_intervals(back_end_dir, products_dir, cur_input[-1], tbl_name, c_files)
 
-	elif newtable.kind=='mapjoin' and len(cur_input)==2: #case of mapjoin
+	if newtable.kind=='mapjoin' and len(cur_input)==2: #case of mapjoin
 		in1=cur_input[0]
 		in2=cur_input[1]
 		if tables[in1].kind=='READS':
@@ -541,13 +567,7 @@ def genomequery_calls(newtable, tbl_name, c_files, cur_input, back_end_dir, prod
 		call_mapjoin(back_end_dir, products_dir, in1, in2, tbl_name)
 		output_cmd=get_join_output(tbl_name, products_dir, back_end_dir, indx_file, bam_file, chromo_len, type1, type2)
 
-	elif newtable.kind=='mapjoin' and len(cur_input)==1: #case of join filtering
-		tbl1,tbl2=get_join_inputs(tbl_name)
-		call_filter_join(back_end_dir, products_dir, cur_input[0], tbl1, tbl2, tbl_name, indx_file, c_files)
-		type1=get_table_type(tbl1)
-		type2=get_table_type(tbl2)
-		output_cmd=get_join_output(tbl_name, products_dir, back_end_dir, indx_file, bam_file, chromo_len, type1, type2)
-
+		
 	if tbl_name=='out':
 		if output_cmd!='':
 			print output_cmd
@@ -693,7 +713,9 @@ def main(argv=sys.argv):
 			#print 'file, cmd ',flt_file, flt_cmd
 			status,i,mates_en=produce_code(lines, i+1, flt_file, cur_input_paths, flt_cmd)
 			if newtable.mates_en!=1: newtable.mates_en=mates_en
-			if(status>0): c_files.append(flt_file)
+			if(status>0): 
+				c_files.append(flt_file)
+				newtable.filtering_cmd.append(flt_cmd)
 		elif sp_line[1]=='mapjoin':
 			newtable.kind='mapjoin'
 			if newtable.mates_en!=1: newtable.mates_en=get_mates_en(cur_input)

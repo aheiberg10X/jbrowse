@@ -17,6 +17,8 @@ debugging = False
 def copyIfExists( source, dest ) :
     if os.path.exists( source ) :
         shutil.copy( source, dest )
+    else :
+        print "\n%s doesn't exist!\n" % source
 
 utils.printToServer( 'Content-type: text/json\n\n' )
 #utils.printToServer( utils.textarea_opener )
@@ -27,12 +29,13 @@ query_name = fields.getvalue("query_name")
 donor = fields.getvalue("query_donor")
 chromnum = fields.getvalue("query_chrom")
 linking = fields.getvalue("query_linking")
-linking = "linking"
-
+linking = "linking";
 root = GlobalConfig.ROOT_DIR
 
-sys.stderr = open("%s/query_error.txt" % GlobalConfig.DEBUG_DIR,'w')
-sys.stdout = open("%s/query_output.txt" % GlobalConfig.DEBUG_DIR,'w')
+err_filename = "%s/query_error_%s.txt" % (GlobalConfig.DEBUG_DIR,chromnum)
+sys.stderr = open( err_filename,'w')
+out_filename = "%s/query_output_%s.txt" % (GlobalConfig.DEBUG_DIR,chromnum)
+sys.stdout = open( out_filename,'w')
 print "fields", fields
 
 query_loc = "%s/user_query.txt" % GlobalConfig.UPLOAD_DIR 
@@ -45,7 +48,7 @@ fuq.close()
 print "popping run_biosql.sh"
 t1 = time.time()
 #chrom is 1..22 X Y
-pop = Popen(['bash', "../genomequery/biosql_compiler/biosql/run_biosql_single.sh", \
+pop = Popen(['bash', "../genomequery/biosql_compiler/biosql/run_biosql.sh", \
              query_loc, \
              donor, \
              chromnum], \
@@ -67,19 +70,19 @@ if not os.path.exists( dest ) :
 print "copying (change to moving!!) from %s to %s" % (source,dest)
 
 #copy bam
-copyIfExists( "%s/out.evidence.bam" % source, \
+copyIfExists( "%s/out.bam" % source, \
               "%s/%s.bam" % (dest,query_name) )
 
 #copy query
 copyIfExists( query_loc, "%s/%s.gq" % (dest, query_name) )
 
 #copy histogram
-histogram = "%s/out.hist.txt" % source
+histogram = "%s/out.hist" % source
 copyIfExists( histogram, \
               "%s/%s.hist" % (dest, query_name) )
 
 #copy intervals
-copyIfExists( "%s/out.evidence.bam.short" % source, \
+copyIfExists( "%s/out.bam.short" % source, \
               "%s/%s.intervals" % (dest,query_name) )
 #
 t3 = time.time()
@@ -99,7 +102,3 @@ t4 = time.time()
 print "done with bam2ncl, took: %f s" % (t4-t3)
 print "returning %s" % out
 utils.printToServer( out )
-#utils.printToServer( utils.textarea_closer )
-#except IOError :
-    #utils.printToServer( json.dumps( {"status":"error", \
-                                      #"message":"io error in run query"} ) )

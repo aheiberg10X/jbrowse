@@ -287,7 +287,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     //by doing multiple XHR requests in one go
     brwsr.running_query = false;
     var queryChromosomes = function( donor, chroms, trackkey, progress_chrom, messages ){
-        var args = {"query_donor" : donor, "query_chrom" : chroms[0]};
+        var args = {"query_donor" : donor, 
+                    "query_chrom" : chroms[0]};
         var url = "bin/run_query.py?" + dojo.objectToQuery(args);
         //TODO: security security SECURITY!! could manually pass in supposedly inaccessible donor name
         var xhrArgs = {

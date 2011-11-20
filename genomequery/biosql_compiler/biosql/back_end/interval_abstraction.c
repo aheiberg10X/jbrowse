@@ -295,9 +295,9 @@ Intrevidence min_interval_coverage(Intervals *intrvl_lst, int ttl_intrvl, int mi
 		if(cur.direction==0){ //the opening of an interval
 			if (intrvl_lst[cur.intrvl_indx].st != cur.loc) ioerror("Discrepancy on an opening unrolled"); //The opening of an unrolled interval should match with the st of the corresponding interval.
 			//printf("+\n");
-			if(last_intrvl>cur.intrvl_indx){
+			/*if(last_intrvl>cur.intrvl_indx){
 				fprintf(stderr, "last: %d cur: %d\n",last_intrvl, cur.intrvl_indx);
-			}
+			}*/
 
 			//last_intrvl=max(last_intrvl,cur.intrvl_indx); //????????//
 			last_intrvl=cur.intrvl_indx;
@@ -382,9 +382,9 @@ Intrevidence max_interval_coverage(Intervals *intrvl_lst, int ttl_intrvl, int ma
 		if(cur.direction==0){ //the opening of an interval
 			if (intrvl_lst[cur.intrvl_indx].st != cur.loc) ioerror("Discrepancy on an opening unrolled"); //The opening of an unrolled interval should match with the st of the corresponding interval.
 			//printf("+\n");
-			if(last_intrvl>cur.intrvl_indx){
+			/*if(last_intrvl>cur.intrvl_indx){
 				fprintf(stderr, "last: %d cur: %d\n",last_intrvl, cur.intrvl_indx);
-			}
+			}*/
 
 			//last_intrvl=max(last_intrvl,cur.intrvl_indx); //????????//
 			last_intrvl=cur.intrvl_indx;
