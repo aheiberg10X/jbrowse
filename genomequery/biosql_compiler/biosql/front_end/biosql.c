@@ -2361,7 +2361,7 @@ yyreturn:
 extern FILE *yyin;
 
 int main(){
-	//yydebug=1;
+	yydebug=1;
 	yylval.entry = (st_node*) malloc(sizeof(st_node));
 	yylval.entry->next=NULL;
 

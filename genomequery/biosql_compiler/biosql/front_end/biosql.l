@@ -15,6 +15,7 @@ digit	[0-9]
 number	{digit}+
 constChar	"'"([^"\"""\'""\\"])"'"
 constString	"\""([^"\"""\'""\\"\n])*"\""
+mates	mates|MATES
 select	select|SELECT
 from	from|FROM
 mapjoin mapjoin|MAPJOIN
@@ -30,7 +31,6 @@ char	char|CHAR
 string_type string|STRING
 import	import|IMPORT
 use		use
-mates	mates|MATES
 name		([a-z]|[A-Z])+([0-9]|_|[a-z]|[A-Z])*
 comment #.*\n
 
