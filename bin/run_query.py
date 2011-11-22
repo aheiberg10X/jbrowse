@@ -38,8 +38,8 @@ out_filename = "%s/query_output_%s.txt" % (GlobalConfig.DEBUG_DIR,chromnum)
 sys.stdout = open( out_filename,'w')
 print "fields", fields
 
-query_loc = "%s/user_query.txt" % GlobalConfig.UPLOAD_DIR 
-print "writing query to %s" % query_loc 
+query_loc = "%s/user_query.txt" % GlobalConfig.UPLOAD_DIR
+print "writing query to %s" % query_loc
 
 fuq = open( query_loc, 'wb')
 fuq.write( query)
