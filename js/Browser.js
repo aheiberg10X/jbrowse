@@ -299,7 +299,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     var interval_table_p = document.createElement("p");
     interval_table_p.id = "interval_table_p";
     interval_table_p.innerHTML = "New Interval Table?<br />";
-    interval_table_p.style.cssText = "padding-top: 100px";
+    interval_table_p.style.cssText = "border-top: solid 3px #cdcdcd; padding-top: 10px";
     upload_div.appendChild( interval_table_p );
 
 
@@ -329,6 +329,10 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 })
              }
          }).placeAt( upload_div );
+
+    var uploaded_div = document.createElement("div");
+    //create an xhrGet to upload.py readding the directory containing 
+    //region files, dipslay in a div
 
     var upload_form = new dijit.form.Form(
             {id: "upload_form",
