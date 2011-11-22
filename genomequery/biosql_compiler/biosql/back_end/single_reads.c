@@ -46,7 +46,7 @@ long get_closest_min_loc(Mates *indx, int ttl_reads, unsigned long key){
 //mloc and Mloc and satisfy the is_valid_single function. n is the length
 //of the returned array.
 //if mloc==-1 and Mloc==-1, the entire chromosome is considered.
-int *find_valid_reads(Mates *indx, int ttl_reads, long *strand_indx, int strand_len, int *n, long mloc, long Mloc){
+/*int *find_valid_reads(Mates *indx, int ttl_reads, long *strand_indx, int strand_len, int *n, long mloc, long Mloc){
 	int *ret;
 	int cnt=0;
 	long arg_min;
@@ -95,4 +95,4 @@ int *find_valid_reads(Mates *indx, int ttl_reads, long *strand_indx, int strand_
 
 	*n=cnt;
 	return ret;
-}
+}*/

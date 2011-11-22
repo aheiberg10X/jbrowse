@@ -90,9 +90,18 @@ NCList.prototype.binarySearch = function(arr, item, itemIndex) {
 NCList.prototype.iterHelper = function(arr, from, to, fun, finish,
                                        inc, searchIndex, testIndex, path, maxRender) {
 
-    if( maxRender <= 0 ){ 
-        return; 
-    }
+    //if( maxRender <= 0 ){ 
+        //somehow need to construct a feature placed at the correct
+        //coordinates so it appears directly below the last feature
+        //OR
+        //could we used (to,from) to achieve a big long feature
+        //also need to figure out such a thing would be drawn
+        //there was a dashed pattern somewhere, just used that?
+        //chevron2.svg
+        //but what when there is already one ending the block?
+        //fun( [from,to,1,"forward"], ["dot","dot","dot"] );
+        //return; 
+        //}
     var keepIterating = true;
     var len = arr.length;
     var i = this.binarySearch(arr, from, searchIndex);
@@ -158,9 +167,28 @@ NCList.prototype.iterHelper = function(arr, from, to, fun, finish,
                     });
             }
         } else {
-            fun(arr[i], path.concat(i));
+            fun(arr[i], path.concat(i), maxRender);
             keepIterating = true;
         }
+
+
+        //We are given a display depth of D.  To give the best picture of read situation,
+        //we should display as much of the top level NCList as possible.
+        //Overlapping features nested in the same NCList will use +1 display level for
+        //each overlap (current left  <= previous right)
+        //If D - overlap_count > 0, we can move onto  
+        //
+        //logical depth vs display depth
+        //always visualize across logical depth before following any sublist pointers
+        //questions is, where do we hold the chunk information until the user decides
+        //they want to see more?  In memory?  This seems like too much to ask the 
+        //browser, (also what would happen in histogram mode?)  Or do we discard, wait
+        //for requests, resend the chunk, add in new stuff (this seemed to work well
+        //currently).  Or could chuck it entirely and create a fine grained request
+        //mechanism, where we track the unvisualized frontier and make targeted requests
+        // lets go with option 2, it seems that most of the time the user will be satisfied
+        // with what comes out the first time (display depth 50 get rendered no problems)
+        // , and this is easist to implement
 
         if (arr[i][this.sublistIndex] && keepIterating)
             this.iterHelper(arr[i][this.sublistIndex], from, to,

@@ -10,10 +10,12 @@
 	int line=1;
 %}
 
+dot		\.
 digit	[0-9]
 number	{digit}+
 constChar	"'"([^"\"""\'""\\"])"'"
 constString	"\""([^"\"""\'""\\"\n])*"\""
+mates	mates|MATES
 select	select|SELECT
 from	from|FROM
 mapjoin mapjoin|MAPJOIN
@@ -35,6 +37,19 @@ comment #.*\n
 %%
 {comment} {lineNo=line++; /*printf("comment line: %s\n",yytext);*/}
 
+{dot}	{
+	lineNo=line;
+	yylval.string=(char*)malloc(sizeof(yytext));
+	strcpy(yylval.string,yytext);
+	return DOT;
+}
+{mates}	{
+	lineNo=line;
+	yylval.string=(char*)malloc(sizeof(yytext));
+	strcpy(yylval.string,yytext);
+	return MATES;
+
+}
 {constChar}	{
 	lineNo=line;
 	yylval.string=(char*)malloc(sizeof(yytext));

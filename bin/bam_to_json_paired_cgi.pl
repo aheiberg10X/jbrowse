@@ -12,14 +12,13 @@ use Getopt::Long;
 use JsonGenerator;
 use NCLSorter;
 use JSON 2;
-#use Bio::DB::Sam;
-#use Bio::DB::Bam::AlignWrapper;
 use File::Basename;
 use IO::Handle;
 use PairStreamer;
 use Cwd;
 use GlobalConfig;
 use Data::Dumper;
+
 #### DEBUGGING OUTPUT ###
 open( my $OUTPUT, '>', $DEBUG_DIR . "/" . "bam_output.txt" ) or die $!;
 open ERROR,  '>', $DEBUG_DIR . "/" . "bam_error.txt"  or die $!;
@@ -33,11 +32,6 @@ if( $profiling ){
     my $path = "/home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/dst/chr1"; #"/home/andrew/school/dnavis/jbrowse/profiling";
     my $option = "big";
     my $bam_file = "$path/out.evidence.bam.short"; #"$path/"$path/profile_$option.bam";
-
-#"/home/andrew/school/dnavis/svn/jbrowse/Apr28/hack/evidence.or.missFR.5.bam";
-#"/home/andrew/school/dnavis/svn/jbrowse/dinh_seg_dups/bam_files/hack/reg_chr18:96741-100669.bam";
-
-#"/home/andrew/school/dnavis/svn/jbrowse/dinh_seg_dups/bam_files/hack/reg_chr18:96741-100669.bam";
     my $host_chrom = "chr1";
     my $linking = "linking";
     my $histogram_filename = "$path/out.evidence.hist";
@@ -45,13 +39,6 @@ if( $profiling ){
     createTrack( $host_chrom, "NA18507", "test", "linking" );
     exit;
 }
-######################################################
-#################### CGI STUFF #######################
-
-
-#my $cgi = CGI::new();
-#print $cgi->header;
-#print "<html><body><textarea>\n";  #place a json response inside here"
 
 my $donor = $ARGV[0];
 my $chrom = $ARGV[1];
@@ -64,12 +51,7 @@ my @messages = ();
 
 my $compress = 0;
 
-#HERE IS WHERE WE CAN MULTI THREAD
-#my @chroms = qw/1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y/;
-#foreach my $chromnum (@chroms) {
-print $OUTPUT "printing chrom $chrom\n";
-($trackkey, $message) = createTrack( $chrom, $donor, $query_name, $linking,
-                                   $compress );
+($trackkey, $message) = createTrack( $chrom, $donor, $query_name, $linking, $compress );
 push( @messages, "$chrom : $message" );
 print $OUTPUT "affter chreatTrack for $chrom\n";
 #}
@@ -84,8 +66,6 @@ my $new_entry_json =
       'type' => "FeatureTrack",
      };
 
-        #JsonGenerator::writeTrackEntry( "$DATA_DIR/trackInfo.js", $new_entry_json );
-
 my $return_json = '{"status":"ok", "message":"';
 $return_json .= join( '\n', @messages ); 
 $return_json .= '", "trackData":';
@@ -97,18 +77,19 @@ print $return_json;
 
 close $OUTPUT;
 close ERROR;
-#print "\n</textarea></body></html>";
+
+
 
 sub createTrack {
     
     my ($host_chrom, $donor, $query_name, $bam_linking, $compress) = @_;
     
-    my $template = $TRACK_TEMPLATE; #"tracks/$CHROM_PREFIX%s/$DONOR_PREFIX$donor/$QUERY_PREFIX$query_name";
+    my $template = $TRACK_TEMPLATE; 
     print $OUTPUT "template: $template\n";
     my $targetdir = sprintf( "$DATA_DIR/$template", $donor, $query_name, $host_chrom );
     print $OUTPUT "targetdir: $targetdir\n";
-
-
+    $bam_linking = $bam_linking eq "linking";
+    print $OUTPUT "bam_linking: $bam_linking\n";
 
     my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $key);
     $key = "$donor/$query_name";
@@ -119,7 +100,6 @@ sub createTrack {
     if( ! -e $interval_file ){ return ($key, "Nothing to visualize"); }
 
     my $bam_histogram_filename = "$targetdir/$query_name.hist";
-    $bam_linking = $bam_linking eq "linking";
 
     my $pregen_histograms;
     if( defined $bam_histogram_filename ){
@@ -133,9 +113,6 @@ sub createTrack {
         #delete variable assignment (i.e ' histogram = ...')
         $json_text =~ s/^.+= //;
 
-        #TODO OPTIMIZE
-        #   tell Christos not to generate histogram data for bin sizes < 1000
-        #   they take up huge room and forever to decode
         $pregen_histograms = JSON::decode_json($json_text);
         close FILE; 
         $/ = $OLDSEP;
@@ -165,21 +142,10 @@ sub createTrack {
     mkdir($DATA_DIR) unless (-d $DATA_DIR);
     mkdir($trackDir) unless (-d $trackDir);
 
-    #my $index;
-    #my $index = Bio::DB::Bam->index($bamFile, 1);
-    #print "done with index, opening bamFIle\n";
-    #my $bam = Bio::DB::Bam->open($bamFile);
-    #my $bam = Bio::DB::Sam->new(-bam  => $bamFile);
-    #print "bamFile opened\n";
-
-    #my $hdr = $bam->header();
-    #catch divide by 0 errors
     my $bad_bam = 0;
 
-    my @bamHeaders = ("start", "end", "strand","subfeatures");
-    my @subfeatureHeaders = ("start","end","strand","type");
-    my $startIndex = 0;
-    my $endIndex = 1;
+    my @bamHeaders = ("start", "end", "strand","subfeatures", "depth");
+    my @subfeatureHeaders = ("start","end","strand","type", "depth");
 
     my %style = ("class" => $cssClass,
                  "subfeature_classes" => $subfeatureClasses,
@@ -198,8 +164,6 @@ sub createTrack {
     #        unless defined($style{clientConfig}->{histScale});
     #}
 
-    my @bookmarks;
-    my ($cur_left, $cur_right, $featureCount) = (0,0,0);
 
     my @refSeqs = @{JsonGenerator::readJSON("$DATA_DIR/refSeqs.js", [], 1)};
     my ($refseq_start,$refseq_end,$refseq_name) = 0,0,"";
@@ -225,10 +189,10 @@ sub createTrack {
                                      $pregen_histograms);
 
     #ensures ties of left-sort are broken by right-end
+    my $startIndex = 0;
+    my $endIndex = 1;
     my $sorter = NCLSorter->new( sub { $jsonGen->addFeature($_[0]) },
                                  $startIndex, $endIndex);
-
-
 
     open( FINT, '<', $interval_file );
     my $line = <FINT>;
@@ -236,14 +200,17 @@ sub createTrack {
     my $len = scalar(@splt);
     print $OUTPUT "splt is @splt and length is $len";
     my $is_single_reads = $len < 6;
+
+    my ($cur_left, $cur_right, $feature_count) = (0,0,0);
+
     if( $is_single_reads ){
         print $OUTPUT "single reads, not linking\n";
         my $single_callback = sub{
             my $feature = shift;
-            updateBookmarks( $jsonGen,
+            updateInterestingAreas( $jsonGen,
                              \$cur_left, 
                              \$cur_right, 
-                             \$featureCount,
+                             \$feature_count,
                              $feature );
             $sorter->addSorted( $feature );
         };
@@ -257,10 +224,10 @@ sub createTrack {
         print $OUTPUT "linkingi\n";
         my $paired_callback = sub {
             my $feature = shift;
-            updateBookmarks( $jsonGen,
+            updateInterestingAreas( $jsonGen,
                              \$cur_left, 
                              \$cur_right, 
-                             \$featureCount,
+                             \$feature_count,
                              $feature );
             $sorter->addSorted( $feature ); 
         };
@@ -273,12 +240,12 @@ sub createTrack {
     close FINT;
     
 
-    if( $featureCount <= 0 ){
-    	return ($key, "featureCount = 0");
+    if( $feature_count <= 0 ){
+    	return ($key, "There are 0 features");
     }
-    ##it could be that there are no gaps in reads, meaning updateBookmarks never adds anything to IAs
+    #it could be that there are no gaps in reads,
+    #meaning updateInterestingAreas never adds anything to IAs
     #if thats the case, add the one giant interval herei
-    #print "huh\n";
     my $perlIsGay = $jsonGen->{interestingAreas};
     my $countIA =  scalar @{ $perlIsGay };
     if( $countIA == 0 ){
@@ -291,7 +258,7 @@ sub createTrack {
 
     $sorter->flush();
     eval {
-        $jsonGen->generateTrack($featureCount);
+        $jsonGen->generateTrack($feature_count);
         1;
     }
     or do {
@@ -328,6 +295,40 @@ sub makePairedFeature {
     my ($ll,$rr,$lr,$rl) = (int($s[0]), int($s[4]), int($s[1]), int($s[3]));
     return [$ll,$rr,0,[[$ll,$lr,$lstrand,$lstyle],[$rl,$rr,$rstrand,$rstyle]]];
 }
+
+
+#updating cur_right and cur_left through references
+sub updateInterestingAreas {
+    my $jsonGen = shift;
+    my $cur_left = shift;
+    my $cur_right = shift;
+    my $feature_count = shift;
+    my $align_array = shift;
+
+    $$feature_count += 1;
+
+    my ($left,$right) = ($align_array->[0], $align_array->[1]);
+    if( $$cur_left <= $left and $left <= $$cur_right ){
+        if( $right > $$cur_right ){ 
+            $$cur_right = $right;
+        }
+    }
+    else {
+        if( $left - $$cur_right > 0 && $$cur_right > 0 ){ #> $INTERESTING_AREAS_GAP_THRESH ){
+            $jsonGen->addInterestingArea( $$cur_left,$$cur_right );
+        }
+        ($$cur_left, $$cur_right) = ($left,$right);
+    }    
+}
+
+
+1;
+
+
+
+###################################################################################
+######### OLD STUFF for when we interacted with BAM files #########################
+###################################################################################
 
 sub align2array {
     my $align = shift;
@@ -383,7 +384,6 @@ sub passAlignmentToStreamer {
     my $reversed = $alignment->reversed;
     my $strand = $alignment->strand;
 
-    #my $mstart = $alignment->mate_start;
     #my $mend = $alignment->mate_end;
     #my $mreversed = $alignment->mreversed;
     #my $mstrand = $alignment->mstrand;
@@ -438,48 +438,3 @@ sub linking_align2array {
     }
 }
 
-#updating cur_right and cur_left through references
-sub updateBookmarks {
-    my $jsonGen = shift;
-    my $cur_left = shift;
-    my $cur_right = shift;
-    my $featureCount = shift;
-    my $align_array = shift;
-
-    $$featureCount += 1;
-
-    #print $OUTPUT "$align_array->[0], $align_array->[1]\n";
-    #print $OUTPUT "curleft: $$cur_left, curright: $$cur_right\n";
-
-    my ($left,$right) = ($align_array->[0], $align_array->[1]);
-    if( $$cur_left <= $left and $left <= $$cur_right ){
-        if( $right > $$cur_right ){ 
-            $$cur_right = $right;
-        }
-    }
-    else {
-        if( $left - $$cur_right > 0 && $$cur_right > 0 ){ #> $INTERESTING_AREAS_GAP_THRESH ){
-            $jsonGen->addInterestingArea( $$cur_left,$$cur_right );
-        }
-        ($$cur_left, $$cur_right) = ($left,$right);
-    }    
-    #print $OUTPUT "\n";
-}
-
-sub readInJsonFile {
-    my $filename = shift;
-    open( DERP, "<", $filename );
-    local $/=undef;
-    my $json_text = <DERP>;
-    
-    #delete whitespace
-    $json_text =~ s/\s+/ /g;
-    #delete what's leading up to the start of the object (i.e ' histogram = ')
-    $json_text =~ s/^.+= //;
-    
-    return JSON::decode_json($json_text);
-}
-
-
-
-1;

@@ -1,10 +1,11 @@
-if [ $# -ne 2 ] ; then
-	echo 'usage: ./run_biosql.sh <biosql_code> <donor>'
+if [ $# -ne 3 ] ; then
+	echo 'usage: ./run_biosql.sh <biosql_code> <donor> <chrom>'
 	exit 
 fi
 
 input_sql=$1
 donor=$2
+c=$3
 interm_code="bytecode.txt"
 products_dir_prefx="dst"
 front_end_dir="front_end"
@@ -16,7 +17,7 @@ bam_prefx="$DONOR_DIR/$donor/chr"
 indx_prefx="$DONOR_DIR/$donor/chr"
 
 cd $BIOSQL_HOME
-rm -rf $src_table_dir/chr*
+rm -rf $src_table_dir/chr$c
 
 $front_end_dir/biosql < $input_sql > $interm_code
 
@@ -26,36 +27,28 @@ then
 fi
 
 
-for c in {1..1} #{1..23} X Y
-do
-	chr="chr"$c
-	chr_len=$(grep "^$c\>" $chr_info | cut -f2)
-	bam_file=$bam_prefx$c".bam"
-	indx_file=$bam_prefx$c".bam.mates.indx"
-	products_dir=$products_dir_prefx/$chr
+chr="chr"$c
+chr_len=$(grep "^$c\>" $chr_info | cut -f2)
+bam_file=$bam_prefx$c".bam"
+indx_file=$bam_prefx$c".bam.mates.indx"
+products_dir=$products_dir_prefx/$chr
 
-	if test ! -f $bam_file
-	then
-		echo no $bam_file
-		continue
-	fi
-	if test ! -f $indx_file
-	then
-		echo no $indx_file
-		continue
-	fi
-	
-	if test ! -d $products_dir
-		then
-			mkdir $products_dir
-	fi
-	
-	python code_generator.py $interm_code $products_dir $front_end_dir $back_end_dir $src_table_dir $bam_file $indx_file $chr $chr_len >> $low_level_calls
+if test ! -f $bam_file
+then
+    echo no $bam_file
+fi
+if test ! -f $indx_file
+then
+    echo no $indx_file
+fi
 
-done
+if test ! -d $products_dir
+    then
+        mkdir $products_dir
+fi
+python code_generator.py $interm_code $products_dir $front_end_dir $back_end_dir $src_table_dir $bam_file $indx_file $chr $chr_len >> $low_level_calls
 
 
 chmod +x $low_level_calls
 
 ./$low_level_calls
-

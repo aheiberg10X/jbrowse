@@ -34,6 +34,7 @@ var Browser = function(params) {
     dojo.require("dijit.form.Textarea");
     dojo.require("dojox.form.FileInput");
     dojo.require("dijit.form.CheckBox");
+    dojo.require("dijit.form.ValidationTextBox");
     dojo.require("dojo.io.iframe");
     dojo.require("dojox.layout.ExpandoPane");
     dojo.require("dijit.layout.AccordionContainer");
@@ -48,9 +49,7 @@ var Browser = function(params) {
     // end my stuff
 
     var refSeqs = params.refSeqs;
-
     this.trackData = params.trackData;
-
     this.globals = params.globals;
     this.deferredFunctions = [];
     this.dataRoot = params.dataRoot;
@@ -119,7 +118,7 @@ var Browser = function(params) {
 
             var sliderDiv = document.createElement("div");
             sliderPane.appendChild( sliderDiv );
-            brwsr.maxRender = 50;            
+            brwsr.maxRender = 5;            
             absMaxRender = 300;
             //remember: want to have slider at the top mean render 0
             var slider = new dijit.form.VerticalSlider(
@@ -245,18 +244,24 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
    //                     Query Stuff
    ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    var dialog_div = document.createElement("div");
+    dialog_div.id = "dialog_div";
+    
     var query_div = document.createElement("div");
     query_div.id = "query_div";
+    dialog_div.appendChild( query_div );
 
     var query_name_p = document.createElement("p");
     query_name_p.id = "query_name_p";
     query_name_p.innerHTML = "Name<br />";
     query_div.appendChild( query_name_p );
 
-    var query_name = new dijit.form.TextBox(
+    var query_name = new dijit.form.ValidationTextBox(
                         {id: "query_name",
                          label: "Query Name",
-                         name: "query_name"}
+                         name: "query_name",
+                         regExp: '\\w+',
+                         invalidMessage: 'Only alphanumeric characters' }
                      ).placeAt( query_name_p );
 
     var query_box_p = document.createElement("p");
@@ -270,23 +275,75 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                          style: "height: 12em; width: 90%"}
                     ).placeAt( query_box_p );
 
-    //hard coding this for now
-    //var query_box = new dijit.form.TextBox(
-    //{id : "query_chrom",
-    //name: "query_chrom",
-    //value: brwsr.refSeq.name.substring(3), 
-    //type: "hidden"}
-    //).placeAt( query_box_p );
+         //var track_manager_form = document.createElement("form");
+        ////track_manager_form.id = "track_manager_form";
+        ////track_manager_form.method = "post";
+        ////track_manager_form.enctype = "multipart/form-data";
+        ////track_manager_form.innerHTML = '<h3>BAM</h3>' +
+        ////'<div id="bam_controls">' +
+        ////'<p id="bamfile">BAM File</p>' +
+        ////'<p id="bamhistogram">Histogram Data (opt)</p>' +
+        //'<input type="checkbox" name="display_linking" id="display_linking" value="1" checked=true/>Display Links<br/>' +
+        ////'<input type="hidden" name="refseqName" id="refseqName" value="'+brwsr.refSeq.name+'" />' +
+        ////
+        ////'</div>' +
+        //'<h3>Region</h3>'+
+        //'<div id="region_controls">' +
+        //'<p id="regionfile">File</p>' +
+        //'</div>';
+        
+    var upload_div = document.createElement("div");
+    upload_div.id = "upload_div";
+    dialog_div.appendChild( upload_div );
+
+    var interval_table_p = document.createElement("p");
+    interval_table_p.id = "interval_table_p";
+    interval_table_p.innerHTML = "New Interval Table?<br />";
+    interval_table_p.style.cssText = "border-top: solid 3px #cdcdcd; padding-top: 10px";
+    upload_div.appendChild( interval_table_p );
 
 
-    //TODO: runQuery that is able to update a status bar
-    //will have to be such that we return from run_query.py with
-    //one chrom done.  Then in load we could recurse
-    //to do the remaining ones. Could shoot off multiple in parallel
-    //by doing multiple XHR requests in one go
+    var interval_table = document.createElement("input");
+    interval_table.type = "file";
+    interval_table.id = "interval_table";
+    interval_table.name = "interval_table";
+    interval_table.style.cssText = "border-top: 10px;";
+    upload_div.appendChild( interval_table );
+
+    var upload_button = new dijit.form.Button(
+            {id: "upload_button", 
+             label: "Upload",
+             style: "align-text: right;",
+             onClick: function(){ 
+                 dojo.io.iframe.send({
+                     url: "bin/upload_interval_table.py",
+                     method: "post",
+                     handleAs: "json",
+                     form: dojo.byId("upload_form"),
+                     load: function(data,ioArgs) {
+                         alert(data['message']);
+                     },
+                     error: function(response, ioArgs){
+                         alert(response);
+                     }        
+                })
+             }
+         }).placeAt( upload_div );
+
+    var uploaded_div = document.createElement("div");
+    //create an xhrGet to upload.py readding the directory containing 
+    //region files, dipslay in a div
+
+    var upload_form = new dijit.form.Form(
+            {id: "upload_form",
+                method: "post",
+        encType : "multipart/form-data"},
+        upload_div );
+
     brwsr.running_query = false;
-    var queryChromosomes = function( donor, chroms, trackkey, progress_inc, messages ){
-        var args = {"query_donor" : donor, "query_chrom" : chroms[0]};
+    var queryChromosomes = function( donor, chroms, trackkey, progress_chrom, messages ){
+        var args = {"query_donor" : donor, 
+                    "query_chrom" : chroms[0]};
         var url = "bin/run_query.py?" + dojo.objectToQuery(args);
         //TODO: security security SECURITY!! could manually pass in supposedly inaccessible donor name
         var xhrArgs = {
@@ -296,7 +353,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             load: function(data,ioargs){
                 if( data["status"] == "ok" ){
                     var progress = progress_bar.get("progress");
-                    progress_bar.update({'progress': progress + progress_inc});                        
+                    progress_bar.update({'indeterminate': true, 'label': "Chroms [1.."+progress_chrom+"] complete"});
                     messages.push(data["message"]);
                     var entry = data["trackData"];
                     if( entry['key'] != trackkey ){
@@ -311,22 +368,38 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
                     if( chroms.length > 1 && brwsr.running_query ){
                         var n = chroms.slice(1);
-                        queryChromosomes( donor, n, trackkey, progress_inc, messages);
+                        queryChromosomes( donor, n, trackkey, progress_chrom+1, messages);
                     }
                     else{
                         alert( messages.join('\n') );
-                        progress_bar.update({'progress': 0});
+                        dojo.attr(progress_bar.domNode, 'hidden', true);
+                        dojo.style(dijit.byId('stop_button').domNode, {
+                              visibility: 'hidden',
+                              display: 'none'
+                        });
                         setRunningQuery( false );
                     }
                 }
                 else {
                     alert(data["message"]);
-                        progress_bar.update({'progress': 0});
+                    dojo.attr(progress_bar.domNode, 'hidden', true);
+                    dojo.style(dijit.byId('stop_button').domNode, {
+                          visibility: 'hidden',
+                          display: 'none'
+                    });
+                    dojo.attr(stop_button.domNode, 'hidden', true);
+                    //progress_bar.update({'progress': 0});
                 }
             },
             error: function(error) {
                 alert(error);
-                progress_bar.update({'progress': 0});
+                dojo.attr(progress_bar.domNode, 'hidden', true);
+                    dojo.style(dijit.byId('stop_button').domNode, {
+                          visibility: 'hidden',
+                          display: 'none'
+                    });
+                dojo.attr(stop_button.domNode, 'hidden', true);
+                //progress_bar.update({'progress': 0});
             }
         };
         //Call the asynchronous xhrPost
@@ -334,7 +407,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     }
 
     //TODO: won't need to do the disabling thing, correct?
-    var runQuery = function( disableCallback, enableCallback ){
+    var runQuery = function(){
         if( tree.clickedItem.prefix != brwsr.globals["DONOR_PREFIX"] ){
             alert("Trying to execute invalid option 'runQuery' on something other than a donor genome");
         }
@@ -359,36 +432,30 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 return;
             }
             setRunningQuery( true );
-            alert("Your query is running. The progress bar will increment when the results for a new chromosome are ready");
+            alert("Your query is running. The progress bar indicates the completed chromosomes (which can be visualized).  Do not refresh.");
 
-            queryChromosomes( donor, chroms, trackkey, 1.0/chroms.length * 100, messages );
+            dojo.attr(progress_bar.domNode, 'hidden', false);
+            dojo.style(dijit.byId('stop_button').domNode, {
+                  visibility: 'visible',
+                  display: 'block'
+            });
+            progress_bar.update({'indeterminate': true, 'label': 'Working on chr1...'});
+            queryChromosomes( donor, chroms, trackkey, 1, messages );
         }
     };
 
-    var query_button = new dijit.form.Button(
-                            {id: "query_button", 
-                             label: "Run Query",
-                             style: "align-text: right;",
-                             onClick: 
-                                 function(){
-                                     //TODO: maybe a user still wants to browse around while query runs
-                                     //      need to have query progess bar run in background and allow
-                                     //      further interaction
-                                    var buttons = [query_button,query_box,query_name]
-                                    var disableCallback = function() {
-                                        dojo.forEach( buttons, toggler("disabled",true) );
-                                    };
-                                    var enableCallback = function(){ 
-                                        dojo.forEach( buttons, toggler("disabled",false) );
-                                    };
-                                    runQuery(disableCallback,enableCallback);
-                                }
-                       }).placeAt( query_div );
+   var query_button = new dijit.form.Button(
+            {id: "query_button", 
+             label: "Run Query",
+             style: "align-text: right;",
+             onClick: runQuery
+       }).placeAt( query_div );
  
     var query_form = new dijit.form.Form(
                          {id: "query_form",
                           encType : "multipart/form-data"},
-                     query_div )
+                     query_div );
+
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -523,9 +590,15 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                     id : "query_dialog",
                     title: "New Query",
                     style: "width: 500px; height: 500px",
-                    content: query_form
+                    content: dialog_div
                 });
-       
+      
+    var pleasewait_menuitem = new dijit.MenuItem({
+        label: "(Please wait for the current query to finish)",
+        hidden: true,
+        disabled: true
+    });
+    pMenu.addChild( pleasewait_menuitem );
 
     var query_menuitem = new dijit.MenuItem({
             label: "New Query",
@@ -562,9 +635,11 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
                     if( brwsr.running_query ){
                         query_menuitem.hidden = true;
+                        pleasewait_menuitem.hidden = false;
                     }
                     else {
                         query_menuitem.hidden = false;
+                        pleasewait_menuitem.hidden = true;
                     }
 
                     //hack to make left click work on tree
@@ -673,7 +748,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     var progress_bar = dijit.ProgressBar(
             {id: "progress_bar",
-             style: "width: 100%;" 
+             style: "width: 100%;" ,
             }
             ).placeAt( status_cpane.domNode );
 
@@ -681,15 +756,25 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             {id: "stop_button",
              label: "Stop",
              style: "",
-             disabled: true,
              onClick: 
                 function(){
                     setRunningQuery( false );
-                    progress_bar.update({'progress': 0});                        
+                    dojo.attr(progress_bar.domNode, 'hidden', true);
+                    dojo.style(dijit.byId('stop_button').domNode, {
+                          visibility: 'hidden',
+                          display: 'none'
+                    });
+                    //progress_bar.update({'indeterminate': true, label: '0/23'});       
+
                 }
             }
             ).placeAt( status_cpane.domNode );
             
+    dojo.attr(progress_bar.domNode, 'hidden', true);
+    dojo.style(dijit.byId('stop_button').domNode, {
+          visibility: 'hidden',
+          display: 'none'
+    });
 
     var setRunningQuery = function( tf ){
         brwsr.running_query = tf;

@@ -14,10 +14,13 @@ from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFI
 #'static' track data, such as SequenceTracks, + query track data inferred from directory structure
 def getTrackData( root ) :
     #start from root and recursively makeItems
-    # if they have a key, ie are queries/FeatureTracks turn only the relevant bits into a json string suitable for trackInfo.  Make a big list of all these and print to the server
+    #if they have a key, ie are queries/FeatureTracks turn only the relevant bits into a json string suitable for trackInfo.  
+    #Make a big list of all these and print to the server
     #important to read in SequenceTrack data (and other "default" tracks, like one with gene annotations or something) here
     print "inside getTrackData"
     trackData = []
+    
+    #manually add the sequence trackdata
     seqtrack = \
     {"args" : {"chunkSize" : 20000}, \
      "url" : "seq/{refseq}/", \
@@ -26,6 +29,7 @@ def getTrackData( root ) :
      "key" : "DNA"}
     trackData.append( seqtrack )
 
+    #generate all the query trackdata
     for listing in os.listdir(root) :
         fullpath = "%s/%s" % (root,listing)
         if listing.startswith( DONOR_PREFIX ) and \

@@ -83,7 +83,7 @@ typedef struct{
 //that Andrew specified in his email on May 5th 2011.
 Mult_hist create_histogram();
 //For all histograms of hist it increases the bin value that pos falls to. 
-inline void update_histogram_solo(Mult_hist *mhist, int pos, int chromo_len);
+extern inline void update_histogram_solo(Mult_hist *mhist, int pos, int chromo_len);
 void print_histogram(FILE *fp, Mult_hist mhist, int chromo_len);
 void destroy_histogram(Mult_hist *mhist);
 

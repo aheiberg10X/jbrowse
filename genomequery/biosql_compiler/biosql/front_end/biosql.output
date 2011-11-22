@@ -1,7 +1,6 @@
 Terminals unused in grammar
 
    NOT_EQUAL
-   DOT
    TK_NEGATIVE_SIGN
    TK_POSITIVE_SIGN
    TK_RIGHT_SQUARE_BRACKET
@@ -11,12 +10,12 @@ Terminals unused in grammar
 
 
 State 24 conflicts: 1 shift/reduce
-State 71 conflicts: 1 shift/reduce
-State 83 conflicts: 5 shift/reduce
-State 85 conflicts: 1 shift/reduce
-State 86 conflicts: 1 shift/reduce
-State 87 conflicts: 3 shift/reduce
+State 80 conflicts: 1 shift/reduce
 State 92 conflicts: 5 shift/reduce
+State 96 conflicts: 1 shift/reduce
+State 97 conflicts: 1 shift/reduce
+State 98 conflicts: 3 shift/reduce
+State 103 conflicts: 5 shift/reduce
 
 
 Grammar
@@ -55,151 +54,165 @@ Grammar
 
    20 lvalue: names
 
-   21 select_statement: SELECT select_args FROM from_arg WHERE where_args
-   22                 | SELECT select_args FROM MAPJOIN from_args
+   21 select_statement: SELECT select_args FROM compound_from_arg WHERE where_args
+   22                 | SELECT select_args FROM compound_from_arg
+   23                 | SELECT select_args FROM MAPJOIN from_args
 
-   23 select_args: STAR
-   24            | COUNT
-   25            | select_arg_series
+   24 select_args: STAR
+   25            | COUNT
+   26            | select_arg_series
 
-   26 select_arg_series: names COMMA select_arg_series
-   27                  | names
+   27 select_arg_series: names COMMA select_arg_series
+   28                  | names
+   29                  | obj_names
 
-   28 from_args: from_arg COMMA from_args
-   29          | from_arg
+   30 from_args: compound_from_arg COMMA from_args
+   31          | compound_from_arg
 
-   30 from_arg: names
+   32 compound_from_arg: from_arg
+   33                  | from_arg LPAREN arith_expr COMMA arith_expr RPAREN
+   34                  | from_arg MATES LPAREN arith_expr COMMA arith_expr RPAREN
 
-   31 where_args: where_args COMMA where_args
-   32           | where_args AND where_args
-   33           | where_args OR where_args
-   34           | NOT where_args
-   35           | LPAREN where_args RPAREN
-   36           | lowest_expr
+   35 from_arg: names
 
-   37 lowest_expr: arith_expr comparison_op rvalue
+   36 where_args: where_args COMMA where_args
+   37           | where_args AND where_args
+   38           | where_args OR where_args
+   39           | NOT where_args
+   40           | LPAREN where_args RPAREN
+   41           | lowest_expr
 
-   38 arith_expr: arith_expr arith_op arith_expr
-   39           | arith_op arith_expr
-   40           | names
-   41           | NUMBER
+   42 lowest_expr: arith_expr comparison_op rvalue
 
-   42 comparison_op: EQUAL
-   43              | GREATER_EQUAL
-   44              | LESS_EQUAL
-   45              | GREATER
-   46              | LESS
+   43 arith_expr: arith_expr arith_op arith_expr
+   44           | arith_op arith_expr
+   45           | names
+   46           | obj_names
+   47           | NUMBER
 
-   47 arith_op: PLUS
-   48         | MINUS
-   49         | MUL
-   50         | DIV
-   51         | MOD
+   48 obj_names: names DOT names
 
-   52 rvalue: CONST_CHAR
-   53       | CONST_STRING
-   54       | NUMBER
+   49 comparison_op: EQUAL
+   50              | GREATER_EQUAL
+   51              | LESS_EQUAL
+   52              | GREATER
+   53              | LESS
+
+   54 arith_op: PLUS
+   55         | MINUS
+   56         | MUL
+   57         | DIV
+   58         | MOD
+
+   59 rvalue: CONST_CHAR
+   60       | CONST_STRING
+   61       | NUMBER
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
 error (256)
-CONST_CHAR (258) 52
-CONST_STRING (259) 53
-NUMBER (260) 41 54
-EQUAL (261) 42
+CONST_CHAR (258) 59
+CONST_STRING (259) 60
+NUMBER (260) 47 61
+EQUAL (261) 49
 ASSIGN (262) 19
-STAR (263) 23
-GREATER (264) 45
-LESS (265) 46
+STAR (263) 24
+GREATER (264) 52
+LESS (265) 53
 NOT_EQUAL (266)
-LESS_EQUAL (267) 44
-GREATER_EQUAL (268) 43
-MUL (269) 49
-DIV (270) 50
-MOD (271) 51
-PLUS (272) 47
-MINUS (273) 48
-AND (274) 32
-OR (275) 33
-NOT (276) 34
+LESS_EQUAL (267) 51
+GREATER_EQUAL (268) 50
+MUL (269) 56
+DIV (270) 57
+MOD (271) 58
+PLUS (272) 54
+MINUS (273) 55
+AND (274) 37
+OR (275) 38
+NOT (276) 39
 SEMICOLON (277) 5 16
-DOT (278)
-LPAREN (279) 5 35
-RPAREN (280) 5 35
-COMMA (281) 8 26 28 31
+DOT (278) 48
+LPAREN (279) 5 33 34 40
+RPAREN (280) 5 33 34 40
+COMMA (281) 8 27 30 33 34 36
 INTEGER (282) 10
 FLOAT (283) 11
 CHAR (284) 12
 STRING_TYPE (285) 13
 ID (286) 7
-SELECT (287) 21 22
-FROM (288) 21 22
+SELECT (287) 21 22 23
+FROM (288) 21 22 23
 WHERE (289) 21
-COUNT (290) 24
+COUNT (290) 25
 TABLE (291) 6
-MAPJOIN (292) 22
+MAPJOIN (292) 23
 IMPORT (293) 16
 USE (294) 14
-TK_NEGATIVE_SIGN (295)
-TK_POSITIVE_SIGN (296)
-TK_RIGHT_SQUARE_BRACKET (297)
-TK_LEFT_SQUARE_BRACKET (298)
-TK_RIGHT_BRACKET (299)
-TK_LEFT_BRACKET (300)
+MATES (295) 34
+TK_NEGATIVE_SIGN (296)
+TK_POSITIVE_SIGN (297)
+TK_RIGHT_SQUARE_BRACKET (298)
+TK_LEFT_SQUARE_BRACKET (299)
+TK_RIGHT_BRACKET (300)
+TK_LEFT_BRACKET (301)
 
 
 Nonterminals, with rules where they appear
 
-$accept (46)
+$accept (47)
     on left: 0
-program (47)
+program (48)
     on left: 1 2, on right: 0
-table_prototypes (48)
+table_prototypes (49)
     on left: 3 4, on right: 2 3
-table_prototype (49)
+table_prototype (50)
     on left: 5, on right: 3
-table_keyword (50)
+table_keyword (51)
     on left: 6, on right: 5
-names (51)
-    on left: 7, on right: 6 10 11 12 13 14 16 20 26 27 30 40
-table_args (52)
+names (52)
+    on left: 7, on right: 6 10 11 12 13 14 16 20 27 28 35 45 48
+table_args (53)
     on left: 8 9, on right: 5 8
-table_arg (53)
+table_arg (54)
     on left: 10 11 12 13, on right: 8 9
-table_source (54)
+table_source (55)
     on left: 14, on right: 1
-import_tables (55)
+import_tables (56)
     on left: 15 16, on right: 1 15
-assigned_selects (56)
+assigned_selects (57)
     on left: 17 18, on right: 1 17
-assigned_select (57)
+assigned_select (58)
     on left: 19, on right: 17
-lvalue (58)
+lvalue (59)
     on left: 20, on right: 19
-select_statement (59)
-    on left: 21 22, on right: 1 19
-select_args (60)
-    on left: 23 24 25, on right: 21 22
-select_arg_series (61)
-    on left: 26 27, on right: 25 26
-from_args (62)
-    on left: 28 29, on right: 22 28
-from_arg (63)
-    on left: 30, on right: 21 28 29
-where_args (64)
-    on left: 31 32 33 34 35 36, on right: 21 31 32 33 34 35
-lowest_expr (65)
-    on left: 37, on right: 36
-arith_expr (66)
-    on left: 38 39 40 41, on right: 37 38 39
-comparison_op (67)
-    on left: 42 43 44 45 46, on right: 37
-arith_op (68)
-    on left: 47 48 49 50 51, on right: 38 39
-rvalue (69)
-    on left: 52 53 54, on right: 37
+select_statement (60)
+    on left: 21 22 23, on right: 1 19
+select_args (61)
+    on left: 24 25 26, on right: 21 22 23
+select_arg_series (62)
+    on left: 27 28 29, on right: 26 27
+from_args (63)
+    on left: 30 31, on right: 23 30
+compound_from_arg (64)
+    on left: 32 33 34, on right: 21 22 30 31
+from_arg (65)
+    on left: 35, on right: 32 33 34
+where_args (66)
+    on left: 36 37 38 39 40 41, on right: 21 36 37 38 39 40
+lowest_expr (67)
+    on left: 42, on right: 41
+arith_expr (68)
+    on left: 43 44 45 46 47, on right: 33 34 42 43 44
+obj_names (69)
+    on left: 48, on right: 29 46
+comparison_op (70)
+    on left: 49 50 51 52 53, on right: 42
+arith_op (71)
+    on left: 54 55 56 57 58, on right: 43 44
+rvalue (72)
+    on left: 59 60 61, on right: 42
 
 
 state 0
@@ -518,8 +531,9 @@ state 34
 
 state 35
 
-   21 select_statement: SELECT . select_args FROM from_arg WHERE where_args
-   22                 | SELECT . select_args FROM MAPJOIN from_args
+   21 select_statement: SELECT . select_args FROM compound_from_arg WHERE where_args
+   22                 | SELECT . select_args FROM compound_from_arg
+   23                 | SELECT . select_args FROM MAPJOIN from_args
 
     STAR   shift, and go to state 41
     ID     shift, and go to state 8
@@ -528,6 +542,7 @@ state 35
     names              go to state 43
     select_args        go to state 44
     select_arg_series  go to state 45
+    obj_names          go to state 46
 
 
 state 36
@@ -550,7 +565,7 @@ state 38
 
     SELECT  shift, and go to state 35
 
-    select_statement  go to state 46
+    select_statement  go to state 47
 
 
 state 39
@@ -569,577 +584,794 @@ state 40
 
 state 41
 
-   23 select_args: STAR .
-
-    $default  reduce using rule 23 (select_args)
-
-
-state 42
-
-   24 select_args: COUNT .
+   24 select_args: STAR .
 
     $default  reduce using rule 24 (select_args)
 
 
-state 43
+state 42
 
-   26 select_arg_series: names . COMMA select_arg_series
-   27                  | names .
-
-    COMMA  shift, and go to state 47
-
-    $default  reduce using rule 27 (select_arg_series)
-
-
-state 44
-
-   21 select_statement: SELECT select_args . FROM from_arg WHERE where_args
-   22                 | SELECT select_args . FROM MAPJOIN from_args
-
-    FROM  shift, and go to state 48
-
-
-state 45
-
-   25 select_args: select_arg_series .
+   25 select_args: COUNT .
 
     $default  reduce using rule 25 (select_args)
 
 
+state 43
+
+   27 select_arg_series: names . COMMA select_arg_series
+   28                  | names .
+   48 obj_names: names . DOT names
+
+    DOT    shift, and go to state 48
+    COMMA  shift, and go to state 49
+
+    $default  reduce using rule 28 (select_arg_series)
+
+
+state 44
+
+   21 select_statement: SELECT select_args . FROM compound_from_arg WHERE where_args
+   22                 | SELECT select_args . FROM compound_from_arg
+   23                 | SELECT select_args . FROM MAPJOIN from_args
+
+    FROM  shift, and go to state 50
+
+
+state 45
+
+   26 select_args: select_arg_series .
+
+    $default  reduce using rule 26 (select_args)
+
+
 state 46
+
+   29 select_arg_series: obj_names .
+
+    $default  reduce using rule 29 (select_arg_series)
+
+
+state 47
 
    19 assigned_select: lvalue ASSIGN select_statement .
 
     $default  reduce using rule 19 (assigned_select)
 
 
-state 47
+state 48
 
-   26 select_arg_series: names COMMA . select_arg_series
+   48 obj_names: names DOT . names
 
     ID  shift, and go to state 8
 
-    names              go to state 43
-    select_arg_series  go to state 49
-
-
-state 48
-
-   21 select_statement: SELECT select_args FROM . from_arg WHERE where_args
-   22                 | SELECT select_args FROM . MAPJOIN from_args
-
-    ID       shift, and go to state 8
-    MAPJOIN  shift, and go to state 50
-
-    names     go to state 51
-    from_arg  go to state 52
+    names  go to state 51
 
 
 state 49
 
-   26 select_arg_series: names COMMA select_arg_series .
+   27 select_arg_series: names COMMA . select_arg_series
 
-    $default  reduce using rule 26 (select_arg_series)
+    ID  shift, and go to state 8
+
+    names              go to state 43
+    select_arg_series  go to state 52
+    obj_names          go to state 46
 
 
 state 50
 
-   22 select_statement: SELECT select_args FROM MAPJOIN . from_args
+   21 select_statement: SELECT select_args FROM . compound_from_arg WHERE where_args
+   22                 | SELECT select_args FROM . compound_from_arg
+   23                 | SELECT select_args FROM . MAPJOIN from_args
 
-    ID  shift, and go to state 8
+    ID       shift, and go to state 8
+    MAPJOIN  shift, and go to state 53
 
-    names      go to state 51
-    from_args  go to state 53
-    from_arg   go to state 54
+    names              go to state 54
+    compound_from_arg  go to state 55
+    from_arg           go to state 56
 
 
 state 51
 
-   30 from_arg: names .
+   48 obj_names: names DOT names .
 
-    $default  reduce using rule 30 (from_arg)
+    $default  reduce using rule 48 (obj_names)
 
 
 state 52
 
-   21 select_statement: SELECT select_args FROM from_arg . WHERE where_args
+   27 select_arg_series: names COMMA select_arg_series .
 
-    WHERE  shift, and go to state 55
+    $default  reduce using rule 27 (select_arg_series)
 
 
 state 53
 
-   22 select_statement: SELECT select_args FROM MAPJOIN from_args .
+   23 select_statement: SELECT select_args FROM MAPJOIN . from_args
 
-    $default  reduce using rule 22 (select_statement)
+    ID  shift, and go to state 8
+
+    names              go to state 54
+    from_args          go to state 57
+    compound_from_arg  go to state 58
+    from_arg           go to state 56
 
 
 state 54
 
-   28 from_args: from_arg . COMMA from_args
-   29          | from_arg .
+   35 from_arg: names .
 
-    COMMA  shift, and go to state 56
-
-    $default  reduce using rule 29 (from_args)
+    $default  reduce using rule 35 (from_arg)
 
 
 state 55
 
-   21 select_statement: SELECT select_args FROM from_arg WHERE . where_args
+   21 select_statement: SELECT select_args FROM compound_from_arg . WHERE where_args
+   22                 | SELECT select_args FROM compound_from_arg .
 
-    NUMBER  shift, and go to state 57
-    MUL     shift, and go to state 58
-    DIV     shift, and go to state 59
-    MOD     shift, and go to state 60
-    PLUS    shift, and go to state 61
-    MINUS   shift, and go to state 62
-    NOT     shift, and go to state 63
-    LPAREN  shift, and go to state 64
-    ID      shift, and go to state 8
+    WHERE  shift, and go to state 59
 
-    names        go to state 65
-    where_args   go to state 66
-    lowest_expr  go to state 67
-    arith_expr   go to state 68
-    arith_op     go to state 69
+    $default  reduce using rule 22 (select_statement)
 
 
 state 56
 
-   28 from_args: from_arg COMMA . from_args
+   32 compound_from_arg: from_arg .
+   33                  | from_arg . LPAREN arith_expr COMMA arith_expr RPAREN
+   34                  | from_arg . MATES LPAREN arith_expr COMMA arith_expr RPAREN
 
-    ID  shift, and go to state 8
+    LPAREN  shift, and go to state 60
+    MATES   shift, and go to state 61
 
-    names      go to state 51
-    from_args  go to state 70
-    from_arg   go to state 54
+    $default  reduce using rule 32 (compound_from_arg)
 
 
 state 57
 
-   41 arith_expr: NUMBER .
+   23 select_statement: SELECT select_args FROM MAPJOIN from_args .
 
-    $default  reduce using rule 41 (arith_expr)
+    $default  reduce using rule 23 (select_statement)
 
 
 state 58
 
-   49 arith_op: MUL .
+   30 from_args: compound_from_arg . COMMA from_args
+   31          | compound_from_arg .
 
-    $default  reduce using rule 49 (arith_op)
+    COMMA  shift, and go to state 62
+
+    $default  reduce using rule 31 (from_args)
 
 
 state 59
 
-   50 arith_op: DIV .
+   21 select_statement: SELECT select_args FROM compound_from_arg WHERE . where_args
 
-    $default  reduce using rule 50 (arith_op)
+    NUMBER  shift, and go to state 63
+    MUL     shift, and go to state 64
+    DIV     shift, and go to state 65
+    MOD     shift, and go to state 66
+    PLUS    shift, and go to state 67
+    MINUS   shift, and go to state 68
+    NOT     shift, and go to state 69
+    LPAREN  shift, and go to state 70
+    ID      shift, and go to state 8
+
+    names        go to state 71
+    where_args   go to state 72
+    lowest_expr  go to state 73
+    arith_expr   go to state 74
+    obj_names    go to state 75
+    arith_op     go to state 76
 
 
 state 60
 
-   51 arith_op: MOD .
+   33 compound_from_arg: from_arg LPAREN . arith_expr COMMA arith_expr RPAREN
 
-    $default  reduce using rule 51 (arith_op)
+    NUMBER  shift, and go to state 63
+    MUL     shift, and go to state 64
+    DIV     shift, and go to state 65
+    MOD     shift, and go to state 66
+    PLUS    shift, and go to state 67
+    MINUS   shift, and go to state 68
+    ID      shift, and go to state 8
+
+    names       go to state 71
+    arith_expr  go to state 77
+    obj_names   go to state 75
+    arith_op    go to state 76
 
 
 state 61
 
-   47 arith_op: PLUS .
+   34 compound_from_arg: from_arg MATES . LPAREN arith_expr COMMA arith_expr RPAREN
 
-    $default  reduce using rule 47 (arith_op)
+    LPAREN  shift, and go to state 78
 
 
 state 62
 
-   48 arith_op: MINUS .
+   30 from_args: compound_from_arg COMMA . from_args
 
-    $default  reduce using rule 48 (arith_op)
+    ID  shift, and go to state 8
+
+    names              go to state 54
+    from_args          go to state 79
+    compound_from_arg  go to state 58
+    from_arg           go to state 56
 
 
 state 63
 
-   34 where_args: NOT . where_args
+   47 arith_expr: NUMBER .
 
-    NUMBER  shift, and go to state 57
-    MUL     shift, and go to state 58
-    DIV     shift, and go to state 59
-    MOD     shift, and go to state 60
-    PLUS    shift, and go to state 61
-    MINUS   shift, and go to state 62
-    NOT     shift, and go to state 63
-    LPAREN  shift, and go to state 64
-    ID      shift, and go to state 8
-
-    names        go to state 65
-    where_args   go to state 71
-    lowest_expr  go to state 67
-    arith_expr   go to state 68
-    arith_op     go to state 69
+    $default  reduce using rule 47 (arith_expr)
 
 
 state 64
 
-   35 where_args: LPAREN . where_args RPAREN
+   56 arith_op: MUL .
 
-    NUMBER  shift, and go to state 57
-    MUL     shift, and go to state 58
-    DIV     shift, and go to state 59
-    MOD     shift, and go to state 60
-    PLUS    shift, and go to state 61
-    MINUS   shift, and go to state 62
-    NOT     shift, and go to state 63
-    LPAREN  shift, and go to state 64
-    ID      shift, and go to state 8
-
-    names        go to state 65
-    where_args   go to state 72
-    lowest_expr  go to state 67
-    arith_expr   go to state 68
-    arith_op     go to state 69
+    $default  reduce using rule 56 (arith_op)
 
 
 state 65
 
-   40 arith_expr: names .
+   57 arith_op: DIV .
 
-    $default  reduce using rule 40 (arith_expr)
+    $default  reduce using rule 57 (arith_op)
 
 
 state 66
 
-   21 select_statement: SELECT select_args FROM from_arg WHERE where_args .
-   31 where_args: where_args . COMMA where_args
-   32           | where_args . AND where_args
-   33           | where_args . OR where_args
+   58 arith_op: MOD .
 
-    AND    shift, and go to state 73
-    OR     shift, and go to state 74
-    COMMA  shift, and go to state 75
-
-    $default  reduce using rule 21 (select_statement)
+    $default  reduce using rule 58 (arith_op)
 
 
 state 67
 
-   36 where_args: lowest_expr .
+   54 arith_op: PLUS .
 
-    $default  reduce using rule 36 (where_args)
+    $default  reduce using rule 54 (arith_op)
 
 
 state 68
 
-   37 lowest_expr: arith_expr . comparison_op rvalue
-   38 arith_expr: arith_expr . arith_op arith_expr
+   55 arith_op: MINUS .
 
-    EQUAL          shift, and go to state 76
-    GREATER        shift, and go to state 77
-    LESS           shift, and go to state 78
-    LESS_EQUAL     shift, and go to state 79
-    GREATER_EQUAL  shift, and go to state 80
-    MUL            shift, and go to state 58
-    DIV            shift, and go to state 59
-    MOD            shift, and go to state 60
-    PLUS           shift, and go to state 61
-    MINUS          shift, and go to state 62
-
-    comparison_op  go to state 81
-    arith_op       go to state 82
+    $default  reduce using rule 55 (arith_op)
 
 
 state 69
 
-   39 arith_expr: arith_op . arith_expr
+   39 where_args: NOT . where_args
 
-    NUMBER  shift, and go to state 57
-    MUL     shift, and go to state 58
-    DIV     shift, and go to state 59
-    MOD     shift, and go to state 60
-    PLUS    shift, and go to state 61
-    MINUS   shift, and go to state 62
+    NUMBER  shift, and go to state 63
+    MUL     shift, and go to state 64
+    DIV     shift, and go to state 65
+    MOD     shift, and go to state 66
+    PLUS    shift, and go to state 67
+    MINUS   shift, and go to state 68
+    NOT     shift, and go to state 69
+    LPAREN  shift, and go to state 70
     ID      shift, and go to state 8
 
-    names       go to state 65
-    arith_expr  go to state 83
-    arith_op    go to state 69
+    names        go to state 71
+    where_args   go to state 80
+    lowest_expr  go to state 73
+    arith_expr   go to state 74
+    obj_names    go to state 75
+    arith_op     go to state 76
 
 
 state 70
 
-   28 from_args: from_arg COMMA from_args .
+   40 where_args: LPAREN . where_args RPAREN
 
-    $default  reduce using rule 28 (from_args)
+    NUMBER  shift, and go to state 63
+    MUL     shift, and go to state 64
+    DIV     shift, and go to state 65
+    MOD     shift, and go to state 66
+    PLUS    shift, and go to state 67
+    MINUS   shift, and go to state 68
+    NOT     shift, and go to state 69
+    LPAREN  shift, and go to state 70
+    ID      shift, and go to state 8
+
+    names        go to state 71
+    where_args   go to state 81
+    lowest_expr  go to state 73
+    arith_expr   go to state 74
+    obj_names    go to state 75
+    arith_op     go to state 76
 
 
 state 71
 
-   31 where_args: where_args . COMMA where_args
-   32           | where_args . AND where_args
-   33           | where_args . OR where_args
-   34           | NOT where_args .
+   45 arith_expr: names .
+   48 obj_names: names . DOT names
 
-    COMMA  shift, and go to state 75
+    DOT  shift, and go to state 48
 
-    COMMA     [reduce using rule 34 (where_args)]
-    $default  reduce using rule 34 (where_args)
+    $default  reduce using rule 45 (arith_expr)
 
 
 state 72
 
-   31 where_args: where_args . COMMA where_args
-   32           | where_args . AND where_args
-   33           | where_args . OR where_args
-   35           | LPAREN where_args . RPAREN
+   21 select_statement: SELECT select_args FROM compound_from_arg WHERE where_args .
+   36 where_args: where_args . COMMA where_args
+   37           | where_args . AND where_args
+   38           | where_args . OR where_args
 
-    AND     shift, and go to state 73
-    OR      shift, and go to state 74
-    RPAREN  shift, and go to state 84
-    COMMA   shift, and go to state 75
+    AND    shift, and go to state 82
+    OR     shift, and go to state 83
+    COMMA  shift, and go to state 84
+
+    $default  reduce using rule 21 (select_statement)
 
 
 state 73
 
-   32 where_args: where_args AND . where_args
+   41 where_args: lowest_expr .
 
-    NUMBER  shift, and go to state 57
-    MUL     shift, and go to state 58
-    DIV     shift, and go to state 59
-    MOD     shift, and go to state 60
-    PLUS    shift, and go to state 61
-    MINUS   shift, and go to state 62
-    NOT     shift, and go to state 63
-    LPAREN  shift, and go to state 64
-    ID      shift, and go to state 8
-
-    names        go to state 65
-    where_args   go to state 85
-    lowest_expr  go to state 67
-    arith_expr   go to state 68
-    arith_op     go to state 69
+    $default  reduce using rule 41 (where_args)
 
 
 state 74
 
-   33 where_args: where_args OR . where_args
+   42 lowest_expr: arith_expr . comparison_op rvalue
+   43 arith_expr: arith_expr . arith_op arith_expr
 
-    NUMBER  shift, and go to state 57
-    MUL     shift, and go to state 58
-    DIV     shift, and go to state 59
-    MOD     shift, and go to state 60
-    PLUS    shift, and go to state 61
-    MINUS   shift, and go to state 62
-    NOT     shift, and go to state 63
-    LPAREN  shift, and go to state 64
-    ID      shift, and go to state 8
+    EQUAL          shift, and go to state 85
+    GREATER        shift, and go to state 86
+    LESS           shift, and go to state 87
+    LESS_EQUAL     shift, and go to state 88
+    GREATER_EQUAL  shift, and go to state 89
+    MUL            shift, and go to state 64
+    DIV            shift, and go to state 65
+    MOD            shift, and go to state 66
+    PLUS           shift, and go to state 67
+    MINUS          shift, and go to state 68
 
-    names        go to state 65
-    where_args   go to state 86
-    lowest_expr  go to state 67
-    arith_expr   go to state 68
-    arith_op     go to state 69
+    comparison_op  go to state 90
+    arith_op       go to state 91
 
 
 state 75
 
-   31 where_args: where_args COMMA . where_args
+   46 arith_expr: obj_names .
 
-    NUMBER  shift, and go to state 57
-    MUL     shift, and go to state 58
-    DIV     shift, and go to state 59
-    MOD     shift, and go to state 60
-    PLUS    shift, and go to state 61
-    MINUS   shift, and go to state 62
-    NOT     shift, and go to state 63
-    LPAREN  shift, and go to state 64
-    ID      shift, and go to state 8
-
-    names        go to state 65
-    where_args   go to state 87
-    lowest_expr  go to state 67
-    arith_expr   go to state 68
-    arith_op     go to state 69
+    $default  reduce using rule 46 (arith_expr)
 
 
 state 76
 
-   42 comparison_op: EQUAL .
+   44 arith_expr: arith_op . arith_expr
 
-    $default  reduce using rule 42 (comparison_op)
+    NUMBER  shift, and go to state 63
+    MUL     shift, and go to state 64
+    DIV     shift, and go to state 65
+    MOD     shift, and go to state 66
+    PLUS    shift, and go to state 67
+    MINUS   shift, and go to state 68
+    ID      shift, and go to state 8
+
+    names       go to state 71
+    arith_expr  go to state 92
+    obj_names   go to state 75
+    arith_op    go to state 76
 
 
 state 77
 
-   45 comparison_op: GREATER .
+   33 compound_from_arg: from_arg LPAREN arith_expr . COMMA arith_expr RPAREN
+   43 arith_expr: arith_expr . arith_op arith_expr
 
-    $default  reduce using rule 45 (comparison_op)
+    MUL    shift, and go to state 64
+    DIV    shift, and go to state 65
+    MOD    shift, and go to state 66
+    PLUS   shift, and go to state 67
+    MINUS  shift, and go to state 68
+    COMMA  shift, and go to state 93
+
+    arith_op  go to state 91
 
 
 state 78
 
-   46 comparison_op: LESS .
+   34 compound_from_arg: from_arg MATES LPAREN . arith_expr COMMA arith_expr RPAREN
 
-    $default  reduce using rule 46 (comparison_op)
+    NUMBER  shift, and go to state 63
+    MUL     shift, and go to state 64
+    DIV     shift, and go to state 65
+    MOD     shift, and go to state 66
+    PLUS    shift, and go to state 67
+    MINUS   shift, and go to state 68
+    ID      shift, and go to state 8
+
+    names       go to state 71
+    arith_expr  go to state 94
+    obj_names   go to state 75
+    arith_op    go to state 76
 
 
 state 79
 
-   44 comparison_op: LESS_EQUAL .
+   30 from_args: compound_from_arg COMMA from_args .
 
-    $default  reduce using rule 44 (comparison_op)
+    $default  reduce using rule 30 (from_args)
 
 
 state 80
 
-   43 comparison_op: GREATER_EQUAL .
+   36 where_args: where_args . COMMA where_args
+   37           | where_args . AND where_args
+   38           | where_args . OR where_args
+   39           | NOT where_args .
 
-    $default  reduce using rule 43 (comparison_op)
+    COMMA  shift, and go to state 84
+
+    COMMA     [reduce using rule 39 (where_args)]
+    $default  reduce using rule 39 (where_args)
 
 
 state 81
 
-   37 lowest_expr: arith_expr comparison_op . rvalue
+   36 where_args: where_args . COMMA where_args
+   37           | where_args . AND where_args
+   38           | where_args . OR where_args
+   40           | LPAREN where_args . RPAREN
 
-    CONST_CHAR    shift, and go to state 88
-    CONST_STRING  shift, and go to state 89
-    NUMBER        shift, and go to state 90
-
-    rvalue  go to state 91
+    AND     shift, and go to state 82
+    OR      shift, and go to state 83
+    RPAREN  shift, and go to state 95
+    COMMA   shift, and go to state 84
 
 
 state 82
 
-   38 arith_expr: arith_expr arith_op . arith_expr
+   37 where_args: where_args AND . where_args
 
-    NUMBER  shift, and go to state 57
-    MUL     shift, and go to state 58
-    DIV     shift, and go to state 59
-    MOD     shift, and go to state 60
-    PLUS    shift, and go to state 61
-    MINUS   shift, and go to state 62
+    NUMBER  shift, and go to state 63
+    MUL     shift, and go to state 64
+    DIV     shift, and go to state 65
+    MOD     shift, and go to state 66
+    PLUS    shift, and go to state 67
+    MINUS   shift, and go to state 68
+    NOT     shift, and go to state 69
+    LPAREN  shift, and go to state 70
     ID      shift, and go to state 8
 
-    names       go to state 65
-    arith_expr  go to state 92
-    arith_op    go to state 69
+    names        go to state 71
+    where_args   go to state 96
+    lowest_expr  go to state 73
+    arith_expr   go to state 74
+    obj_names    go to state 75
+    arith_op     go to state 76
 
 
 state 83
 
-   38 arith_expr: arith_expr . arith_op arith_expr
-   39           | arith_op arith_expr .
+   38 where_args: where_args OR . where_args
 
-    MUL    shift, and go to state 58
-    DIV    shift, and go to state 59
-    MOD    shift, and go to state 60
-    PLUS   shift, and go to state 61
-    MINUS  shift, and go to state 62
+    NUMBER  shift, and go to state 63
+    MUL     shift, and go to state 64
+    DIV     shift, and go to state 65
+    MOD     shift, and go to state 66
+    PLUS    shift, and go to state 67
+    MINUS   shift, and go to state 68
+    NOT     shift, and go to state 69
+    LPAREN  shift, and go to state 70
+    ID      shift, and go to state 8
 
-    MUL       [reduce using rule 39 (arith_expr)]
-    DIV       [reduce using rule 39 (arith_expr)]
-    MOD       [reduce using rule 39 (arith_expr)]
-    PLUS      [reduce using rule 39 (arith_expr)]
-    MINUS     [reduce using rule 39 (arith_expr)]
-    $default  reduce using rule 39 (arith_expr)
-
-    arith_op  go to state 82
+    names        go to state 71
+    where_args   go to state 97
+    lowest_expr  go to state 73
+    arith_expr   go to state 74
+    obj_names    go to state 75
+    arith_op     go to state 76
 
 
 state 84
 
-   35 where_args: LPAREN where_args RPAREN .
+   36 where_args: where_args COMMA . where_args
 
-    $default  reduce using rule 35 (where_args)
+    NUMBER  shift, and go to state 63
+    MUL     shift, and go to state 64
+    DIV     shift, and go to state 65
+    MOD     shift, and go to state 66
+    PLUS    shift, and go to state 67
+    MINUS   shift, and go to state 68
+    NOT     shift, and go to state 69
+    LPAREN  shift, and go to state 70
+    ID      shift, and go to state 8
+
+    names        go to state 71
+    where_args   go to state 98
+    lowest_expr  go to state 73
+    arith_expr   go to state 74
+    obj_names    go to state 75
+    arith_op     go to state 76
 
 
 state 85
 
-   31 where_args: where_args . COMMA where_args
-   32           | where_args . AND where_args
-   32           | where_args AND where_args .
-   33           | where_args . OR where_args
+   49 comparison_op: EQUAL .
 
-    COMMA  shift, and go to state 75
-
-    COMMA     [reduce using rule 32 (where_args)]
-    $default  reduce using rule 32 (where_args)
+    $default  reduce using rule 49 (comparison_op)
 
 
 state 86
 
-   31 where_args: where_args . COMMA where_args
-   32           | where_args . AND where_args
-   33           | where_args . OR where_args
-   33           | where_args OR where_args .
+   52 comparison_op: GREATER .
 
-    AND    shift, and go to state 73
-    COMMA  shift, and go to state 75
-
-    COMMA     [reduce using rule 33 (where_args)]
-    $default  reduce using rule 33 (where_args)
+    $default  reduce using rule 52 (comparison_op)
 
 
 state 87
 
-   31 where_args: where_args . COMMA where_args
-   31           | where_args COMMA where_args .
-   32           | where_args . AND where_args
-   33           | where_args . OR where_args
+   53 comparison_op: LESS .
 
-    AND    shift, and go to state 73
-    OR     shift, and go to state 74
-    COMMA  shift, and go to state 75
-
-    AND       [reduce using rule 31 (where_args)]
-    OR        [reduce using rule 31 (where_args)]
-    COMMA     [reduce using rule 31 (where_args)]
-    $default  reduce using rule 31 (where_args)
+    $default  reduce using rule 53 (comparison_op)
 
 
 state 88
 
-   52 rvalue: CONST_CHAR .
+   51 comparison_op: LESS_EQUAL .
 
-    $default  reduce using rule 52 (rvalue)
+    $default  reduce using rule 51 (comparison_op)
 
 
 state 89
 
-   53 rvalue: CONST_STRING .
+   50 comparison_op: GREATER_EQUAL .
 
-    $default  reduce using rule 53 (rvalue)
+    $default  reduce using rule 50 (comparison_op)
 
 
 state 90
 
-   54 rvalue: NUMBER .
+   42 lowest_expr: arith_expr comparison_op . rvalue
 
-    $default  reduce using rule 54 (rvalue)
+    CONST_CHAR    shift, and go to state 99
+    CONST_STRING  shift, and go to state 100
+    NUMBER        shift, and go to state 101
+
+    rvalue  go to state 102
 
 
 state 91
 
-   37 lowest_expr: arith_expr comparison_op rvalue .
+   43 arith_expr: arith_expr arith_op . arith_expr
 
-    $default  reduce using rule 37 (lowest_expr)
+    NUMBER  shift, and go to state 63
+    MUL     shift, and go to state 64
+    DIV     shift, and go to state 65
+    MOD     shift, and go to state 66
+    PLUS    shift, and go to state 67
+    MINUS   shift, and go to state 68
+    ID      shift, and go to state 8
+
+    names       go to state 71
+    arith_expr  go to state 103
+    obj_names   go to state 75
+    arith_op    go to state 76
 
 
 state 92
 
-   38 arith_expr: arith_expr . arith_op arith_expr
-   38           | arith_expr arith_op arith_expr .
+   43 arith_expr: arith_expr . arith_op arith_expr
+   44           | arith_op arith_expr .
 
-    MUL    shift, and go to state 58
-    DIV    shift, and go to state 59
-    MOD    shift, and go to state 60
-    PLUS   shift, and go to state 61
-    MINUS  shift, and go to state 62
+    MUL    shift, and go to state 64
+    DIV    shift, and go to state 65
+    MOD    shift, and go to state 66
+    PLUS   shift, and go to state 67
+    MINUS  shift, and go to state 68
 
-    MUL       [reduce using rule 38 (arith_expr)]
-    DIV       [reduce using rule 38 (arith_expr)]
-    MOD       [reduce using rule 38 (arith_expr)]
-    PLUS      [reduce using rule 38 (arith_expr)]
-    MINUS     [reduce using rule 38 (arith_expr)]
-    $default  reduce using rule 38 (arith_expr)
+    MUL       [reduce using rule 44 (arith_expr)]
+    DIV       [reduce using rule 44 (arith_expr)]
+    MOD       [reduce using rule 44 (arith_expr)]
+    PLUS      [reduce using rule 44 (arith_expr)]
+    MINUS     [reduce using rule 44 (arith_expr)]
+    $default  reduce using rule 44 (arith_expr)
 
-    arith_op  go to state 82
+    arith_op  go to state 91
+
+
+state 93
+
+   33 compound_from_arg: from_arg LPAREN arith_expr COMMA . arith_expr RPAREN
+
+    NUMBER  shift, and go to state 63
+    MUL     shift, and go to state 64
+    DIV     shift, and go to state 65
+    MOD     shift, and go to state 66
+    PLUS    shift, and go to state 67
+    MINUS   shift, and go to state 68
+    ID      shift, and go to state 8
+
+    names       go to state 71
+    arith_expr  go to state 104
+    obj_names   go to state 75
+    arith_op    go to state 76
+
+
+state 94
+
+   34 compound_from_arg: from_arg MATES LPAREN arith_expr . COMMA arith_expr RPAREN
+   43 arith_expr: arith_expr . arith_op arith_expr
+
+    MUL    shift, and go to state 64
+    DIV    shift, and go to state 65
+    MOD    shift, and go to state 66
+    PLUS   shift, and go to state 67
+    MINUS  shift, and go to state 68
+    COMMA  shift, and go to state 105
+
+    arith_op  go to state 91
+
+
+state 95
+
+   40 where_args: LPAREN where_args RPAREN .
+
+    $default  reduce using rule 40 (where_args)
+
+
+state 96
+
+   36 where_args: where_args . COMMA where_args
+   37           | where_args . AND where_args
+   37           | where_args AND where_args .
+   38           | where_args . OR where_args
+
+    COMMA  shift, and go to state 84
+
+    COMMA     [reduce using rule 37 (where_args)]
+    $default  reduce using rule 37 (where_args)
+
+
+state 97
+
+   36 where_args: where_args . COMMA where_args
+   37           | where_args . AND where_args
+   38           | where_args . OR where_args
+   38           | where_args OR where_args .
+
+    AND    shift, and go to state 82
+    COMMA  shift, and go to state 84
+
+    COMMA     [reduce using rule 38 (where_args)]
+    $default  reduce using rule 38 (where_args)
+
+
+state 98
+
+   36 where_args: where_args . COMMA where_args
+   36           | where_args COMMA where_args .
+   37           | where_args . AND where_args
+   38           | where_args . OR where_args
+
+    AND    shift, and go to state 82
+    OR     shift, and go to state 83
+    COMMA  shift, and go to state 84
+
+    AND       [reduce using rule 36 (where_args)]
+    OR        [reduce using rule 36 (where_args)]
+    COMMA     [reduce using rule 36 (where_args)]
+    $default  reduce using rule 36 (where_args)
+
+
+state 99
+
+   59 rvalue: CONST_CHAR .
+
+    $default  reduce using rule 59 (rvalue)
+
+
+state 100
+
+   60 rvalue: CONST_STRING .
+
+    $default  reduce using rule 60 (rvalue)
+
+
+state 101
+
+   61 rvalue: NUMBER .
+
+    $default  reduce using rule 61 (rvalue)
+
+
+state 102
+
+   42 lowest_expr: arith_expr comparison_op rvalue .
+
+    $default  reduce using rule 42 (lowest_expr)
+
+
+state 103
+
+   43 arith_expr: arith_expr . arith_op arith_expr
+   43           | arith_expr arith_op arith_expr .
+
+    MUL    shift, and go to state 64
+    DIV    shift, and go to state 65
+    MOD    shift, and go to state 66
+    PLUS   shift, and go to state 67
+    MINUS  shift, and go to state 68
+
+    MUL       [reduce using rule 43 (arith_expr)]
+    DIV       [reduce using rule 43 (arith_expr)]
+    MOD       [reduce using rule 43 (arith_expr)]
+    PLUS      [reduce using rule 43 (arith_expr)]
+    MINUS     [reduce using rule 43 (arith_expr)]
+    $default  reduce using rule 43 (arith_expr)
+
+    arith_op  go to state 91
+
+
+state 104
+
+   33 compound_from_arg: from_arg LPAREN arith_expr COMMA arith_expr . RPAREN
+   43 arith_expr: arith_expr . arith_op arith_expr
+
+    MUL     shift, and go to state 64
+    DIV     shift, and go to state 65
+    MOD     shift, and go to state 66
+    PLUS    shift, and go to state 67
+    MINUS   shift, and go to state 68
+    RPAREN  shift, and go to state 106
+
+    arith_op  go to state 91
+
+
+state 105
+
+   34 compound_from_arg: from_arg MATES LPAREN arith_expr COMMA . arith_expr RPAREN
+
+    NUMBER  shift, and go to state 63
+    MUL     shift, and go to state 64
+    DIV     shift, and go to state 65
+    MOD     shift, and go to state 66
+    PLUS    shift, and go to state 67
+    MINUS   shift, and go to state 68
+    ID      shift, and go to state 8
+
+    names       go to state 71
+    arith_expr  go to state 107
+    obj_names   go to state 75
+    arith_op    go to state 76
+
+
+state 106
+
+   33 compound_from_arg: from_arg LPAREN arith_expr COMMA arith_expr RPAREN .
+
+    $default  reduce using rule 33 (compound_from_arg)
+
+
+state 107
+
+   34 compound_from_arg: from_arg MATES LPAREN arith_expr COMMA arith_expr . RPAREN
+   43 arith_expr: arith_expr . arith_op arith_expr
+
+    MUL     shift, and go to state 64
+    DIV     shift, and go to state 65
+    MOD     shift, and go to state 66
+    PLUS    shift, and go to state 67
+    MINUS   shift, and go to state 68
+    RPAREN  shift, and go to state 108
+
+    arith_op  go to state 91
+
+
+state 108
+
+   34 compound_from_arg: from_arg MATES LPAREN arith_expr COMMA arith_expr RPAREN .
+
+    $default  reduce using rule 34 (compound_from_arg)

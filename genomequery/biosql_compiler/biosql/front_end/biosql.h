@@ -76,12 +76,13 @@
      MAPJOIN = 292,
      IMPORT = 293,
      USE = 294,
-     TK_NEGATIVE_SIGN = 295,
-     TK_POSITIVE_SIGN = 296,
-     TK_RIGHT_SQUARE_BRACKET = 297,
-     TK_LEFT_SQUARE_BRACKET = 298,
-     TK_RIGHT_BRACKET = 299,
-     TK_LEFT_BRACKET = 300
+     MATES = 295,
+     TK_NEGATIVE_SIGN = 296,
+     TK_POSITIVE_SIGN = 297,
+     TK_RIGHT_SQUARE_BRACKET = 298,
+     TK_LEFT_SQUARE_BRACKET = 299,
+     TK_RIGHT_BRACKET = 300,
+     TK_LEFT_BRACKET = 301
    };
 #endif
 
@@ -101,7 +102,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 105 "biosql.h"
+#line 106 "biosql.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
