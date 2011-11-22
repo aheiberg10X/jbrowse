@@ -25,3 +25,10 @@ Compilation completed without errors
 24. loaded_param int begin 
 25. loaded_param int end 
 26. end_load_table 
+27. load_table genes2 
+28. loaded_param char* annot_id 
+29. loaded_param char* chr 
+30. loaded_param char ornt 
+31. loaded_param int begin 
+32. loaded_param int end 
+33. end_load_table 
