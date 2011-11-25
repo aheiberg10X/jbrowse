@@ -532,6 +532,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 var selected = tree.clickedItem;
                 var query_name = selected.name; 
                 var donor_name = selected.donor;
+                var host_chrom = brwsr.refSeq.name;
+                var chromnum = host_chrom.substring(3);
                 var url = "data/" + 
                            sprintf( sprintf( globals.TRACK_TEMPLATE, 
                                              globals.DONOR_PREFIX, 
@@ -540,7 +542,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                                     donor_name, 
                                     query_name,
                                     brwsr.refSeq.name ) + 
-                           "/" + query_name + ".bam";
+                           "/" + query_name + "_" + chromnum + ".bam";
                 window.location = url;
             }
         }));
@@ -552,6 +554,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             onClick: function(e) {
                 var item = tree.clickedItem;
                 var host_chrom = brwsr.refSeq.name;
+                var chromnum = host_chrom.substring(3);
                 var query_name = item.name;
                 var donor_name = item.donor;
                 var url = "data/" + 
@@ -562,7 +565,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                                     donor_name, 
                                     query_name,
                                     brwsr.refSeq.name ) +  
-                           "/" + query_name + ".gq";
+                           "/" + query_name + "_" + chromnum + ".gq";
                  dojo.xhrGet({
                     url: url,
                     handleAs: "text",
