@@ -476,7 +476,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     var explorer_cpane = dijit.layout.ContentPane(
             {id : "explorer_cpane",
              region : "top",
-             style : "background-color: #efefef; border-style: none solid none none; border-color: #929292;"} //overflow: hidden; background-color: #efefef; height: 70%;"}
+             style : "height: 95%; background-color: #efefef; border-style: none solid none none; border-color: #929292;"} //overflow: hidden; background-color: #efefef; height: 70%;"}
         ).placeAt(explorer_bc.domNode );
 
 
@@ -742,7 +742,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     var status_cpane = dijit.layout.ContentPane(
             {id : "status_cpane",
              region : "bottom",
-             style : "background-color: #efefef; border-style: none solid none none; border-color: #929292;"}
+             style : "background-color: #efefef; margin-bottom: 20px; border-style: none solid none none; border-color: #929292;"}
         ).placeAt(explorer_bc.domNode );
 
 
