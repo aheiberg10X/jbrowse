@@ -41,7 +41,7 @@ if( $profiling ){
 }
 
 my $donor = $ARGV[0];
-my $chrom = $ARGV[1];
+my $chromnum = $ARGV[1];
 my $query_name = $ARGV[2];
 my $linking = $ARGV[3];
 
@@ -51,9 +51,9 @@ my @messages = ();
 
 my $compress = 0;
 
-($trackkey, $message) = createTrack( $chrom, $donor, $query_name, $linking, $compress );
-push( @messages, "$chrom : $message" );
-print $OUTPUT "affter chreatTrack for $chrom\n";
+($trackkey, $message) = createTrack( $chromnum, $donor, $query_name, $linking, $compress );
+push( @messages, "chr$chromnum : $message" );
+print $OUTPUT "affter chreatTrack for chr$chromnum\n";
 #}
 
 my $ext = ($compress ? "jsonz" : "json");
@@ -82,8 +82,9 @@ close ERROR;
 
 sub createTrack {
     
-    my ($host_chrom, $donor, $query_name, $bam_linking, $compress) = @_;
-    
+    my ($chromnum, $donor, $query_name, $bam_linking, $compress) = @_;
+
+    my $host_chrom = "chr$chromnum";    
     my $template = $TRACK_TEMPLATE; 
     print $OUTPUT "template: $template\n";
     my $targetdir = sprintf( "$DATA_DIR/$template", $donor, $query_name, $host_chrom );
@@ -96,10 +97,10 @@ sub createTrack {
     $trackLabel = $query_name;
     #my $bamFile = "$targetdir/$query_name.bam";
 
-    my $interval_file = "$targetdir/$query_name.intervals";
+    my $interval_file = "$targetdir/$query_name\_$chromnum.intervals";
     if( ! -e $interval_file ){ return ($key, "Nothing to visualize"); }
 
-    my $bam_histogram_filename = "$targetdir/$query_name.hist";
+    my $bam_histogram_filename = "$targetdir/$query_name\_$chromnum.hist";
 
     my $pregen_histograms;
     if( defined $bam_histogram_filename ){
@@ -121,7 +122,7 @@ sub createTrack {
     my $defaultClass = "transcript";
     my $defaultSubfeatureClasses = {"forward","forward-strand",
                                     "reverse","reverse-strand",
-                                    "hanging","feature3",
+                                    "hanging","hanging",
                                     "SNP","SNP"};
 
     $cssClass = $defaultClass;
@@ -276,7 +277,13 @@ sub createTrack {
 }
 
 sub convertStrand {
-    return shift eq 'F' ? (1,"forward") : (-1,"reverse");
+    my ($leftpos,$strand) = @_;
+    if( $leftpos == -1 ){
+        return (0,"unmapped");
+    }
+    else { 
+        return $strand eq 'F' ? (1,"forward") : (-1,"reverse");
+    }
 }
 
 sub makeSingleFeature {
@@ -290,10 +297,22 @@ sub makeSingleFeature {
 sub makePairedFeature {
     my $intervals = shift;
     my @s = split( '\t', $intervals );
-    my ($lstrand,$lstyle) = convertStrand($s[2]);
-    my ($rstrand,$rstyle) = convertStrand($s[5]);
     my ($ll,$rr,$lr,$rl) = (int($s[0]), int($s[4]), int($s[1]), int($s[3]));
-    return [$ll,$rr,0,[[$ll,$lr,$lstrand,$lstyle],[$rl,$rr,$rstrand,$rstyle]]];
+    my ($lstrand,$lstyle) = convertStrand($ll,$s[2]);
+    my ($rstrand,$rstyle) = convertStrand($rl,$s[5]);
+
+    #left read unmapped, right all alone
+    if( $lstrand == 0 ){
+        [$rl,$rr,0,[[$rl,$rr,0,"hanging"]]];
+    }
+    #right read unmapped, left all alone
+    elsif( $rstrand == 0 ){
+        [$ll,$lr,0,[[$ll,$lr,0,"hanging"]]];
+    }
+    #both present
+    else{
+        return [$ll,$rr,0,[[$ll,$lr,$lstrand,$lstyle],[$rl,$rr,$rstrand,$rstyle]]];
+    }
 }
 
 

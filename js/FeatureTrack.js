@@ -445,6 +445,9 @@ FeatureTrack.prototype.renderFeature = function(feature, uniqueId, block, scale,
     //and arrowheads if applicable
     var featureEnd = feature[fields["end"]];
     var featureStart = feature[fields["start"]];
+    if( featureStart == 133000293 ){
+        a = 5;
+    }
     if (this.arrowheadClass) {
         switch (feature[fields["strand"]]) {
         case 1:
@@ -617,6 +620,9 @@ FeatureTrack.prototype.renderSubfeature = function(feature, featDiv, subfeature,
 
     if (this.subfeatureClasses) {
         var className = this.subfeatureClasses[subfeature[this.subFields["type"]]];
+        //if( className == "hanging" ){
+        //alert("hoorary");
+        //}
         switch (subfeature[this.subFields["strand"]]) {
         case 1:
             subDiv.className = "plus-" + className; break;

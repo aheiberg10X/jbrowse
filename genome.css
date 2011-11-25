@@ -657,6 +657,26 @@ div.transcript-hist {
     min-width: 2px;
     cursor: pointer;
 }
+.hanging,
+.plus-hanging,
+.minus-hanging {
+    position: absolute;
+    height: 4px;
+    margin-top: -2px;
+    /*background-image: url('img/readright.png');
+    background-repeat: repeat-x;*/
+    background-color: #FF0000;
+/*  border-width: 2px 0px 3px 0px;
+    border-style: solid;
+    border-color: white;
+    background-color: #FF9185;
+    border-style: solid;
+    border-color: #00f;
+    border-width: 1px;*/
+    cursor: pointer;
+    z-index: 10;
+    min-width: 1px;
+}
 
 .forward-strand,
 .plus-forward-strand,

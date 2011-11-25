@@ -71,19 +71,19 @@ print "copying (change to moving!!) from %s to %s" % (source,dest)
 
 #copy bam
 copyIfExists( "%s/out.bam" % source, \
-              "%s/%s.bam" % (dest,query_name) )
+              "%s/%s_%d.bam" % (dest,chromnum,query_name) )
 
 #copy query
-copyIfExists( query_loc, "%s/%s.gq" % (dest, query_name) )
+copyIfExists( query_loc, "%s/%s_%d.gq" % (dest, chromnum, query_name) )
 
 #copy histogram
 histogram = "%s/out.hist" % source
 copyIfExists( histogram, \
-              "%s/%s.hist" % (dest, query_name) )
+              "%s/%s_%d.hist" % (dest, chromnum,  query_name) )
 
 #copy intervals
 copyIfExists( "%s/out.bam.short" % source, \
-              "%s/%s.intervals" % (dest,query_name) )
+              "%s/%s_%d.intervals" % (dest,chromnum,query_name) )
 #
 t3 = time.time()
 #print "done moving, took: %f s" % (t3-t2)
@@ -91,7 +91,7 @@ t3 = time.time()
 print "starting bam2ncl"
 pop = Popen(["./bam_to_json_paired_cgi.pl", \
              donor, \
-             chrom, \
+             chromnum, \
              query_name, \
              linking], \
             stdin=PIPE, stdout=PIPE, stderr=PIPE)
