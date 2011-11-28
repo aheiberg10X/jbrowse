@@ -26,6 +26,7 @@ def validate( some_stuff ) :
     return (True,"good to go")
 
 fileitem = fields["interval_table"]
+donor_name = fields.getvalue("donor_name")
 if fileitem.filename :
     handle = fileitem.file
     stuff = handle.read()
@@ -34,14 +35,23 @@ if fileitem.filename :
         json_data = "{'status':'ERROR', 'message':'%s'}" % message
     else :
         fn = os.path.basename(fileitem.filename)
-        path = "%s/genomequery/biosql_compiler/biosql" % GlobalConfig.ROOT_DIR
-        newfilename = "%s/dst/%s" % (path,fn)
+        path = "%s/data/tracks/%s%s/interval_tables" % \
+                    (GlobalConfig.ROOT_DIR, \
+                     GlobalConfig.DONOR_PREFIX, \
+                     donor_name )
+        if not os.path.exists( path ) :
+            os.mkdir( path )
+
+        newfilename = "%s/%s" % (path,fn)
         open(newfilename, 'w').write( stuff )
         #update tables.txt, rebuild parsed tables
 
+        path = "%s/genomequery/biosql_compiler/biosql" % GlobalConfig.ROOT_DIR
         ftables = "%s/tables.txt" % path
         ftables = open( ftables, 'a' )
         (name,ext) = os.path.splitext(fn)
+        #TODO: prepend name with donor
+        name = "%s_%s" % (donor_name,name)
         schema = "table %s (string annot_id, string chr, char ornt, integer begin, integer end);\n" % name
         ftables.write( schema )
         ftables.close()
