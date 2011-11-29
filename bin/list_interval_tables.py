@@ -31,8 +31,10 @@ if os.path.exists( path ) :
         print listing
         interval_tables.append( listing )
     message = json.dumps(interval_tables)
+    status = '"OK"'
 else :
-    message = "No tables loaded"
+    status = '"EMPTY"'
+    message = '"No tables loaded"'
 
 print message
-utils.printToServer( '{"status":"OK", "message": %s }' % message )
+utils.printToServer( '{"status": %s, "message": %s }' % (status,message) )

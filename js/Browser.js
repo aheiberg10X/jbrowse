@@ -309,7 +309,15 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                      handleAs: "json",
                      form: dojo.byId("upload_form"),
                      load: function(data,ioArgs) {
-                         alert(data['message']);
+                         if( data['status'] == 'OK' ){
+                             alert("Table: '" 
+                                   + data['message'] 
+                                   + "' uploaded" );
+                             table_dialog.hide();
+                         }
+                         else{
+                             alert( data['message'] );
+                         }
                      },
                      error: function(response, ioArgs){
                          alert(response);
@@ -423,7 +431,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                   visibility: 'visible',
                   display: 'block'
             });
-            progress_bar.update({'indeterminate': true, 'label': 'Working on chr1...'});
+            progress_bar.update({'indeterminate': true, 
+                                 'label': 'Working on chr1...'});
             queryChromosomes( donor, chroms, trackkey, 1, messages );
         }
     };
@@ -604,33 +613,44 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     pMenu.addChild( query_menuitem );
 
     var table_menuitem = new dijit.MenuItem({
-            label: "Upload Interval Table",
-            prefix: "donor_",
-            hidden: false,
-            onClick: function(e) {
-                args = {"donor_name" : tree.selectedItem.name};
-                url = "bin/list_interval_tables.py?"+dojo.objectToQuery(args);
-                dojo.xhrGet({
-                    url: url,
-                    handleAs: "json",
-                    load: function(data,args){
-                        interval_table_p.innerHTML = "Uploaded Tables: <br />";
-                        if( data["status"] == 'OK' ){
-                            for ( i in data["message"] ){
-                                interval_table_p.innerHTML += data["message"][i] + "<br />";
-                            }
-                        }
-                        else{
-                            alert( data["message"] );
-                        }
-                    },
-                    error: function(data,args){
-                       alert("trouble fetching the upload tables");
+        label: "Upload Interval Table",
+        prefix: "donor_",
+        hidden: false,
+        onClick: function(e) {
+            args = {"donor_name" : tree.selectedItem.name};
+            url = "bin/list_interval_tables.py?"+dojo.objectToQuery(args);
+            dojo.xhrGet({
+                url: url,
+                handleAs: "json",
+                load: function(data,args){
+                    interval_table_p.innerHTML = "Uploaded Tables: <br />";
+                    interval_table_p.innerHTML += "<ul>";
+                    if( data['status'] == "EMPTY" ){
+                        interval_table_p.innerHTML += 
+                            "<li>" 
+                            + data["message"]
+                            + "</li>";
                     }
-                });
-                table_dialog.show();   
-            }
-        });
+                    else if( data["status"] == 'OK' ){
+                        for ( i in data["message"] ){
+                            interval_table_p.innerHTML += 
+                                "<li>" 
+                                + data["message"][i] 
+                                + "</li>";
+                        }
+                    }
+                    else{
+                        alert( data["message"] );
+                    }
+                    interval_table_p.innerHTML += "</ul>";
+                },
+                error: function(data,args){
+                   alert("trouble fetching the upload tables");
+                }
+            });
+            table_dialog.show();   
+        }
+    });
     pMenu.addChild( table_menuitem );
 
     pMenu.startup();

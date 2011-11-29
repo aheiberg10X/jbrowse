@@ -43,28 +43,30 @@ if fileitem.filename :
             os.mkdir( path )
 
         newfilename = "%s/%s" % (path,fn)
-        open(newfilename, 'w').write( stuff )
-        #update tables.txt, rebuild parsed tables
-
-        path = "%s/genomequery/biosql_compiler/biosql" % GlobalConfig.ROOT_DIR
-        ftables = "%s/tables.txt" % path
-        ftables = open( ftables, 'a' )
         (name,ext) = os.path.splitext(fn)
-        #TODO: prepend name with donor
-        name = "%s_%s" % (donor_name,name)
-        schema = "table %s (string annot_id, string chr, char ornt, integer begin, integer end);\n" % name
-        ftables.write( schema )
-        ftables.close()
+        if not os.path.exists( newfilename ) :
+            open(newfilename, 'w').write( stuff )
+            #update tables.txt, rebuild parsed tables
 
-        pop = Popen(['bash','rebuild_parsed_tables.sh'], \
-                    stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        (out, err) = pop.communicate()
-        sys.stderr.write(err)
-        sys.stdout.write(out)
+            path = "%s/genomequery/biosql_compiler/biosql" % GlobalConfig.ROOT_DIR
+            ftables = "%s/tables.txt" % path
+            ftables = open( ftables, 'a' )
+            fullname = "%s_%s" % (donor_name,name)
+            schema = "table %s (string annot_id, string chr, char ornt, integer begin, integer end);\n" % fullname
+            ftables.write( schema )
+            ftables.close()
 
-        #check err here?
+            pop = Popen(['bash','rebuild_parsed_tables.sh'], \
+                        stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            (out, err) = pop.communicate()
+            sys.stderr.write(err)
+            sys.stdout.write(out)
 
-        json_data = "{'status':'OK','message':'Uploaded!'}"
+            #check err here?
+
+            json_data = "{'status':'OK','message':'%s'}" % name
+        else :
+            json_data = "{'status':'DUPLICATE','message':'A table named: \\'%s\\' already exists.'}" % name
 else :
     json_data = "{'status':'ERROR','message':'Uploading went awry'}"
 
