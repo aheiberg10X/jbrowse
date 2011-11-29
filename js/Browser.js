@@ -244,12 +244,12 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
    //                     Query Stuff
    ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    var dialog_div = document.createElement("div");
-    dialog_div.id = "dialog_div";
+    var query_dialog_div = document.createElement("div");
+    query_dialog_div.id = "query_dialog_div";
     
     var query_div = document.createElement("div");
     query_div.id = "query_div";
-    dialog_div.appendChild( query_div );
+    query_dialog_div.appendChild( query_div );
 
     var query_name_p = document.createElement("p");
     query_name_p.id = "query_name_p";
@@ -274,34 +274,19 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                          name: "query_box",
                          style: "height: 12em; width: 90%"}
                     ).placeAt( query_box_p );
+    
+    var table_dialog_div = document.createElement("div");
+    table_dialog_div.id = "table_dialog_div";
 
-         //var track_manager_form = document.createElement("form");
-        ////track_manager_form.id = "track_manager_form";
-        ////track_manager_form.method = "post";
-        ////track_manager_form.enctype = "multipart/form-data";
-        ////track_manager_form.innerHTML = '<h3>BAM</h3>' +
-        ////'<div id="bam_controls">' +
-        ////'<p id="bamfile">BAM File</p>' +
-        ////'<p id="bamhistogram">Histogram Data (opt)</p>' +
-        //'<input type="checkbox" name="display_linking" id="display_linking" value="1" checked=true/>Display Links<br/>' +
-        ////'<input type="hidden" name="refseqName" id="refseqName" value="'+brwsr.refSeq.name+'" />' +
-        ////
-        ////'</div>' +
-        //'<h3>Region</h3>'+
-        //'<div id="region_controls">' +
-        //'<p id="regionfile">File</p>' +
-        //'</div>';
-        
     var upload_div = document.createElement("div");
     upload_div.id = "upload_div";
-    dialog_div.appendChild( upload_div );
+    table_dialog_div.appendChild( upload_div );
 
     var interval_table_p = document.createElement("p");
     interval_table_p.id = "interval_table_p";
-    interval_table_p.innerHTML = "New Interval Table?<br />";
     interval_table_p.style.cssText = "border-top: solid 3px #cdcdcd; padding-top: 10px";
     upload_div.appendChild( interval_table_p );
-
+    
 
     var interval_table = document.createElement("input");
     interval_table.type = "file";
@@ -315,13 +300,24 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
              label: "Upload",
              style: "align-text: right;",
              onClick: function(){ 
+                 args = {"donor_name" : tree.selectedItem.name};
+                 url = "bin/upload_interval_table.py?" 
+                       + dojo.objectToQuery(args);
                  dojo.io.iframe.send({
-                     url: "bin/upload_interval_table.py",
+                     url: url,
                      method: "post",
                      handleAs: "json",
                      form: dojo.byId("upload_form"),
                      load: function(data,ioArgs) {
-                         alert(data['message']);
+                         if( data['status'] == 'OK' ){
+                             alert("Table: '" 
+                                   + data['message'] 
+                                   + "' uploaded" );
+                             table_dialog.hide();
+                         }
+                         else{
+                             alert( data['message'] );
+                         }
                      },
                      error: function(response, ioArgs){
                          alert(response);
@@ -329,10 +325,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 })
              }
          }).placeAt( upload_div );
-
-    var uploaded_div = document.createElement("div");
-    //create an xhrGet to upload.py readding the directory containing 
-    //region files, dipslay in a div
 
     var upload_form = new dijit.form.Form(
             {id: "upload_form",
@@ -424,7 +416,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             alert( "There is already a query with that name" );
         }
         else {
-            secondDlg.hide();
+            query_dialog.hide();
             chroms = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,'X','Y']; 
             var messages = [];
             if( brwsr.running_query ){
@@ -439,7 +431,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                   visibility: 'visible',
                   display: 'block'
             });
-            progress_bar.update({'indeterminate': true, 'label': 'Working on chr1...'});
+            progress_bar.update({'indeterminate': true, 
+                                 'label': 'Working on chr1...'});
             queryChromosomes( donor, chroms, trackkey, 1, messages );
         }
     };
@@ -532,6 +525,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 var selected = tree.clickedItem;
                 var query_name = selected.name; 
                 var donor_name = selected.donor;
+                var host_chrom = brwsr.refSeq.name;
+                var chromnum = host_chrom.substring(3);
                 var url = "data/" + 
                            sprintf( sprintf( globals.TRACK_TEMPLATE, 
                                              globals.DONOR_PREFIX, 
@@ -540,7 +535,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                                     donor_name, 
                                     query_name,
                                     brwsr.refSeq.name ) + 
-                           "/" + query_name + ".bam";
+                           "/" + query_name + "_" + chromnum + ".bam";
                 window.location = url;
             }
         }));
@@ -552,6 +547,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             onClick: function(e) {
                 var item = tree.clickedItem;
                 var host_chrom = brwsr.refSeq.name;
+                var chromnum = host_chrom.substring(3);
                 var query_name = item.name;
                 var donor_name = item.donor;
                 var url = "data/" + 
@@ -562,7 +558,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                                     donor_name, 
                                     query_name,
                                     brwsr.refSeq.name ) +  
-                           "/" + query_name + ".gq";
+                           "/" + query_name + "_" + chromnum + ".gq";
                  dojo.xhrGet({
                     url: url,
                     handleAs: "text",
@@ -586,11 +582,18 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 deleteQuery( item.donor, item.name ); 
         }}));
 
-    var secondDlg = new dijit.Dialog({
+    var query_dialog = new dijit.Dialog({
                     id : "query_dialog",
                     title: "New Query",
-                    style: "width: 500px; height: 500px",
-                    content: dialog_div
+                    style: "width: 500px; height: 200px",
+                    content: query_dialog_div
+                });
+
+    var table_dialog = new dijit.Dialog({
+                    id: "table_dialog",
+                    title: "Upload Interval Table",
+                    style: "width: 500px, height: 300px",
+                    content: table_dialog_div
                 });
       
     var pleasewait_menuitem = new dijit.MenuItem({
@@ -605,10 +608,50 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             prefix: "donor_",
             hidden: false,
             onClick: function(e) {
-                //TODO: clear query_name and query_box
-                secondDlg.show();      //deleteQuery( item.donor, item.name ); 
+                query_dialog.show();   
         }});
     pMenu.addChild( query_menuitem );
+
+    var table_menuitem = new dijit.MenuItem({
+        label: "Upload Interval Table",
+        prefix: "donor_",
+        hidden: false,
+        onClick: function(e) {
+            args = {"donor_name" : tree.selectedItem.name};
+            url = "bin/list_interval_tables.py?"+dojo.objectToQuery(args);
+            dojo.xhrGet({
+                url: url,
+                handleAs: "json",
+                load: function(data,args){
+                    interval_table_p.innerHTML = "Uploaded Tables: <br />";
+                    interval_table_p.innerHTML += "<ul>";
+                    if( data['status'] == "EMPTY" ){
+                        interval_table_p.innerHTML += 
+                            "<li>" 
+                            + data["message"]
+                            + "</li>";
+                    }
+                    else if( data["status"] == 'OK' ){
+                        for ( i in data["message"] ){
+                            interval_table_p.innerHTML += 
+                                "<li>" 
+                                + data["message"][i] 
+                                + "</li>";
+                        }
+                    }
+                    else{
+                        alert( data["message"] );
+                    }
+                    interval_table_p.innerHTML += "</ul>";
+                },
+                error: function(data,args){
+                   alert("trouble fetching the upload tables");
+                }
+            });
+            table_dialog.show();   
+        }
+    });
+    pMenu.addChild( table_menuitem );
 
     pMenu.startup();
 
@@ -646,8 +689,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                     //openOnLeftClick: true | is insufficient for whatever reason
                     //when dealing with dijit.Trees
                     pMenu._openMyself(item);
-                    var trackkey = store.getValue(this.selectedItem, 'key');
-                    var isVisualized = brwsr.view.isVisualized( trackkey ); //f.length == 1;
+                    //var trackkey = store.getValue(this.selectedItem, 'key');
+                    //var isVisualized = brwsr.view.isVisualized( trackkey ); //f.length == 1;
                 }
             })
         tree.placeAt( explorer_cpane.domNode ); 

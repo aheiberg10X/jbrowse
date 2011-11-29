@@ -32,3 +32,24 @@ Compilation completed without errors
 31. loaded_param int begin 
 32. loaded_param int end 
 33. end_load_table 
+34. load_table NA18507_genes 
+35. loaded_param char* annot_id 
+36. loaded_param char* chr 
+37. loaded_param char ornt 
+38. loaded_param int begin 
+39. loaded_param int end 
+40. end_load_table 
+41. load_table sangwoo_genes 
+42. loaded_param char* annot_id 
+43. loaded_param char* chr 
+44. loaded_param char ornt 
+45. loaded_param int begin 
+46. loaded_param int end 
+47. end_load_table 
+48. load_table sangwoo_genes2 
+49. loaded_param char* annot_id 
+50. loaded_param char* chr 
+51. loaded_param char ornt 
+52. loaded_param int begin 
+53. loaded_param int end 
+54. end_load_table 

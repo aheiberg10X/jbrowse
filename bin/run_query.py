@@ -20,11 +20,16 @@ def copyIfExists( source, dest ) :
     else :
         print "\n%s doesn't exist!\n" % source
 
+#TODO: take the use _____ statements and
+#fill in with the path to that file (is this what the compiler will need?)
+def expandImports( query ) :
+    return query
+
 utils.printToServer( 'Content-type: text/json\n\n' )
 #utils.printToServer( utils.textarea_opener )
 
 fields = cgi.FieldStorage()
-query = fields.getvalue("query_box")
+query = expandImports( fields.getvalue("query_box") )
 query_name = fields.getvalue("query_name")
 donor = fields.getvalue("query_donor")
 chromnum = fields.getvalue("query_chrom")
