@@ -66,7 +66,7 @@ my $new_entry_json =
       'type' => "FeatureTrack",
      };
 
-my $return_json = '{"status":"ok", "message":"';
+my $return_json = '{"status":"OK", "message":"';
 $return_json .= join( '\n', @messages ); 
 $return_json .= '", "trackData":';
 $return_json .=  JSON::to_json($new_entry_json, {pretty => 1});

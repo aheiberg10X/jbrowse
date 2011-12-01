@@ -44,7 +44,7 @@ if fileitem.filename :
         if not os.path.exists( path ) :
             os.mkdir( path )
 
-        newfilename = "%s/%s.it" % (path,name)
+        newfilename = "%s/%s_%s.it" % (path,donor_name,name)
         if not os.path.exists( newfilename ) :
             open(newfilename, 'w').write( stuff )
             #update tables.txt, rebuild parsed tables
