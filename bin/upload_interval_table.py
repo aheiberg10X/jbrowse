@@ -21,20 +21,22 @@ fields = cgi.FieldStorage()
 utils.printToServer( 'Content-type: text/html\n\n' )
 
 #TODO: ownership and permission for inteval files
-def validate( some_stuff ) :
+def validate( some_stuff, donor_name ) :
     #how to check permissions to 
     return (True,"good to go")
+
 
 fileitem = fields["interval_table"]
 donor_name = fields.getvalue("donor_name")
 if fileitem.filename :
     handle = fileitem.file
     stuff = handle.read()
-    (ok,message) = validate(stuff)
+    (ok,message) = validate(stuff, donor_name)
     if not ok :
         json_data = "{'status':'ERROR', 'message':'%s'}" % message
     else :
         fn = os.path.basename(fileitem.filename)
+        (name,ext) = os.path.splitext(fn)
         path = "%s/data/tracks/%s%s/interval_tables" % \
                     (GlobalConfig.ROOT_DIR, \
                      GlobalConfig.DONOR_PREFIX, \
@@ -42,8 +44,7 @@ if fileitem.filename :
         if not os.path.exists( path ) :
             os.mkdir( path )
 
-        newfilename = "%s/%s" % (path,fn)
-        (name,ext) = os.path.splitext(fn)
+        newfilename = "%s/%s.it" % (path,name)
         if not os.path.exists( newfilename ) :
             open(newfilename, 'w').write( stuff )
             #update tables.txt, rebuild parsed tables

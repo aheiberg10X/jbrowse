@@ -11,6 +11,9 @@ sys.path.append("../lib")
 import GlobalConfig
 import utils
 import time
+import os.path
+
+use = re.compile(r'\s*use\s+(.*)\s*;')
 
 debugging = False 
 
@@ -22,17 +25,44 @@ def copyIfExists( source, dest ) :
 
 #TODO: take the use _____ statements and
 #fill in with the path to that file (is this what the compiler will need?)
-def expandImports( query ) :
-    return query
+def expandUses( query, donor_name ) :
+    path = "%s/data/tracks/%s%s/interval_tables" % \
+                (GlobalConfig.ROOT_DIR, \
+                 GlobalConfig.DONOR_PREFIX, \
+                 donor_name )
+    statements = query.split('\n')
+    for i in range(len(statements)) :
+        #other use caveats?
+        if 'parsed_tables' not in statements[i].lower() and \
+            use.match(statements[i]) :
+            usepath = use.sub( r'%s/\1.it' % path, statements[i] )
+            if os.path.exists( usepath ) :
+                statements[i] = "use %s;" % usepath
+            else :
+                return (False, "No such table '%s'" % usepath)
+
+    return (True, "\n".join( statements ))
 
 utils.printToServer( 'Content-type: text/json\n\n' )
 #utils.printToServer( utils.textarea_opener )
 
+if debugging :
+    query = '''use parsed_tables;
+    import READS;
+    use genes;
+
+    H1=select count from READS mates(location,mate_loc) where location>=0 and mate_loc>=0 and ((mate_loc-location>1000 and mate_loc-location<2000000) or (location-mate_loc>1000 and location-mate_loc<2000000))
+
+    select * from H1 where countvec>5'''
+
+    print expandUses( query, 'NA18507' )[1]
+
+
 fields = cgi.FieldStorage()
-query = expandImports( fields.getvalue("query_box") )
 query_name = fields.getvalue("query_name")
 donor = fields.getvalue("query_donor")
 chromnum = fields.getvalue("query_chrom")
+(status, query) = expandUses( fields.getvalue("query_box"), donor )
 linking = fields.getvalue("query_linking")
 linking = "linking";
 root = GlobalConfig.ROOT_DIR
@@ -107,3 +137,4 @@ t4 = time.time()
 print "done with bam2ncl, took: %f s" % (t4-t3)
 print "returning %s" % out
 utils.printToServer( out )
+
