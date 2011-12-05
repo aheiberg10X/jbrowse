@@ -343,7 +343,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             form: dojo.byId("query_form"),
             handleAs: "json",
             load: function(data,ioargs){
-                if( data["status"] == "ok" ){
+                if( data["status"] == "OK" ){
                     var progress = progress_bar.get("progress");
                     progress_bar.update({'indeterminate': true, 'label': "Chroms [1.."+progress_chrom+"] complete"});
                     messages.push(data["message"]);
@@ -379,7 +379,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                           visibility: 'hidden',
                           display: 'none'
                     });
-                    dojo.attr(stop_button.domNode, 'hidden', true);
+                    //dojo.attr(stop_button.domNode, 'hidden', true);
+                    setRunningQuery( false );
                     //progress_bar.update({'progress': 0});
                 }
             },
@@ -558,7 +559,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                                     donor_name, 
                                     query_name,
                                     brwsr.refSeq.name ) +  
-                           "/" + query_name + "_" + chromnum + ".gq";
+                           "/../" + query_name + ".gq";
                  dojo.xhrGet({
                     url: url,
                     handleAs: "text",
@@ -585,14 +586,14 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     var query_dialog = new dijit.Dialog({
                     id : "query_dialog",
                     title: "New Query",
-                    style: "width: 500px; height: 200px",
+                    style: "width: 500px;",
                     content: query_dialog_div
                 });
 
     var table_dialog = new dijit.Dialog({
                     id: "table_dialog",
                     title: "Upload Interval Table",
-                    style: "width: 500px, height: 300px",
+                    style: "width: 500px;",
                     content: table_dialog_div
                 });
       

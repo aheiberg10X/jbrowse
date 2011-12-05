@@ -34,8 +34,13 @@ static inline void update_histogram_solo(Mult_hist *mhist, int pos, int chromo_l
 	int bin_range;
 	int i,j;
 	for (i=0;i<(mhist->ttl_histograms);i++){
-		bin_range=chromo_len/(mhist->ttl_bins[i]);
+		if(chromo_len%(mhist->ttl_bins[i])==0)
+			bin_range=chromo_len/(mhist->ttl_bins[i]);
+		else
+			bin_range=chromo_len/(mhist->ttl_bins[i])+1;
 		j=pos/bin_range;
+		if(j>mhist->ttl_bins[i])
+			printf("i: %d j: %d ttl_bins[i]: %d bin_range: %d chromo_len: %d pos: %d\n",i, j, mhist->ttl_bins[i], bin_range, chromo_len, pos);
 		mhist->hist[i][j]+=1;
 	}
 }

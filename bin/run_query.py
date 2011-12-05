@@ -115,7 +115,8 @@ else :
                   "%s/%s_%s.bam" % (dest, query_name, chromnum) )
 
     #copy query
-    copyIfExists( query_loc, "%s/%s_%s.gq" % (dest, query_name, chromnum) )
+    #put the gq file in the query_ dir
+    copyIfExists( query_loc, "%s/../%s.gq" % (dest, query_name) )
 
     #copy histogram
     histogram = "%s/out.hist" % source

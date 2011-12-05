@@ -53,3 +53,10 @@ Compilation completed without errors
 52. loaded_param int begin 
 53. loaded_param int end 
 54. end_load_table 
+55. load_table NA18507_genes2 
+56. loaded_param char* annot_id 
+57. loaded_param char* chr 
+58. loaded_param char ornt 
+59. loaded_param int begin 
+60. loaded_param int end 
+61. end_load_table 
