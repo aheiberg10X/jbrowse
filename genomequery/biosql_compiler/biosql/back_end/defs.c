@@ -343,17 +343,20 @@ Mult_hist create_histogram(){
 	return ret;
 }
 
-static inline void update_histogram_solo(Mult_hist *mhist, int pos, int chromo_len){
+/*static inline void update_histogram_solo(Mult_hist *mhist, int pos, int chromo_len){
 	//int bin_range=chromo_len/ttl_bins;
 	//int i=pos/bin_range;
 	int bin_range;
 	int i,j;
 	for (i=0;i<(mhist->ttl_histograms);i++){
-		bin_range=chromo_len/(mhist->ttl_bins[i]);
+		if(chromo_len%(mhist->ttl_bins[i])==0)
+			bin_range=chromo_len/(mhist->ttl_bins[i]);
+		else
+			bin_range=chromo_len/(mhist->ttl_bins[i])+1;
 		j=pos/bin_range;
 		mhist->hist[i][j]+=1;
 	}
-}
+}*/
 
 void print_histogram(FILE *fp, Mult_hist mhist, int chromo_len){
 	int i=0, j=0;

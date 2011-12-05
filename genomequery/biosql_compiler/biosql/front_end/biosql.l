@@ -39,20 +39,20 @@ comment #.*\n
 
 {dot}	{
 	lineNo=line;
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return DOT;
 }
 {mates}	{
 	lineNo=line;
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return MATES;
 
 }
 {constChar}	{
 	lineNo=line;
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return CONST_CHAR;
 	//printf("constChar: %s\n",yytext);
@@ -60,7 +60,7 @@ comment #.*\n
 
 {constString}	{
 	lineNo=line;
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return CONST_STRING;
 
@@ -69,7 +69,7 @@ comment #.*\n
 
 {number}	{
 	lineNo=line;
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return NUMBER;
 
@@ -78,7 +78,7 @@ comment #.*\n
 
 {select}	{
 	lineNo=line;//printf("select\n");
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return SELECT;
 
@@ -86,28 +86,28 @@ comment #.*\n
 
 {from}	{
 	lineNo=line;//printf("where\n");
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return FROM;
 
 }
 {mapjoin}	{
 	lineNo=line;//printf("where\n");
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return MAPJOIN;
 }
 
 {import} {
 	lineNo=line;//printf("where\n");
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return IMPORT;
 }
 
 {where}	{
 	lineNo=line;//printf("where\n");
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return WHERE;
 
@@ -115,7 +115,7 @@ comment #.*\n
 
 {count}	{
 	lineNo=line;//printf("count\n");
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return COUNT;
 
@@ -123,7 +123,7 @@ comment #.*\n
 
 {table}	{
 	lineNo=line;//printf("count\n");
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return TABLE;
 
@@ -131,7 +131,7 @@ comment #.*\n
 
 {integer}	{
 	lineNo=line;//printf("count\n");
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return INTEGER;
 
@@ -139,7 +139,7 @@ comment #.*\n
 
 {float}	{
 	lineNo=line;//printf("count\n");
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return FLOAT;
 
@@ -147,7 +147,7 @@ comment #.*\n
 
 {char}	{
 	lineNo=line;//printf("count\n");
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return CHAR;
 
@@ -155,14 +155,14 @@ comment #.*\n
 
 {string_type}	{
 	lineNo=line;//printf("count\n");
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return STRING_TYPE;
 
 }
 {and}	{
 	lineNo=line;//printf("and\n");
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return AND;
 
@@ -170,7 +170,7 @@ comment #.*\n
 
 {or}	{
 	lineNo=line;//printf("or\n");
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return OR;
 
@@ -178,7 +178,7 @@ comment #.*\n
 
 {not}	{
 	lineNo=line;//printf("or\n");
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return NOT;
 
@@ -186,7 +186,7 @@ comment #.*\n
 
 {use}	{
 	lineNo=line;//printf("or\n");
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return USE;
 }
@@ -194,13 +194,13 @@ comment #.*\n
 
 "=="	{
 	lineNo=line;//printf("equality\n");/*return TK_EQUAL*/
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return EQUAL;
 }
 
 "="		{lineNo=line;//printf("assignment\n");/*return TK_ASSIGN*/
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return ASSIGN;
 	
@@ -208,7 +208,7 @@ comment #.*\n
 
 ">"		{
 	lineNo=line;//printf("greater\n");/*return TK_GREATER*/
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return GREATER;
 
@@ -216,14 +216,14 @@ comment #.*\n
 
 "<"		{
 	lineNo=line;//printf("less\n");/*return TK_LESS*/
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return LESS;
 }
 
 "!="		{
 	lineNo=line;//printf("neq\n");/*return TK_NOT_EQUAL*/
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return NOT_EQUAL;
 	
@@ -231,63 +231,63 @@ comment #.*\n
 
 "<="		{
 	lineNo=line;//printf("leq\n");/*return TK_LESS_EQUAL*/
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return LESS_EQUAL;
 }
 
 ">="		{
 	lineNo=line;//printf("geq\n");/*return TK_GREATER_EQUAL*/
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return GREATER_EQUAL;
 }
 
 "*"		{
 	lineNo=line;//printf("star\n");/*return TK_MUL*/
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return STAR;
 }
 
 "/"		{
 	lineNo=line;//printf("div\n");/*return TK_DIV*/
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return DIV;
 }
 
 "%"		{
 	lineNo=line;//printf("mod\n");/*return TK_MOD*/
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return MOD;
 }
 
 "+"		{
 	lineNo=line;//printf("plus\n");/*return TK_PLUS*/
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return PLUS;
 }
 
 "-"		{
 	lineNo=line;//printf("minus\n");/*return TK_MINUS*/
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return MINUS;
 }
 
 "("		{
 	lineNo=line;//printf("lparen\n");/*return TK_LEFT_BRACKET*/
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return LPAREN;
 }
 
 ")"		{
 	lineNo=line;//printf("rparen\n");/*return TK_RIGHT_BRACKET*/
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return RPAREN;
 
@@ -295,7 +295,7 @@ comment #.*\n
 
 ","		{
 	lineNo=line;//printf("comma\n");/*return TK_COMMA*/
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return COMMA;
 	
@@ -303,7 +303,7 @@ comment #.*\n
 
 ";"		{
 	lineNo=line;//printf("comma\n");/*return TK_COMMA*/
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return SEMICOLON;
 	
@@ -311,12 +311,11 @@ comment #.*\n
 
 {name}	{
 	lineNo=line;//printf("name: %s\n",yytext);
-	yylval.string=(char*)malloc(sizeof(yytext));
+	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
 	return ID;
 
 }
-
 [ \t\r]+	/*eat whitespace*/
 [\n]		{line++;}
 

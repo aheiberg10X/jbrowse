@@ -180,6 +180,8 @@ table_arg: INTEGER names{
 
 
 table_source: USE names{
+	//parsed_table_file=(char*)malloc(strlen(yylval.string)+3);
+	//strcpy(parsed_table_file, yylval.string);
 	parsed_table_file=strdup($2);
 }
 
@@ -418,6 +420,43 @@ lowest_expr: arith_expr comparison_op rvalue{
 	free(tmp_str2);
 
 }
+|arith_expr comparison_op arith_expr{
+
+	if (strcmp($1->type, $3->type)!=0) symerror("Incompatible types in a where expression", $1->name);
+
+	char *tmp_str1=(char*)malloc(1024);
+	char *tmp_str2=(char*)malloc(1024);
+	
+	if (strcmp($1->type, "string")!=0){
+		sprintf(tmp_str1,"%s %s %s",$1->place,$2,$3->place);
+		sprintf(tmp_str2,"%d",nextstat+3);
+	}
+	else{
+		if(strcmp($2,"==")==0)
+			sprintf(tmp_str1, "(strcmp( %s , %s )==0)", $1->place, $3->place);
+		else if(strcmp($2,"!=")==0)
+			sprintf(tmp_str1, "(strcmp( %s , %s )!=0)", $1->place, $3->place);
+		else if($2[0]=='>')
+			sprintf(tmp_str1, "(strcmp( %s , %s )>0)", $1->place, $3->place);
+		else 
+			sprintf(tmp_str1, "(strcmp( %s , %s )<0)", $1->place, $3->place);
+	}
+
+
+	
+
+	$$=get_newtemp();
+	/*emit(&emit_lst, "if", tmp_str1, "goto",tmp_str2,NULL);//original impl
+	emit(&emit_lst, $$,"=","0",NULL, NULL);*/
+	emit(&emit_lst, $$, "=", tmp_str1,NULL, NULL);
+	/*sprintf(tmp_str2,"%d",nextstat+2);
+	emit(&emit_lst, "goto", tmp_str2,NULL, NULL, NULL);
+	emit(&emit_lst, $$,"=","1",NULL,NULL);*/
+
+	free(tmp_str1);
+	free(tmp_str2);
+
+}
 ;
 
 arith_expr: arith_expr arith_op arith_expr{
@@ -492,13 +531,15 @@ arith_op: PLUS {$$=strdup("+");}
 
 rvalue: CONST_CHAR{
 	$$=create_node(yylval.string, "char", NULL, NULL);
+	if($$->name[1]=='+') $$->name[1]='F'; //cannot predict whether user chooses F/+
+	if($$->name[1]=='-') $$->name[1]='R'; //cannot predict whether user chooses R/-
 }
 | CONST_STRING {
 	$$=create_node(yylval.string, "string", NULL, NULL);
 }
-| NUMBER{
+/*| NUMBER{
 	$$=create_node(yylval.string, "integer", NULL, NULL);
-}
+}*/
 ;
 
 %%

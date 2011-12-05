@@ -69,13 +69,13 @@ def print_header(code_type, f):
 	print >> f, "#include<stdio.h>\n#include\"all_tools.h\""
 	line=''
 	if code_type=='read_filtering':
-		line="inline int is_valid(Mates *indx, int i, long *strand_indx, int strand_len){\n\tint mate_indx=indx[i].mate_indx;"
+		line="inline int is_valid(Mates *indx, int i, long *indx_strand, int strand_len){\n\tint mate_indx=indx[i].mate_indx;"
 	elif code_type=='import_filtering':
 		line="inline int isvalid_imported(Imported_info *indx, int i, int ttl_table){"
 	elif code_type=='interval_filtering':
 		line='inline int get_interval_coverage_param(int *up_low){'
 	elif code_type=='join_filtering':
-		line='inline int isvalid_join(Join *join_lst, int i, Mates *indx1, long *strand_indx1, Mates *indx2, long *strand_indx2, Imported_info *tbl1, Imported_info *tbl2){\n \
+		line='inline int isvalid_join(Join *join_lst, int i, Mates *indx1, long *indx1_strand, Mates *indx2, long *indx2_strand, Imported_info *tbl1, Imported_info *tbl2){\n \
 \tJoin jn=join_lst[i];\n\tint i1=jn.indx1;\n\tint i2=jn.indx2;\n'
 
 	elif code_type=='read_interval':
@@ -513,7 +513,7 @@ def genomequery_calls(newtable, tbl_name, c_files, cur_input, back_end_dir, prod
 		call_filter_intervals(back_end_dir, products_dir, cur_input[-1], tbl_name, c_files)
 		type1=get_table_type(cur_input[-1])
 		if type1=='reads':
-			output_cmd=output_reads(cur_input[-1], tbl_name, products_dir, back_end_dir, indx_file, bam_file, chromo_len)
+			output_cmd=output_reads(tbl_name, tbl_name, products_dir, back_end_dir, indx_file, bam_file, chromo_len)
 		elif type1=='imported':
 			init_tbl=newtable.origin_path[-1].split('.')[-1]
 			output_cmd=output_imported(cur_input[-1], init_tbl, tbl_name, back_end_dir, products_dir)
@@ -623,7 +623,7 @@ def get_filtering_cmd(cur_input_paths):
 		elif kind=='imported':
 			return 'isvalid_imported.c', 'import_filtering'
 		elif kind=='interval':
-			return 'isvalid_interval.c', 'interval_filtering'
+			return 'get_interval_coverage_param.c', 'interval_filtering' #or isvalid_interval.c???
 	else:
 		cip=tmp[-1]
 		inpt_name=cip.split('.')[0]

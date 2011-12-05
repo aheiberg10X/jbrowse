@@ -29,7 +29,8 @@ interval_tables = []
 if os.path.exists( path ) :
     for listing in os.listdir( path ) :
         print listing
-        interval_tables.append( listing )
+        viewable =  listing.strip("%s_" % donor_name).strip('.it')
+        interval_tables.append( viewable )
     message = json.dumps(interval_tables)
     status = '"OK"'
 else :

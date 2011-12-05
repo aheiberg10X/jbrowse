@@ -63,7 +63,7 @@ void filter_reads(char *indx_file, char *in_valid_file, char *dst_file){
 		valid_lst_in=(int*)retrieve_vec(in_valid_file, sizeof(int), &ttl_valid_in);
 
 	///stupid method: First iterate read_indx to find n and then iterate indx again to populate ret
-	for(i=0;i<ttl_reads;i++){ //iterate over either reads or valid_lst_in
+	for(i=1;i<ttl_reads;i++){ //iterate over either reads or valid_lst_in
 		if(valid_lst_in!=NULL){
 			if(i==ttl_valid_in) break;
 			else cur_i=valid_lst_in[i];
@@ -74,7 +74,7 @@ void filter_reads(char *indx_file, char *in_valid_file, char *dst_file){
 	valid_lst=(int*)malloc(sizeof(int)*(cnt+1));
 	ttl_valid=cnt;
 	cnt=0;
-	for(i=0;i<ttl_reads;i++){
+	for(i=1;i<ttl_reads;i++){
 		if(valid_lst_in!=NULL){
 			if(i==ttl_valid_in) break;
 			else cur_i=valid_lst_in[i];

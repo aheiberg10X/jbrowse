@@ -66,7 +66,7 @@ my $new_entry_json =
       'type' => "FeatureTrack",
      };
 
-my $return_json = '{"status":"ok", "message":"';
+my $return_json = '{"status":"OK", "message":"';
 $return_json .= join( '\n', @messages ); 
 $return_json .= '", "trackData":';
 $return_json .=  JSON::to_json($new_entry_json, {pretty => 1});
@@ -281,7 +281,7 @@ sub convertStrand {
     if( $leftpos == -1 ){
         return (0,"unmapped");
     }
-    else { 
+    else {
         return $strand eq 'F' ? (1,"forward") : (-1,"reverse");
     }
 }
@@ -289,7 +289,7 @@ sub convertStrand {
 sub makeSingleFeature {
     my $intervals = shift;
     my @s = split( '\t', $intervals );
-    my ($strand,$style) = convertStrand($s[2]);
+    my ($strand,$style) = convertStrand(42, $s[2]);
     my ($ll,$rr) = (int($s[0]), int($s[1]));
     return [$ll,$rr,$strand,$style];
 }

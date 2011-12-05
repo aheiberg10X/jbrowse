@@ -53,6 +53,8 @@ def getPrefix( path, name ) :
                 return CHROM_PREFIX
             elif name.startswith( DONOR_PREFIX ) :
                 return DONOR_PREFIX
+            else :
+                return PRIVATE_PREFIX
         else :
             return "file"
 
