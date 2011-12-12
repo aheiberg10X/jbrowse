@@ -251,6 +251,10 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     query_div.id = "query_div";
     query_dialog_div.appendChild( query_div );
 
+    var query_interval_table_p = document.createElement("p");
+    query_interval_table_p.id = "query_inteval_table_p";
+    query_div.appendChild( query_interval_table_p );
+
     var query_name_p = document.createElement("p");
     query_name_p.id = "query_name_p";
     query_name_p.innerHTML = "Name<br />";
@@ -609,46 +613,51 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             prefix: "donor_",
             hidden: false,
             onClick: function(e) {
+                fillWithIntervalTables( query_interval_table_p );
                 query_dialog.show();   
         }});
     pMenu.addChild( query_menuitem );
+
+    var fillWithIntervalTables = function( html_elem ){
+        args = {"donor_name" : tree.selectedItem.name};
+        url = "bin/list_interval_tables.py?"+dojo.objectToQuery(args);
+        dojo.xhrGet({
+            url: url,
+            handleAs: "json",
+            load: function(data,args){
+                html_elem.innerHTML = "Uploaded Tables: <br />";
+                html_elem.innerHTML += "<ul>";
+                if( data['status'] == "EMPTY" ){
+                    html_elem.innerHTML += 
+                        "<li>" 
+                        + data["message"]
+                        + "</li>";
+                }
+                else if( data["status"] == 'OK' ){
+                    for ( i in data["message"] ){
+                        html_elem.innerHTML += 
+                            "<li>" 
+                            + data["message"][i] 
+                            + "</li>";
+                    }
+                }
+                else{
+                    alert( data["message"] );
+                }
+                html_elem.innerHTML += "</ul>";
+            },
+            error: function(data,args){
+               alert("trouble fetching the upload tables");
+            }
+        });
+    };
 
     var table_menuitem = new dijit.MenuItem({
         label: "Upload Interval Table",
         prefix: "donor_",
         hidden: false,
         onClick: function(e) {
-            args = {"donor_name" : tree.selectedItem.name};
-            url = "bin/list_interval_tables.py?"+dojo.objectToQuery(args);
-            dojo.xhrGet({
-                url: url,
-                handleAs: "json",
-                load: function(data,args){
-                    interval_table_p.innerHTML = "Uploaded Tables: <br />";
-                    interval_table_p.innerHTML += "<ul>";
-                    if( data['status'] == "EMPTY" ){
-                        interval_table_p.innerHTML += 
-                            "<li>" 
-                            + data["message"]
-                            + "</li>";
-                    }
-                    else if( data["status"] == 'OK' ){
-                        for ( i in data["message"] ){
-                            interval_table_p.innerHTML += 
-                                "<li>" 
-                                + data["message"][i] 
-                                + "</li>";
-                        }
-                    }
-                    else{
-                        alert( data["message"] );
-                    }
-                    interval_table_p.innerHTML += "</ul>";
-                },
-                error: function(data,args){
-                   alert("trouble fetching the upload tables");
-                }
-            });
+            fillWithIntervalTables( interval_table_p );    
             table_dialog.show();   
         }
     });
