@@ -157,13 +157,16 @@ char *parsed_table_file;
      MAPJOIN = 292,
      IMPORT = 293,
      USE = 294,
-     MATES = 295,
-     TK_NEGATIVE_SIGN = 296,
-     TK_POSITIVE_SIGN = 297,
-     TK_RIGHT_SQUARE_BRACKET = 298,
-     TK_LEFT_SQUARE_BRACKET = 299,
-     TK_RIGHT_BRACKET = 300,
-     TK_LEFT_BRACKET = 301
+     USING = 295,
+     INTERVAL_CREATION = 296,
+     INTERVALS = 297,
+     BOTH_MATES = 298,
+     TK_NEGATIVE_SIGN = 299,
+     TK_POSITIVE_SIGN = 300,
+     TK_RIGHT_SQUARE_BRACKET = 301,
+     TK_LEFT_SQUARE_BRACKET = 302,
+     TK_RIGHT_BRACKET = 303,
+     TK_LEFT_BRACKET = 304
    };
 #endif
 
@@ -183,7 +186,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 187 "biosql.c"
+#line 190 "biosql.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -195,7 +198,7 @@ typedef union YYSTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 199 "biosql.c"
+#line 202 "biosql.c"
 
 #ifdef short
 # undef short
@@ -410,20 +413,20 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  11
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   144
+#define YYLAST   151
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  47
+#define YYNTOKENS  50
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  26
 /* YYNRULES -- Number of rules.  */
 #define YYNRULES  62
 /* YYNRULES -- Number of states.  */
-#define YYNSTATES  109
+#define YYNSTATES  110
 
 /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   301
+#define YYMAXUTOK   304
 
 #define YYTRANSLATE(YYX)						\
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
@@ -461,7 +464,7 @@ static const yytype_uint8 yytranslate[] =
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
       35,    36,    37,    38,    39,    40,    41,    42,    43,    44,
-      45,    46
+      45,    46,    47,    48,    49
 };
 
 #if YYDEBUG
@@ -471,47 +474,48 @@ static const yytype_uint8 yyprhs[] =
 {
        0,     0,     3,     8,    10,    13,    14,    20,    23,    25,
       29,    31,    34,    37,    40,    43,    46,    49,    53,    56,
-      57,    61,    63,    70,    75,    81,    83,    85,    87,    91,
-      93,    95,    99,   101,   103,   110,   118,   120,   124,   128,
-     132,   135,   139,   141,   145,   149,   152,   154,   156,   158,
-     162,   164,   166,   168,   170,   172,   174,   176,   178,   180,
-     182,   184,   186
+      57,    61,    63,    70,    75,    81,    83,    87,    89,    93,
+      95,    97,   101,   103,   105,   114,   125,   127,   131,   135,
+     139,   142,   146,   148,   152,   156,   160,   163,   165,   167,
+     169,   173,   175,   177,   179,   181,   183,   185,   187,   189,
+     191,   193,   195
 };
 
 /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
 static const yytype_int8 yyrhs[] =
 {
-      48,     0,    -1,    55,    56,    57,    60,    -1,    49,    -1,
-      50,    49,    -1,    -1,    51,    24,    53,    25,    22,    -1,
-      36,    52,    -1,    31,    -1,    53,    26,    54,    -1,    54,
-      -1,    27,    52,    -1,    28,    52,    -1,    29,    52,    -1,
-      30,    52,    -1,    39,    52,    -1,    56,    56,    -1,    38,
-      52,    22,    -1,    58,    57,    -1,    -1,    59,     7,    60,
-      -1,    52,    -1,    32,    61,    33,    64,    34,    66,    -1,
-      32,    61,    33,    64,    -1,    32,    61,    33,    37,    63,
-      -1,     8,    -1,    35,    -1,    62,    -1,    52,    26,    62,
-      -1,    52,    -1,    69,    -1,    64,    26,    63,    -1,    64,
-      -1,    65,    -1,    65,    24,    68,    26,    68,    25,    -1,
-      65,    40,    24,    68,    26,    68,    25,    -1,    52,    -1,
-      66,    26,    66,    -1,    66,    19,    66,    -1,    66,    20,
-      66,    -1,    21,    66,    -1,    24,    66,    25,    -1,    67,
-      -1,    68,    70,    72,    -1,    68,    71,    68,    -1,    71,
-      68,    -1,    52,    -1,    69,    -1,     5,    -1,    52,    23,
-      52,    -1,     6,    -1,    13,    -1,    12,    -1,     9,    -1,
-      10,    -1,    17,    -1,    18,    -1,    14,    -1,    15,    -1,
-      16,    -1,     3,    -1,     4,    -1,     5,    -1
+      51,     0,    -1,    58,    59,    60,    63,    -1,    52,    -1,
+      53,    52,    -1,    -1,    54,    24,    56,    25,    22,    -1,
+      36,    55,    -1,    31,    -1,    56,    26,    57,    -1,    57,
+      -1,    27,    55,    -1,    28,    55,    -1,    29,    55,    -1,
+      30,    55,    -1,    39,    55,    -1,    59,    59,    -1,    38,
+      55,    22,    -1,    61,    60,    -1,    -1,    62,     7,    63,
+      -1,    55,    -1,    32,    64,    33,    67,    34,    69,    -1,
+      32,    64,    33,    67,    -1,    32,    64,    33,    37,    66,
+      -1,     8,    -1,    41,    24,    25,    -1,    65,    -1,    55,
+      26,    65,    -1,    55,    -1,    72,    -1,    67,    26,    66,
+      -1,    67,    -1,    68,    -1,    68,    40,    42,    24,    71,
+      26,    71,    25,    -1,    68,    40,    42,    24,    71,    26,
+      71,    26,    43,    25,    -1,    55,    -1,    69,    26,    69,
+      -1,    69,    19,    69,    -1,    69,    20,    69,    -1,    21,
+      69,    -1,    24,    69,    25,    -1,    70,    -1,    71,    73,
+      75,    -1,    71,    73,    71,    -1,    71,    74,    71,    -1,
+      74,    71,    -1,    55,    -1,    72,    -1,     5,    -1,    55,
+      23,    55,    -1,     6,    -1,    13,    -1,    12,    -1,     9,
+      -1,    10,    -1,    17,    -1,    18,    -1,    14,    -1,    15,
+      -1,    16,    -1,     3,    -1,     4,    -1
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    96,    96,    98,   101,   102,   105,   112,   126,   132,
-     146,   158,   163,   168,   173,   182,   186,   187,   192,   193,
-     196,   199,   207,   235,   263,   295,   299,   302,   304,   308,
-     312,   317,   318,   321,   326,   332,   343,   358,   362,   366,
-     370,   374,   378,   384,   423,   430,   436,   451,   457,   464,
-     480,   481,   482,   483,   484,   487,   488,   489,   490,   491,
-     493,   496,   499
+       0,    99,    99,   101,   104,   105,   108,   115,   129,   135,
+     149,   161,   166,   171,   176,   185,   191,   192,   197,   198,
+     201,   204,   212,   240,   268,   300,   304,   307,   309,   313,
+     317,   322,   323,   326,   332,   340,   351,   366,   370,   374,
+     378,   382,   386,   392,   429,   468,   475,   481,   496,   502,
+     509,   525,   526,   527,   528,   529,   532,   533,   534,   535,
+     536,   538,   543
 };
 #endif
 
@@ -525,15 +529,16 @@ static const char *const yytname[] =
   "GREATER_EQUAL", "MUL", "DIV", "MOD", "PLUS", "MINUS", "AND", "OR",
   "NOT", "SEMICOLON", "DOT", "LPAREN", "RPAREN", "COMMA", "INTEGER",
   "FLOAT", "CHAR", "STRING_TYPE", "ID", "SELECT", "FROM", "WHERE", "COUNT",
-  "TABLE", "MAPJOIN", "IMPORT", "USE", "MATES", "TK_NEGATIVE_SIGN",
-  "TK_POSITIVE_SIGN", "TK_RIGHT_SQUARE_BRACKET", "TK_LEFT_SQUARE_BRACKET",
-  "TK_RIGHT_BRACKET", "TK_LEFT_BRACKET", "$accept", "program",
-  "table_prototypes", "table_prototype", "table_keyword", "names",
-  "table_args", "table_arg", "table_source", "import_tables",
-  "assigned_selects", "assigned_select", "lvalue", "select_statement",
-  "select_args", "select_arg_series", "from_args", "compound_from_arg",
-  "from_arg", "where_args", "lowest_expr", "arith_expr", "obj_names",
-  "comparison_op", "arith_op", "rvalue", 0
+  "TABLE", "MAPJOIN", "IMPORT", "USE", "USING", "INTERVAL_CREATION",
+  "INTERVALS", "BOTH_MATES", "TK_NEGATIVE_SIGN", "TK_POSITIVE_SIGN",
+  "TK_RIGHT_SQUARE_BRACKET", "TK_LEFT_SQUARE_BRACKET", "TK_RIGHT_BRACKET",
+  "TK_LEFT_BRACKET", "$accept", "program", "table_prototypes",
+  "table_prototype", "table_keyword", "names", "table_args", "table_arg",
+  "table_source", "import_tables", "assigned_selects", "assigned_select",
+  "lvalue", "select_statement", "select_args", "select_arg_series",
+  "from_args", "compound_from_arg", "from_arg", "where_args",
+  "lowest_expr", "arith_expr", "obj_names", "comparison_op", "arith_op",
+  "rvalue", 0
 };
 #endif
 
@@ -546,20 +551,20 @@ static const yytype_uint16 yytoknum[] =
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
      275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
      285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
-     295,   296,   297,   298,   299,   300,   301
+     295,   296,   297,   298,   299,   300,   301,   302,   303,   304
 };
 # endif
 
 /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,    47,    48,    48,    49,    49,    50,    51,    52,    53,
-      53,    54,    54,    54,    54,    55,    56,    56,    57,    57,
-      58,    59,    60,    60,    60,    61,    61,    61,    62,    62,
-      62,    63,    63,    64,    64,    64,    65,    66,    66,    66,
-      66,    66,    66,    67,    68,    68,    68,    68,    68,    69,
-      70,    70,    70,    70,    70,    71,    71,    71,    71,    71,
-      72,    72,    72
+       0,    50,    51,    51,    52,    52,    53,    54,    55,    56,
+      56,    57,    57,    57,    57,    58,    59,    59,    60,    60,
+      61,    62,    63,    63,    63,    64,    64,    64,    65,    65,
+      65,    66,    66,    67,    67,    67,    68,    69,    69,    69,
+      69,    69,    69,    70,    70,    71,    71,    71,    71,    71,
+      72,    73,    73,    73,    73,    73,    74,    74,    74,    74,
+      74,    75,    75
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
@@ -567,10 +572,10 @@ static const yytype_uint8 yyr2[] =
 {
        0,     2,     4,     1,     2,     0,     5,     2,     1,     3,
        1,     2,     2,     2,     2,     2,     2,     3,     2,     0,
-       3,     1,     6,     4,     5,     1,     1,     1,     3,     1,
-       1,     3,     1,     1,     6,     7,     1,     3,     3,     3,
-       2,     3,     1,     3,     3,     2,     1,     1,     1,     3,
-       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       3,     1,     6,     4,     5,     1,     3,     1,     3,     1,
+       1,     3,     1,     1,     8,    10,     1,     3,     3,     3,
+       2,     3,     1,     3,     3,     3,     2,     1,     1,     1,
+       3,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1
 };
 
@@ -583,47 +588,47 @@ static const yytype_uint8 yydefact[] =
       15,     1,     4,     0,     0,    19,     0,     0,     0,     0,
        0,    10,     0,    21,    16,     0,    19,     0,    11,    12,
       13,    14,     0,     0,    17,     0,     2,    18,     0,     6,
-       9,    25,    26,    29,     0,    27,    30,    20,     0,     0,
-       0,    49,    28,     0,    36,    23,    33,    24,    32,     0,
-       0,     0,     0,    48,    57,    58,    59,    55,    56,     0,
-       0,    46,    22,    42,     0,    47,     0,     0,     0,    31,
-      40,     0,     0,     0,     0,    50,    53,    54,    52,    51,
-       0,     0,    45,     0,     0,    41,    38,    39,    37,    60,
-      61,    62,    43,    44,     0,     0,    34,     0,    35
+       9,    25,     0,    29,     0,    27,    30,    20,     0,     0,
+       0,     0,    26,    50,    28,     0,    36,    23,    33,    24,
+      32,     0,     0,     0,    49,    58,    59,    60,    56,    57,
+       0,     0,    47,    22,    42,     0,    48,     0,     0,    31,
+      40,     0,     0,     0,     0,    51,    54,    55,    53,    52,
+       0,     0,    46,     0,    41,    38,    39,    37,    61,    62,
+      44,    43,    45,     0,     0,     0,    34,     0,     0,    35
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     3,     4,     5,     6,    71,    20,    21,     7,    24,
-      25,    26,    27,    36,    44,    45,    57,    58,    56,    72,
-      73,    74,    75,    90,    76,   102
+      -1,     3,     4,     5,     6,    72,    20,    21,     7,    24,
+      25,    26,    27,    36,    44,    45,    59,    60,    58,    73,
+      74,    75,    76,    90,    77,   101
 };
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
-#define YYPACT_NINF -56
+#define YYPACT_NINF -74
 static const yytype_int8 yypact[] =
 {
-       4,   -25,   -25,    11,   -56,     3,    17,    13,   -56,   -56,
-     -56,   -56,   -56,   109,   -25,   -29,   -25,   -25,   -25,   -25,
-       7,   -56,    34,   -56,    13,    30,   -25,    56,   -56,   -56,
-     -56,   -56,    47,   109,   -56,    -5,   -56,   -56,    30,   -56,
-     -56,   -56,   -56,   -16,    37,   -56,   -56,   -56,   -25,   -25,
-       0,   -56,   -56,   -25,   -56,    38,   -20,   -56,    54,    50,
-      68,    64,   -25,   -56,   -56,   -56,   -56,   -56,   -56,    50,
-      50,    69,     9,   -56,    88,   -56,    68,    61,    68,   -56,
-      65,    70,    50,    50,    50,   -56,   -56,   -56,   -56,   -56,
-     117,    68,   115,    68,    93,   -56,    65,    -7,     9,   -56,
-     -56,   -56,   -56,   115,    98,    68,   -56,   110,   -56
+     -32,   -23,   -23,    33,   -74,    28,    11,     5,   -74,   -74,
+     -74,   -74,   -74,    87,   -23,     7,   -23,   -23,   -23,   -23,
+      58,   -74,    63,   -74,     5,    72,   -23,   106,   -74,   -74,
+     -74,   -74,    97,    87,   -74,    -5,   -74,   -74,    72,   -74,
+     -74,   -74,    96,    95,    89,   -74,   -74,   -74,    98,   -23,
+     -23,    30,   -74,   -74,   -74,   -23,   -74,    90,    88,   -74,
+      99,    42,    84,   -23,   -74,   -74,   -74,   -74,   -74,   -74,
+      42,    42,   104,   -14,   -74,    80,   -74,    60,   105,   -74,
+     107,    62,    42,    42,    42,   -74,   -74,   -74,   -74,   -74,
+       6,    60,    92,    60,   -74,   107,    86,   -14,   -74,   -74,
+      92,   -74,    92,    85,    60,    54,   -74,    91,   110,   -74
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -56,   -56,   112,   -56,   -56,    -1,   -56,    60,   -56,   111,
-     108,   -56,   -56,   102,   -56,    92,    80,    94,   -56,   -24,
-     -56,   -55,   -27,   -56,   -50,   -56
+     -74,   -74,   125,   -74,   -74,    -1,   -74,   103,   -74,   124,
+     111,   -74,   -74,    94,   -74,    93,    75,   100,   -74,   -31,
+     -74,   -49,    -4,   -74,   -73,   -74
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -633,57 +638,59 @@ static const yytype_int8 yypgoto[] =
 #define YYTABLE_NINF -1
 static const yytype_uint8 yytable[] =
 {
-       9,    10,     8,    41,    60,    77,     8,    48,    46,    14,
-      49,    11,    82,    22,    23,    28,    29,    30,    31,    84,
-      61,    92,    46,    94,    91,    23,     8,    91,    82,    83,
-      42,     8,    32,    33,    43,    84,   103,    53,   104,     1,
-       1,    13,    91,     2,    91,    80,    81,    51,    43,    54,
-     107,    14,    54,    91,    91,    63,    34,    91,    96,    97,
-      98,    54,    35,    38,    64,    65,    66,    67,    68,    39,
-      50,    69,    59,    63,    70,    64,    65,    66,    67,    68,
-      62,     8,    64,    65,    66,    67,    68,    93,    78,    82,
-      83,    84,    48,    40,    85,    95,    84,    86,    87,     8,
-      88,    89,    64,    65,    66,    67,    68,    64,    65,    66,
-      67,    68,    64,    65,    66,    67,    68,    12,    15,   105,
-      99,   100,   101,   106,    64,    65,    66,    67,    68,    64,
-      65,    66,    67,    68,    37,   108,    16,    17,    18,    19,
-      47,    52,    79,     0,    55
+       9,    10,    91,    41,     1,    82,    83,     2,     8,    98,
+      99,    64,    84,    22,    23,    28,    29,    30,    31,    91,
+      65,    66,    67,    68,    69,    23,     8,    91,    92,    91,
+      91,    46,    91,    11,    43,    13,    42,     8,     8,    80,
+      81,   100,   102,    14,   103,    14,    46,    64,    53,    43,
+      56,    95,    96,    97,    56,   105,    65,    66,    67,    68,
+      69,     8,    56,    70,     1,    64,    71,    55,    65,    66,
+      67,    68,    69,     8,    65,    66,    67,    68,    69,   106,
+     107,    82,    83,    32,    33,    34,    85,    94,    84,    86,
+      87,     8,    88,    89,    65,    66,    67,    68,    69,    65,
+      66,    67,    68,    69,    35,    82,    65,    66,    67,    68,
+      69,   104,    84,    38,    16,    17,    18,    19,    49,    39,
+      48,    50,    51,    52,    61,    63,    78,    49,    62,    93,
+      12,    15,    47,    84,   108,   109,    40,    37,    79,     0,
+       0,     0,     0,    54,     0,     0,     0,     0,     0,     0,
+       0,    57
 };
 
 static const yytype_int8 yycheck[] =
 {
-       1,     2,    31,     8,    24,    60,    31,    23,    35,    38,
-      26,     0,    19,    14,    15,    16,    17,    18,    19,    26,
-      40,    76,    49,    78,    74,    26,    31,    77,    19,    20,
-      35,    31,    25,    26,    35,    26,    91,    37,    93,    36,
-      36,    24,    92,    39,    94,    69,    70,    48,    49,    50,
-     105,    38,    53,   103,   104,     5,    22,   107,    82,    83,
-      84,    62,    32,     7,    14,    15,    16,    17,    18,    22,
-      33,    21,    34,     5,    24,    14,    15,    16,    17,    18,
-      26,    31,    14,    15,    16,    17,    18,    26,    24,    19,
-      20,    26,    23,    33,     6,    25,    26,     9,    10,    31,
-      12,    13,    14,    15,    16,    17,    18,    14,    15,    16,
-      17,    18,    14,    15,    16,    17,    18,     5,     7,    26,
-       3,     4,     5,    25,    14,    15,    16,    17,    18,    14,
-      15,    16,    17,    18,    26,    25,    27,    28,    29,    30,
-      38,    49,    62,    -1,    50
+       1,     2,    75,     8,    36,    19,    20,    39,    31,     3,
+       4,     5,    26,    14,    15,    16,    17,    18,    19,    92,
+      14,    15,    16,    17,    18,    26,    31,   100,    77,   102,
+     103,    35,   105,     0,    35,    24,    41,    31,    31,    70,
+      71,    90,    91,    38,    93,    38,    50,     5,    49,    50,
+      51,    82,    83,    84,    55,   104,    14,    15,    16,    17,
+      18,    31,    63,    21,    36,     5,    24,    37,    14,    15,
+      16,    17,    18,    31,    14,    15,    16,    17,    18,    25,
+      26,    19,    20,    25,    26,    22,     6,    25,    26,     9,
+      10,    31,    12,    13,    14,    15,    16,    17,    18,    14,
+      15,    16,    17,    18,    32,    19,    14,    15,    16,    17,
+      18,    26,    26,     7,    27,    28,    29,    30,    23,    22,
+      24,    26,    33,    25,    34,    26,    42,    23,    40,    24,
+       5,     7,    38,    26,    43,    25,    33,    26,    63,    -1,
+      -1,    -1,    -1,    50,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    51
 };
 
 /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
    symbol of state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
-       0,    36,    39,    48,    49,    50,    51,    55,    31,    52,
-      52,     0,    49,    24,    38,    56,    27,    28,    29,    30,
-      53,    54,    52,    52,    56,    57,    58,    59,    52,    52,
-      52,    52,    25,    26,    22,    32,    60,    57,     7,    22,
-      54,     8,    35,    52,    61,    62,    69,    60,    23,    26,
-      33,    52,    62,    37,    52,    64,    65,    63,    64,    34,
-      24,    40,    26,     5,    14,    15,    16,    17,    18,    21,
-      24,    52,    66,    67,    68,    69,    71,    68,    24,    63,
-      66,    66,    19,    20,    26,     6,     9,    10,    12,    13,
-      70,    71,    68,    26,    68,    25,    66,    66,    66,     3,
-       4,     5,    72,    68,    68,    26,    25,    68,    25
+       0,    36,    39,    51,    52,    53,    54,    58,    31,    55,
+      55,     0,    52,    24,    38,    59,    27,    28,    29,    30,
+      56,    57,    55,    55,    59,    60,    61,    62,    55,    55,
+      55,    55,    25,    26,    22,    32,    63,    60,     7,    22,
+      57,     8,    41,    55,    64,    65,    72,    63,    24,    23,
+      26,    33,    25,    55,    65,    37,    55,    67,    68,    66,
+      67,    34,    40,    26,     5,    14,    15,    16,    17,    18,
+      21,    24,    55,    69,    70,    71,    72,    74,    42,    66,
+      69,    69,    19,    20,    26,     6,     9,    10,    12,    13,
+      73,    74,    71,    24,    25,    69,    69,    69,     3,     4,
+      71,    75,    71,    71,    26,    71,    25,    26,    43,    25
 };
 
 #define yyerrok		(yyerrstatus = 0)
@@ -1497,7 +1504,7 @@ yyreduce:
         case 6:
 
 /* Line 1455 of yacc.c  */
-#line 105 "biosql.y"
+#line 108 "biosql.y"
     {cur_owner=NULL;
 	//if(strcmp($1->name, "READS")!=0){
 		emit(&emit_lst, "end_load_table", NULL, NULL, NULL,NULL);
@@ -1508,7 +1515,7 @@ yyreduce:
   case 7:
 
 /* Line 1455 of yacc.c  */
-#line 112 "biosql.y"
+#line 115 "biosql.y"
     {
 	if(lookup(lst, (yyvsp[(2) - (2)].string), NULL, NULL, NULL)==NULL){
 		(yyval.entry)=create_node((yyvsp[(2) - (2)].string), "table", "table", NULL);
@@ -1525,7 +1532,7 @@ yyreduce:
   case 8:
 
 /* Line 1455 of yacc.c  */
-#line 126 "biosql.y"
+#line 129 "biosql.y"
     {
 	(yyval.string)=(char*)malloc(strlen(yylval.string)+3);
 	strcpy((yyval.string), yylval.string);
@@ -1535,7 +1542,7 @@ yyreduce:
   case 9:
 
 /* Line 1455 of yacc.c  */
-#line 132 "biosql.y"
+#line 135 "biosql.y"
     {
 //arguments need to appear in output in the order that the user enders them.
 
@@ -1554,7 +1561,7 @@ yyreduce:
   case 10:
 
 /* Line 1455 of yacc.c  */
-#line 146 "biosql.y"
+#line 149 "biosql.y"
     {
 	//if(strcmp(cur_owner->name, "READS")!=0){
 		if(strcmp((yyvsp[(1) - (1)].entry)->type,"integer")==0)
@@ -1570,7 +1577,7 @@ yyreduce:
   case 11:
 
 /* Line 1455 of yacc.c  */
-#line 158 "biosql.y"
+#line 161 "biosql.y"
     {
 	(yyval.entry)=check_and_create(lst, (yyvsp[(2) - (2)].string), "integer", "attribute", cur_owner);
 	if((yyval.entry)!=NULL) add_node(&lst, (yyval.entry));
@@ -1581,7 +1588,7 @@ yyreduce:
   case 12:
 
 /* Line 1455 of yacc.c  */
-#line 163 "biosql.y"
+#line 166 "biosql.y"
     {
 	(yyval.entry)=check_and_create(lst, (yyvsp[(2) - (2)].string), "float", "attribute", cur_owner);
 	if((yyval.entry)!=NULL) add_node(&lst, (yyval.entry));
@@ -1592,7 +1599,7 @@ yyreduce:
   case 13:
 
 /* Line 1455 of yacc.c  */
-#line 168 "biosql.y"
+#line 171 "biosql.y"
     {
 	(yyval.entry)=check_and_create(lst, (yyvsp[(2) - (2)].string), "char", "attribute", cur_owner);
 	if((yyval.entry)!=NULL) add_node(&lst, (yyval.entry));
@@ -1603,7 +1610,7 @@ yyreduce:
   case 14:
 
 /* Line 1455 of yacc.c  */
-#line 173 "biosql.y"
+#line 176 "biosql.y"
     {
 	(yyval.entry)=check_and_create(lst, (yyvsp[(2) - (2)].string), "string", "attribute", cur_owner);
 	if((yyval.entry)!=NULL) add_node(&lst, (yyval.entry));
@@ -1614,8 +1621,10 @@ yyreduce:
   case 15:
 
 /* Line 1455 of yacc.c  */
-#line 182 "biosql.y"
+#line 185 "biosql.y"
     {
+	//parsed_table_file=(char*)malloc(strlen(yylval.string)+3);
+	//strcpy(parsed_table_file, yylval.string);
 	parsed_table_file=strdup((yyvsp[(2) - (2)].string));
 ;}
     break;
@@ -1623,7 +1632,7 @@ yyreduce:
   case 17:
 
 /* Line 1455 of yacc.c  */
-#line 187 "biosql.y"
+#line 192 "biosql.y"
     {
 	load_table(&lst, &emit_lst, parsed_table_file, (yyvsp[(2) - (3)].string));
 ;}
@@ -1632,14 +1641,14 @@ yyreduce:
   case 20:
 
 /* Line 1455 of yacc.c  */
-#line 196 "biosql.y"
+#line 201 "biosql.y"
     {emit(&emit_lst, "result_table", ":", (yyvsp[(1) - (3)].entry)->name, NULL,NULL); cur_owner=NULL;;}
     break;
 
   case 21:
 
 /* Line 1455 of yacc.c  */
-#line 199 "biosql.y"
+#line 204 "biosql.y"
     {
 	(yyval.entry)=check_and_create(lst, (yyvsp[(1) - (1)].string), "table", "table", NULL);
 	check_for_symerror((yyval.entry), "assigned table already exists", (yyvsp[(1) - (1)].string));
@@ -1651,7 +1660,7 @@ yyreduce:
   case 22:
 
 /* Line 1455 of yacc.c  */
-#line 207 "biosql.y"
+#line 212 "biosql.y"
     {
 	emit(&emit_lst, "end_filtering_code",NULL, NULL, NULL, NULL);
 	if(1/*cur_owner != NULL*/){ //indication of assigned select...need to update the symbol table.
@@ -1659,8 +1668,8 @@ yyreduce:
 			replicate_args(from_lst, len_from_lst, &lst, cur_owner); //All properties of the tables in from_args are replicated under a new owner.
 			emit(&emit_lst, "return_arg",":", "*",NULL, NULL);
 		}
-		else if(strcmp(select_lst->name, "countvec")==0){
-			add_node(&lst, create_node("countvec", "integer", "attribute", cur_owner));
+		else if(strcmp(select_lst->name, "interval_coverage")==0){
+			add_node(&lst, create_node("interval_coverage", "integer", "attribute", cur_owner));
 			emit(&emit_lst, "return_arg",":","strength_vector",NULL, NULL);
 		}
 		else{
@@ -1685,7 +1694,7 @@ yyreduce:
   case 23:
 
 /* Line 1455 of yacc.c  */
-#line 235 "biosql.y"
+#line 240 "biosql.y"
     {
 	emit(&emit_lst, "N/A",NULL, NULL, NULL, NULL);
 	emit(&emit_lst, "end_filtering_code",NULL, NULL, NULL, NULL);
@@ -1694,8 +1703,8 @@ yyreduce:
 			replicate_args(from_lst, len_from_lst, &lst, cur_owner); //All properties of the tables in from_args are replicated under a new owner.
 			emit(&emit_lst, "return_arg",":", "*",NULL, NULL);
 		}
-		else if(strcmp(select_lst->name, "countvec")==0){
-			add_node(&lst, create_node("countvec", "integer", "attribute", cur_owner));
+		else if(strcmp(select_lst->name, "interval_coverage")==0){
+			add_node(&lst, create_node("interval_coverage", "integer", "attribute", cur_owner));
 			emit(&emit_lst, "return_arg",":","strength_vector",NULL, NULL);
 		}
 		else{
@@ -1719,7 +1728,7 @@ yyreduce:
   case 24:
 
 /* Line 1455 of yacc.c  */
-#line 263 "biosql.y"
+#line 268 "biosql.y"
     {
 	emit(&emit_lst, "N/A",NULL, NULL, NULL, NULL);
 	emit(&emit_lst, "end_filtering_code",NULL, NULL, NULL, NULL);
@@ -1730,8 +1739,8 @@ yyreduce:
 		replicate_args(from_lst, len_from_lst, &lst, cur_owner); //All properties of the tables in from_args are replicated under a new owner.
 		///////////////emit(&emit_lst, "return_arg",":", "*",NULL, NULL);
 	}
-	else if(strcmp(select_lst->name, "countvec")==0){
-		add_node(&lst, create_node("countvec", "integer", "attribute", cur_owner));
+	else if(strcmp(select_lst->name, "interval_coverage")==0){
+		add_node(&lst, create_node("interval_coverage", "integer", "attribute", cur_owner));
 		emit(&emit_lst, "return_arg",":","strength_vector",NULL, NULL);
 	}
 	else{
@@ -1755,7 +1764,7 @@ yyreduce:
   case 25:
 
 /* Line 1455 of yacc.c  */
-#line 295 "biosql.y"
+#line 300 "biosql.y"
     {
 	add_node(&select_lst, create_node("*",NULL, NULL, NULL));
 
@@ -1765,16 +1774,16 @@ yyreduce:
   case 26:
 
 /* Line 1455 of yacc.c  */
-#line 299 "biosql.y"
+#line 304 "biosql.y"
     {
-	add_node(&select_lst, create_node("countvec", NULL, NULL, NULL));
+	add_node(&select_lst, create_node("interval_coverage", NULL, NULL, NULL));
 ;}
     break;
 
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 304 "biosql.y"
+#line 309 "biosql.y"
     {
 	//printf("@@adding %s\n",$1);
 	add_node(&select_lst, create_node((yyvsp[(1) - (3)].string), NULL, NULL, NULL)); //remembers which names have been encountered by select
@@ -1784,7 +1793,7 @@ yyreduce:
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 308 "biosql.y"
+#line 313 "biosql.y"
     {
 	//printf("@@adding %s\n",$1);
 	add_node(&select_lst, create_node((yyvsp[(1) - (1)].string), NULL, NULL, NULL)); //remembers which names have been encountered by select
@@ -1794,7 +1803,7 @@ yyreduce:
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 312 "biosql.y"
+#line 317 "biosql.y"
     {
 	add_node(&select_lst, create_node((yyvsp[(1) - (1)].entry)->name, NULL, NULL, (yyvsp[(1) - (1)].entry)->owner));
 ;}
@@ -1803,7 +1812,7 @@ yyreduce:
   case 33:
 
 /* Line 1455 of yacc.c  */
-#line 321 "biosql.y"
+#line 326 "biosql.y"
     {
 	emit(&emit_lst, "N/A", NULL, NULL, NULL, NULL);
 	emit(&emit_lst, "end_interval_spec",NULL, NULL, NULL, NULL);
@@ -1814,10 +1823,11 @@ yyreduce:
   case 34:
 
 /* Line 1455 of yacc.c  */
-#line 326 "biosql.y"
+#line 332 "biosql.y"
     {
-	emit(&emit_lst, (yyvsp[(1) - (6)].entry)->name, "start", "=", (yyvsp[(3) - (6)].entry)->place, NULL);
-	emit(&emit_lst, (yyvsp[(1) - (6)].entry)->name, "end", "=", (yyvsp[(5) - (6)].entry)->place, NULL);
+
+	emit(&emit_lst, (yyvsp[(1) - (8)].entry)->name, "start", "=", (yyvsp[(5) - (8)].entry)->place, NULL);
+	emit(&emit_lst, (yyvsp[(1) - (8)].entry)->name, "end", "=", (yyvsp[(7) - (8)].entry)->place, NULL);
 	emit(&emit_lst, "end_interval_spec",NULL, NULL, NULL, NULL);
 	emit(&emit_lst, "begin_filtering_code",NULL, NULL, NULL, NULL);
 ;}
@@ -1826,11 +1836,11 @@ yyreduce:
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 332 "biosql.y"
+#line 340 "biosql.y"
     {
-	emit(&emit_lst, (yyvsp[(1) - (7)].entry)->name, "mate_en", "=", "1", NULL);
-	emit(&emit_lst, (yyvsp[(1) - (7)].entry)->name, "start", "=", (yyvsp[(4) - (7)].entry)->place, NULL);
-	emit(&emit_lst, (yyvsp[(1) - (7)].entry)->name, "end", "=", (yyvsp[(6) - (7)].entry)->place, NULL);
+	emit(&emit_lst, (yyvsp[(1) - (10)].entry)->name, "mate_en", "=", "1", NULL);
+	emit(&emit_lst, (yyvsp[(1) - (10)].entry)->name, "start", "=", (yyvsp[(5) - (10)].entry)->place, NULL);
+	emit(&emit_lst, (yyvsp[(1) - (10)].entry)->name, "end", "=", (yyvsp[(7) - (10)].entry)->place, NULL);
 	emit(&emit_lst, "end_interval_spec",NULL, NULL, NULL, NULL);
 	emit(&emit_lst, "begin_filtering_code",NULL, NULL, NULL, NULL);
 
@@ -1840,7 +1850,7 @@ yyreduce:
   case 36:
 
 /* Line 1455 of yacc.c  */
-#line 343 "biosql.y"
+#line 351 "biosql.y"
     {
 	(yyval.entry)=lookup(lst, (yyvsp[(1) - (1)].string), "table", "table", NULL);
 	//st_node *tmp;
@@ -1859,7 +1869,7 @@ yyreduce:
   case 37:
 
 /* Line 1455 of yacc.c  */
-#line 358 "biosql.y"
+#line 366 "biosql.y"
     { //the type of where_args is str and denotes the respective temporary variable
 	(yyval.string)=get_newtemp();
 	emit(&emit_lst, (yyval.string),"=",(yyvsp[(1) - (3)].string), "&&", (yyvsp[(3) - (3)].string));
@@ -1869,7 +1879,7 @@ yyreduce:
   case 38:
 
 /* Line 1455 of yacc.c  */
-#line 362 "biosql.y"
+#line 370 "biosql.y"
     {
 (yyval.string)=get_newtemp();
 	emit(&emit_lst, (yyval.string),"=",(yyvsp[(1) - (3)].string), "&&", (yyvsp[(3) - (3)].string));
@@ -1879,7 +1889,7 @@ yyreduce:
   case 39:
 
 /* Line 1455 of yacc.c  */
-#line 366 "biosql.y"
+#line 374 "biosql.y"
     {
 	(yyval.string)=get_newtemp();
 	emit(&emit_lst, (yyval.string),"=",(yyvsp[(1) - (3)].string), "||", (yyvsp[(3) - (3)].string));
@@ -1889,7 +1899,7 @@ yyreduce:
   case 40:
 
 /* Line 1455 of yacc.c  */
-#line 370 "biosql.y"
+#line 378 "biosql.y"
     {
 	(yyval.string)=get_newtemp();
 	emit(&emit_lst, (yyval.string),"=","!",(yyvsp[(2) - (2)].string), NULL);
@@ -1899,7 +1909,7 @@ yyreduce:
   case 41:
 
 /* Line 1455 of yacc.c  */
-#line 374 "biosql.y"
+#line 382 "biosql.y"
     {
 	(yyval.string)=strdup((yyvsp[(2) - (3)].string));
 	//emit(&emit_lst, $$,"=",$1.place, NULL, NULL);
@@ -1909,7 +1919,7 @@ yyreduce:
   case 42:
 
 /* Line 1455 of yacc.c  */
-#line 378 "biosql.y"
+#line 386 "biosql.y"
     {
 	(yyval.string)=strdup((yyvsp[(1) - (1)].string));
 ;}
@@ -1918,7 +1928,7 @@ yyreduce:
   case 43:
 
 /* Line 1455 of yacc.c  */
-#line 384 "biosql.y"
+#line 392 "biosql.y"
     {
 
 	if (strcmp((yyvsp[(1) - (3)].entry)->type, (yyvsp[(3) - (3)].entry)->type)!=0) symerror("Incompatible types in a where expression", (yyvsp[(1) - (3)].entry)->name);
@@ -1961,7 +1971,50 @@ yyreduce:
   case 44:
 
 /* Line 1455 of yacc.c  */
-#line 423 "biosql.y"
+#line 429 "biosql.y"
+    {
+
+	if (strcmp((yyvsp[(1) - (3)].entry)->type, (yyvsp[(3) - (3)].entry)->type)!=0) symerror("Incompatible types in a where expression", (yyvsp[(1) - (3)].entry)->name);
+
+	char *tmp_str1=(char*)malloc(1024);
+	char *tmp_str2=(char*)malloc(1024);
+	
+	if (strcmp((yyvsp[(1) - (3)].entry)->type, "string")!=0){
+		sprintf(tmp_str1,"%s %s %s",(yyvsp[(1) - (3)].entry)->place,(yyvsp[(2) - (3)].string),(yyvsp[(3) - (3)].entry)->place);
+		sprintf(tmp_str2,"%d",nextstat+3);
+	}
+	else{
+		if(strcmp((yyvsp[(2) - (3)].string),"==")==0)
+			sprintf(tmp_str1, "(strcmp( %s , %s )==0)", (yyvsp[(1) - (3)].entry)->place, (yyvsp[(3) - (3)].entry)->place);
+		else if(strcmp((yyvsp[(2) - (3)].string),"!=")==0)
+			sprintf(tmp_str1, "(strcmp( %s , %s )!=0)", (yyvsp[(1) - (3)].entry)->place, (yyvsp[(3) - (3)].entry)->place);
+		else if((yyvsp[(2) - (3)].string)[0]=='>')
+			sprintf(tmp_str1, "(strcmp( %s , %s )>0)", (yyvsp[(1) - (3)].entry)->place, (yyvsp[(3) - (3)].entry)->place);
+		else 
+			sprintf(tmp_str1, "(strcmp( %s , %s )<0)", (yyvsp[(1) - (3)].entry)->place, (yyvsp[(3) - (3)].entry)->place);
+	}
+
+
+	
+
+	(yyval.string)=get_newtemp();
+	/*emit(&emit_lst, "if", tmp_str1, "goto",tmp_str2,NULL);//original impl
+	emit(&emit_lst, $$,"=","0",NULL, NULL);*/
+	emit(&emit_lst, (yyval.string), "=", tmp_str1,NULL, NULL);
+	/*sprintf(tmp_str2,"%d",nextstat+2);
+	emit(&emit_lst, "goto", tmp_str2,NULL, NULL, NULL);
+	emit(&emit_lst, $$,"=","1",NULL,NULL);*/
+
+	free(tmp_str1);
+	free(tmp_str2);
+
+;}
+    break;
+
+  case 45:
+
+/* Line 1455 of yacc.c  */
+#line 468 "biosql.y"
     {
 	if(strcmp((yyvsp[(1) - (3)].entry)->type,"integer")!=0 || strcmp((yyvsp[(3) - (3)].entry)->type,"integer")!=0) symerror("Only integers are allowed in arithmetic operations", (yyvsp[(1) - (3)].entry));
 	(yyval.entry)=create_node((yyvsp[(1) - (3)].entry)->name, (yyvsp[(1) - (3)].entry)->type, (yyvsp[(1) - (3)].entry)->kind, (yyvsp[(1) - (3)].entry)->owner);
@@ -1970,10 +2023,10 @@ yyreduce:
 ;}
     break;
 
-  case 45:
+  case 46:
 
 /* Line 1455 of yacc.c  */
-#line 430 "biosql.y"
+#line 475 "biosql.y"
     {
 	if(strcmp((yyvsp[(2) - (2)].entry)->type,"integer")!=0) symerror("Only integers are allowed in arithmetic operations", (yyvsp[(2) - (2)].entry));
 	(yyval.entry)=create_node((yyvsp[(2) - (2)].entry)->name, (yyvsp[(2) - (2)].entry)->type, (yyvsp[(2) - (2)].entry)->kind, (yyvsp[(2) - (2)].entry)->owner);
@@ -1982,10 +2035,10 @@ yyreduce:
 ;}
     break;
 
-  case 46:
+  case 47:
 
 /* Line 1455 of yacc.c  */
-#line 436 "biosql.y"
+#line 481 "biosql.y"
     {
 	st_node *tmp=lookup_mult_tables(from_lst, len_from_lst, lst, (yyvsp[(1) - (1)].string));
 	check_for_symerror(tmp, "Unknown attribute in where expressions", (yyvsp[(1) - (1)].string));
@@ -2002,10 +2055,10 @@ yyreduce:
 ;}
     break;
 
-  case 47:
+  case 48:
 
 /* Line 1455 of yacc.c  */
-#line 451 "biosql.y"
+#line 496 "biosql.y"
     {
 	(yyval.entry)=create_node((yyvsp[(1) - (1)].entry)->name, (yyvsp[(1) - (1)].entry)->type, (yyvsp[(1) - (1)].entry)->kind, (yyvsp[(1) - (1)].entry)->owner);
 	(yyval.entry)->place=strdup((yyvsp[(1) - (1)].entry)->place);
@@ -2013,10 +2066,10 @@ yyreduce:
 ;}
     break;
 
-  case 48:
+  case 49:
 
 /* Line 1455 of yacc.c  */
-#line 457 "biosql.y"
+#line 502 "biosql.y"
     {
 	(yyval.entry)=create_node(yylval.string, "integer", NULL, NULL);
 	(yyval.entry)->place=strdup((yyval.entry)->name);
@@ -2024,10 +2077,10 @@ yyreduce:
 ;}
     break;
 
-  case 49:
+  case 50:
 
 /* Line 1455 of yacc.c  */
-#line 464 "biosql.y"
+#line 509 "biosql.y"
     {
 	st_node *origin=lookup(lst, (yyvsp[(1) - (3)].string), "table", "table", NULL);
 	check_for_symerror(origin, "Could not find parent table", (yyvsp[(1) - (3)].string));
@@ -2044,107 +2097,100 @@ yyreduce:
 ;}
     break;
 
-  case 50:
-
-/* Line 1455 of yacc.c  */
-#line 480 "biosql.y"
-    {(yyval.string)=strdup("==");;}
-    break;
-
   case 51:
 
 /* Line 1455 of yacc.c  */
-#line 481 "biosql.y"
-    {(yyval.string)=strdup(">=");;}
+#line 525 "biosql.y"
+    {(yyval.string)=strdup("==");;}
     break;
 
   case 52:
 
 /* Line 1455 of yacc.c  */
-#line 482 "biosql.y"
-    {(yyval.string)=strdup("<=");;}
+#line 526 "biosql.y"
+    {(yyval.string)=strdup(">=");;}
     break;
 
   case 53:
 
 /* Line 1455 of yacc.c  */
-#line 483 "biosql.y"
-    {(yyval.string)=strdup(">");;}
+#line 527 "biosql.y"
+    {(yyval.string)=strdup("<=");;}
     break;
 
   case 54:
 
 /* Line 1455 of yacc.c  */
-#line 484 "biosql.y"
-    {(yyval.string)=strdup("<");;}
+#line 528 "biosql.y"
+    {(yyval.string)=strdup(">");;}
     break;
 
   case 55:
 
 /* Line 1455 of yacc.c  */
-#line 487 "biosql.y"
-    {(yyval.string)=strdup("+");;}
+#line 529 "biosql.y"
+    {(yyval.string)=strdup("<");;}
     break;
 
   case 56:
 
 /* Line 1455 of yacc.c  */
-#line 488 "biosql.y"
-    {(yyval.string)=strdup("-");;}
+#line 532 "biosql.y"
+    {(yyval.string)=strdup("+");;}
     break;
 
   case 57:
 
 /* Line 1455 of yacc.c  */
-#line 489 "biosql.y"
-    {(yyval.string)=strdup("x");;}
+#line 533 "biosql.y"
+    {(yyval.string)=strdup("-");;}
     break;
 
   case 58:
 
 /* Line 1455 of yacc.c  */
-#line 490 "biosql.y"
-    {(yyval.string)=strdup("/");;}
+#line 534 "biosql.y"
+    {(yyval.string)=strdup("x");;}
     break;
 
   case 59:
 
 /* Line 1455 of yacc.c  */
-#line 491 "biosql.y"
-    {(yyval.string)=strdup("%");;}
+#line 535 "biosql.y"
+    {(yyval.string)=strdup("/");;}
     break;
 
   case 60:
 
 /* Line 1455 of yacc.c  */
-#line 493 "biosql.y"
-    {
-	(yyval.entry)=create_node(yylval.string, "char", NULL, NULL);
-;}
+#line 536 "biosql.y"
+    {(yyval.string)=strdup("%");;}
     break;
 
   case 61:
 
 /* Line 1455 of yacc.c  */
-#line 496 "biosql.y"
+#line 538 "biosql.y"
     {
-	(yyval.entry)=create_node(yylval.string, "string", NULL, NULL);
+	(yyval.entry)=create_node(yylval.string, "char", NULL, NULL);
+	if((yyval.entry)->name[1]=='+') (yyval.entry)->name[1]='F'; //cannot predict whether user chooses F/+
+	if((yyval.entry)->name[1]=='-') (yyval.entry)->name[1]='R'; //cannot predict whether user chooses R/-
 ;}
     break;
 
   case 62:
 
 /* Line 1455 of yacc.c  */
-#line 499 "biosql.y"
+#line 543 "biosql.y"
     {
-	(yyval.entry)=create_node(yylval.string, "integer", NULL, NULL);
+	(yyval.entry)=create_node(yylval.string, "string", NULL, NULL);
 ;}
     break;
 
 
 
 /* Line 1455 of yacc.c  */
-#line 2148 "biosql.c"
+#line 2194 "biosql.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2356,7 +2402,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 504 "biosql.y"
+#line 551 "biosql.y"
 
 extern FILE *yyin;
 

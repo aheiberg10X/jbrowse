@@ -89,10 +89,14 @@ else :
     print "popping run_biosql.sh"
     t1 = time.time()
     #chrom is 1..22 X Y
-    pop = Popen(['bash', "../genomequery/biosql_compiler/biosql/run_biosql.sh", \
+    src_table_dir = "%s/data/tracks/%s_%s/interval_tables" \
+                    % (root, GlobalConfig.DONOR_PREFIX, donor)
+    pop = Popen(['bash', \
+                 "../genomequery/biosql_compiler/biosql/run_biosql.sh", \
                  query_loc, \
                  donor, \
-                 chromnum], \
+                 chromnum, \
+                 src_table_dir], \
                 stdin=PIPE, stdout=PIPE, stderr=PIPE)
     (out, err) = pop.communicate()
     sys.stdout.write( out )

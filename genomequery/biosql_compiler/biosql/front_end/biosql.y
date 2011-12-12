@@ -64,7 +64,10 @@ char *parsed_table_file;
 %token  MAPJOIN
 %token	IMPORT
 %token	USE
-%token	MATES
+%token  USING
+%token	INTERVAL_CREATION
+%token  INTERVALS
+%token	BOTH_MATES
 
 %type <string> names
 %type <entry> obj_names
@@ -213,8 +216,8 @@ select_statement: SELECT select_args FROM compound_from_arg WHERE where_args{
 			replicate_args(from_lst, len_from_lst, &lst, cur_owner); //All properties of the tables in from_args are replicated under a new owner.
 			emit(&emit_lst, "return_arg",":", "*",NULL, NULL);
 		}
-		else if(strcmp(select_lst->name, "countvec")==0){
-			add_node(&lst, create_node("countvec", "integer", "attribute", cur_owner));
+		else if(strcmp(select_lst->name, "interval_coverage")==0){
+			add_node(&lst, create_node("interval_coverage", "integer", "attribute", cur_owner));
 			emit(&emit_lst, "return_arg",":","strength_vector",NULL, NULL);
 		}
 		else{
@@ -242,8 +245,8 @@ select_statement: SELECT select_args FROM compound_from_arg WHERE where_args{
 			replicate_args(from_lst, len_from_lst, &lst, cur_owner); //All properties of the tables in from_args are replicated under a new owner.
 			emit(&emit_lst, "return_arg",":", "*",NULL, NULL);
 		}
-		else if(strcmp(select_lst->name, "countvec")==0){
-			add_node(&lst, create_node("countvec", "integer", "attribute", cur_owner));
+		else if(strcmp(select_lst->name, "interval_coverage")==0){
+			add_node(&lst, create_node("interval_coverage", "integer", "attribute", cur_owner));
 			emit(&emit_lst, "return_arg",":","strength_vector",NULL, NULL);
 		}
 		else{
@@ -272,8 +275,8 @@ select_statement: SELECT select_args FROM compound_from_arg WHERE where_args{
 		replicate_args(from_lst, len_from_lst, &lst, cur_owner); //All properties of the tables in from_args are replicated under a new owner.
 		///////////////emit(&emit_lst, "return_arg",":", "*",NULL, NULL);
 	}
-	else if(strcmp(select_lst->name, "countvec")==0){
-		add_node(&lst, create_node("countvec", "integer", "attribute", cur_owner));
+	else if(strcmp(select_lst->name, "interval_coverage")==0){
+		add_node(&lst, create_node("interval_coverage", "integer", "attribute", cur_owner));
 		emit(&emit_lst, "return_arg",":","strength_vector",NULL, NULL);
 	}
 	else{
@@ -298,8 +301,8 @@ select_args: STAR{
 	add_node(&select_lst, create_node("*",NULL, NULL, NULL));
 
 }
-| COUNT{
-	add_node(&select_lst, create_node("countvec", NULL, NULL, NULL));
+| INTERVAL_CREATION LPAREN RPAREN{
+	add_node(&select_lst, create_node("interval_coverage", NULL, NULL, NULL));
 }
 | select_arg_series
 
@@ -325,16 +328,19 @@ compound_from_arg: from_arg{
 	emit(&emit_lst, "end_interval_spec",NULL, NULL, NULL, NULL);
 	emit(&emit_lst, "begin_filtering_code",NULL, NULL, NULL, NULL);
 }
-| from_arg LPAREN arith_expr COMMA arith_expr RPAREN{
-	emit(&emit_lst, $1->name, "start", "=", $3->place, NULL);
-	emit(&emit_lst, $1->name, "end", "=", $5->place, NULL);
+/*| from_arg LPAREN arith_expr COMMA arith_expr RPAREN{*/
+| from_arg USING INTERVALS LPAREN arith_expr COMMA arith_expr RPAREN{
+
+	emit(&emit_lst, $1->name, "start", "=", $5->place, NULL);
+	emit(&emit_lst, $1->name, "end", "=", $7->place, NULL);
 	emit(&emit_lst, "end_interval_spec",NULL, NULL, NULL, NULL);
 	emit(&emit_lst, "begin_filtering_code",NULL, NULL, NULL, NULL);
 }
-| from_arg MATES LPAREN arith_expr COMMA arith_expr RPAREN{
+/*| from_arg MATES LPAREN arith_expr COMMA arith_expr RPAREN{*/
+| from_arg USING INTERVALS LPAREN arith_expr COMMA arith_expr COMMA BOTH_MATES RPAREN{
 	emit(&emit_lst, $1->name, "mate_en", "=", "1", NULL);
-	emit(&emit_lst, $1->name, "start", "=", $4->place, NULL);
-	emit(&emit_lst, $1->name, "end", "=", $6->place, NULL);
+	emit(&emit_lst, $1->name, "start", "=", $5->place, NULL);
+	emit(&emit_lst, $1->name, "end", "=", $7->place, NULL);
 	emit(&emit_lst, "end_interval_spec",NULL, NULL, NULL, NULL);
 	emit(&emit_lst, "begin_filtering_code",NULL, NULL, NULL, NULL);
 

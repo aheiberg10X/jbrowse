@@ -15,7 +15,7 @@ digit	[0-9]
 number	{digit}+
 constChar	"'"([^"\"""\'""\\"])"'"
 constString	"\""([^"\"""\'""\\"\n])*"\""
-mates	mates|MATES
+both_mates	both_mates|BOTH_MATES
 select	select|SELECT
 from	from|FROM
 mapjoin mapjoin|MAPJOIN
@@ -30,7 +30,10 @@ float	float|FLOAT
 char	char|CHAR
 string_type string|STRING
 import	import|IMPORT
-use		use
+use		use|USE
+using	using|USING
+interval_creation interval_creation|INTERVAL_CREATION
+intervals intervals|INTERVALS
 name		([a-z]|[A-Z])+([0-9]|_|[a-z]|[A-Z])*
 comment #.*\n
 
@@ -43,11 +46,11 @@ comment #.*\n
 	strcpy(yylval.string,yytext);
 	return DOT;
 }
-{mates}	{
+{both_mates}	{
 	lineNo=line;
 	yylval.string=(char*)malloc(strlen(yytext)+1);
 	strcpy(yylval.string,yytext);
-	return MATES;
+	return BOTH_MATES;
 
 }
 {constChar}	{
@@ -191,6 +194,28 @@ comment #.*\n
 	return USE;
 }
 
+{using}	{
+	lineNo=line;//printf("or\n");
+	yylval.string=(char*)malloc(strlen(yytext)+1);
+	strcpy(yylval.string,yytext);
+	return USING;
+
+}
+{interval_creation}	{
+	lineNo=line;//printf("or\n");
+	yylval.string=(char*)malloc(strlen(yytext)+1);
+	strcpy(yylval.string,yytext);
+	return INTERVAL_CREATION;
+
+}
+
+{intervals}	{
+	lineNo=line;//printf("or\n");
+	yylval.string=(char*)malloc(strlen(yytext)+1);
+	strcpy(yylval.string,yytext);
+	return INTERVALS;
+
+}
 
 "=="	{
 	lineNo=line;//printf("equality\n");/*return TK_EQUAL*/

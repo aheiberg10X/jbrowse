@@ -1,5 +1,5 @@
-if [ $# -ne 3 ] ; then
-	echo 'usage: ./run_biosql.sh <biosql_code> <donor> <chrom>'
+if [ $# -ne 4 ] ; then
+	echo 'usage: ./run_biosql.sh <biosql_code> <donor> <chrom> <src_table_dir>'
 	exit 
 fi
 
@@ -7,7 +7,7 @@ input_sql=$1
 donor=$2
 c=$3
 interm_code="bytecode.txt"
-products_dir_prefx=$3 #"dst"
+products_dir_prefx="dst"    #why did Christos use $3 here?
 front_end_dir="front_end"
 back_end_dir="back_end"
 src_table_dir=$4 

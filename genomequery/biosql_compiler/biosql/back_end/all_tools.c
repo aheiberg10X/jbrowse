@@ -97,7 +97,7 @@ void filter_reads(char *indx_file, char *in_valid_file, char *dst_file){
 //If valid_lst_in (found in in_valid_file) is non NULL, the filtering considers only those reads that are present in valid_lst_in.
 void filter_imported(char *f_tbl_indx, char *in_valid_file, char *dst_file){	
 	int ttl_table=0;
-	Imported_info *tbl=(Imported_info*)retrieve_vec(f_tbl_indx, sizeof(Imported_info),&ttl_table);
+	Imported_info *tbl=retrieve_imported(f_tbl_indx, &ttl_table);
 	int *valid_lst_in=NULL, ttl_valid_in=0;
 
 	if(in_valid_file!=NULL)
@@ -115,7 +115,6 @@ void filter_imported(char *f_tbl_indx, char *in_valid_file, char *dst_file){
 		}
 		else cur_i=i;
 		if (isvalid_imported(tbl, cur_i, ttl_table)>0) cnt+=1;
-		i++;
 	}
 	ret=(int*)malloc(sizeof(int)*(cnt+1));
 	cnt=0;
@@ -127,7 +126,6 @@ void filter_imported(char *f_tbl_indx, char *in_valid_file, char *dst_file){
 		}
 		else cur_i=i;
 		if(isvalid_imported(tbl, i, ttl_table)>0) ret[cnt++]=i;
-		i++;
 	}
 	ttl_table=cnt;
 	store_vec(dst_file, ret, sizeof(int), ttl_table);
@@ -160,10 +158,10 @@ void filter_join(char *fjoin, char *findx1, char *findx2, char *dst_file, char *
 		strand_indx2=get_strand_index(findx2, &ttl_strand2);
 	}
 	if (strcmp(type1, "imported")==0){
-		imp1=(Imported_info*)retrieve_vec(findx1, sizeof(Imported_info), &ttl_imp1);
+		imp1=retrieve_imported(findx1, &ttl_imp1);
 	}
 	if(strcmp(type2, "imported")==0){
-		imp2=(Imported_info*)retrieve_vec(findx2, sizeof(Imported_info), &ttl_imp2);
+		imp2=retrieve_imported(findx2, &ttl_imp2);
 	}
 	int i=0;
 	int cnt=0;
