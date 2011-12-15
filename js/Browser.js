@@ -304,7 +304,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
              label: "Upload",
              style: "align-text: right;",
              onClick: function(){ 
-                 args = {"donor_name" : tree.selectedItem.name};
+                 args = {"project_name" : tree.selectedItem.name};
                  url = "bin/upload_interval_table.py?" 
                        + dojo.objectToQuery(args);
                  dojo.io.iframe.send({
@@ -616,7 +616,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     var query_menuitem = new dijit.MenuItem({
             label: "New Query",
-            prefix: "donor_",
+            prefix: "project_",
             hidden: false,
             onClick: function(e) {
                 fillWithIntervalTables( query_interval_table_p );
@@ -625,7 +625,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     pMenu.addChild( query_menuitem );
 
     var fillWithIntervalTables = function( html_elem ){
-        args = {"donor_name" : tree.selectedItem.name};
+        args = {"project_name" : tree.selectedItem.name};
         url = "bin/list_interval_tables.py?"+dojo.objectToQuery(args);
         dojo.xhrGet({
             url: url,
@@ -660,7 +660,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     var table_menuitem = new dijit.MenuItem({
         label: "Upload Interval Table",
-        prefix: "donor_",
+        prefix: "project_",
         hidden: false,
         onClick: function(e) {
             fillWithIntervalTables( interval_table_p );    
@@ -668,6 +668,42 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         }
     });
     pMenu.addChild( table_menuitem );
+
+    var donor_upload_menuitem = new dijit.MenuItem({
+        label: "Upload Donor Genome",
+        prefix: "project_",
+        hidden: false,
+        onClick: function(e) {
+            alert("Email aheiberg@ucsd.edu");
+        }
+    });
+    pMenu.addChild( donor_upload_menuitem );
+    
+    var new_project_menuitem = new dijit.MenuItem({
+        label: "New Project",
+        prefix: "root_",
+        hidden: false,
+        onClick: function(e) {
+            var xhrArgs = {
+                url: "bin/make_new_project.py",
+                form: dojo.byId("new_project_form"),
+                handleAs: "json",
+                load: function(data,ioargs) {
+                    if( data["status"] == "ok" ){
+                    }
+                    else{       
+                        alert(data["message"]);
+                    }
+                },
+                error: function(error) {
+                   alert(error); 
+                }
+            }
+            //Call the asynchronous xhrPost
+            var deferred = dojo.xhrPost(xhrArgs);
+        }
+    });
+    pMenu.addChild( new_project_menuitem );
 
     pMenu.startup();
 
@@ -682,32 +718,37 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
              onClick :
                 function(selected,e){ 
                     this.clickedItem = selected;
-                    var isVisualized = brwsr.view.isVisualized( selected.key );
-                    if( isVisualized ){ 
-                        visualize_menuitem.hidden = true;
-                        recall_menuitem.hidden = false;
-                    }
-                    else { 
-                        visualize_menuitem.hidden = false;
-                        recall_menuitem.hidden = true;
-                    }
+                    //if( this.clickedItem.id == 'tree_root' ){
+                    //
+                    //}
+                    //else{
+                        var isVisualized = brwsr.view.isVisualized( selected.key );
+                        if( isVisualized ){ 
+                            visualize_menuitem.hidden = true;
+                            recall_menuitem.hidden = false;
+                        }
+                        else { 
+                            visualize_menuitem.hidden = false;
+                            recall_menuitem.hidden = true;
+                        }
 
-                    if( brwsr.running_query ){
-                        query_menuitem.hidden = true;
-                        pleasewait_menuitem.hidden = false;
-                    }
-                    else {
-                        query_menuitem.hidden = false;
-                        pleasewait_menuitem.hidden = true;
-                    }
+                        if( brwsr.running_query ){
+                            query_menuitem.hidden = true;
+                            pleasewait_menuitem.hidden = false;
+                        }
+                        else {
+                            query_menuitem.hidden = false;
+                            pleasewait_menuitem.hidden = true;
+                        }
 
-                    //hack to make left click work on tree
-                    //openOnLeftClick: true | is insufficient for whatever reason
-                    //when dealing with dijit.Trees
-                    pMenu._openMyself(item);
+                        //hack to make left click work on tree
+                        //openOnLeftClick: true | is insufficient for whatever reason
+                        //when dealing with dijit.Trees
+                        pMenu._openMyself();
+                    }
                     //var trackkey = store.getValue(this.selectedItem, 'key');
                     //var isVisualized = brwsr.view.isVisualized( trackkey ); //f.length == 1;
-                }
+                    //}
             })
         tree.placeAt( explorer_cpane.domNode ); 
         pMenu.bindDomNode(dojo.byId("tree"));
@@ -719,7 +760,9 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     //selective presentation of menu children depending on the tree.clickedItem 
     dojo.connect(pMenu, "_openMyself", this, function(e){
         var treeItem = dijit.getEnclosingWidget(e.target).item;
-
+        if( treeItem.root ){
+            treeItem.prefix = "root_";
+        }
         var children = pMenu.getChildren();
         for( i in children ){
             child = children[i];
