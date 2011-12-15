@@ -491,7 +491,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                      {id : "model",
                       store : store,
                       rootId : "tree_root",
-                      rootLabel : "Donors" }
+                      rootLabel : "Projects" }
                     );       
 
     ///////////////////////////////////
@@ -529,14 +529,17 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             onClick: function(e) {
                 var selected = tree.clickedItem;
                 var query_name = selected.name; 
+                var project_name = selected.project;
                 var donor_name = selected.donor;
                 var host_chrom = brwsr.refSeq.name;
                 var chromnum = host_chrom.substring(3);
                 var url = "data/" + 
                            sprintf( sprintf( globals.TRACK_TEMPLATE, 
+                                             globals.PROJECT_PREFIX,
                                              globals.DONOR_PREFIX, 
                                              globals.QUERY_PREFIX,
-                                             globals.CHROM_PREFIX ), 
+                                             globals.CHROM_PREFIX ),
+                                    project_name, 
                                     donor_name, 
                                     query_name,
                                     brwsr.refSeq.name ) + 
@@ -555,11 +558,14 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 var chromnum = host_chrom.substring(3);
                 var query_name = item.name;
                 var donor_name = item.donor;
+                var project_name = item.project;
                 var url = "data/" + 
                            sprintf( sprintf( globals.TRACK_TEMPLATE, 
+                                             globals.PROJECT_PREFIX,
                                              globals.DONOR_PREFIX, 
                                              globals.QUERY_PREFIX,
                                              globals.CHROM_PREFIX ), 
+                                    project_name,
                                     donor_name, 
                                     query_name,
                                     brwsr.refSeq.name ) +  

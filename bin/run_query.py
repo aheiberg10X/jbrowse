@@ -135,7 +135,7 @@ else :
     #print "done moving, took: %f s" % (t3-t2)
 
     print "starting bam2ncl"
-    pop = Popen(["./bam_to_json_paired_cgi.pl", \
+    pop = Popen(["./bam2ncl.pl", \
                  donor, \
                  chromnum, \
                  query_name, \
