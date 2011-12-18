@@ -1,4 +1,5 @@
 #!/usr/bin/python
+
 import cgi
 import simplejson as json
 import os
@@ -11,9 +12,9 @@ import utils
 import time
 from subprocess import Popen, PIPE
 
-err_filename = "%s/list_error.txt" % (GlobalConfig.DEBUG_DIR)
+err_filename = "%s/list_tables_error.txt" % (GlobalConfig.DEBUG_DIR)
 sys.stderr = open( err_filename,'w')
-out_filename = "%s/list_output.txt" % (GlobalConfig.DEBUG_DIR)
+out_filename = "%s/list_tables_output.txt" % (GlobalConfig.DEBUG_DIR)
 sys.stdout = open( out_filename,'w')
 
 fields = cgi.FieldStorage()
