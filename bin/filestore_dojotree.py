@@ -102,6 +102,8 @@ def makeItem( path ) :
     if show( path, name) :
         name = utils.unprefix(name)
         parent_prefix = getPrefix( parent, parent_name )
+        gparent_prefix = getPrefix( gparent, gparent_name )
+        gparent_name = utils.extractName(gparent_prefix, path)
         parent_name = utils.extractName(parent_prefix, path)
         item = {'name' : name, \
                 'parentDir' : parent, \
