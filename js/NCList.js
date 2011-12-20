@@ -106,8 +106,7 @@ NCList.prototype.iterHelper = function(arr, from, to, fun, finish,
     var len = arr.length;
     var i = this.binarySearch(arr, from, searchIndex);
     var rendered = 0;
-    while (rendered < 4 &&
-           (i < len)
+    while ((i < len)
            && (i >= 0)
            && ((inc * arr[i][testIndex]) < (inc * to)) ) {
 
