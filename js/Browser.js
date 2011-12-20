@@ -30,6 +30,7 @@ var Browser = function(params) {
     dojo.require("dojo.cache");
     dojo.require("dijit.form.Form");
     dojo.require("dijit.form.Button");
+    dojo.require("dijit.form.ToggleButton");
     dojo.require("dijit.form.TextBox");
     dojo.require("dijit.form.Textarea");
     dojo.require("dojox.form.FileInput");
@@ -754,28 +755,71 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             url: url,
             handleAs: "json",
             load: function(data,args){
-                html_elem.innerHTML = "Uploaded Tables: <br />";
-                html_elem.innerHTML += "<ul>";
+                var widgets = dijit.findWidgets(html_elem);
+                dojo.forEach(widgets, function(w) {
+                        w.destroyRecursive(true);
+                });
+                html_elem.innerHTML = "Use Tables: <br />";
+                //html_elem.innerHTML += "<ul>";
                 if( data['status'] == "EMPTY" ){
-                    html_elem.innerHTML += 
-                        "<li>" 
-                        + data["message"]
-                        + "</li>";
+                    alert("empty");
+                //html_elem.innerHTML += 
+                //"<li>" 
+                //+ data["message"]
+                ////+ "</li>";
                 }
                 else if( data["status"] == 'OK' ){
+                    var button, scheme_link;
                     for ( i in data["message"] ){
-                        html_elem.innerHTML += 
-                            "<li>" 
-                            + data["message"][i] 
-                            + "</li>";
+                        button = dijit.form.ToggleButton(
+                            {id : "table_button_" + i,
+                             label : data["message"][i],
+                             onClick : function(){
+                                 if( this.checked ){
+                                     alert("take some action to insert 'use' statement into query box");
+                                 }
+                                 else {
+                                     alert("remove any 'use ...' from query box");
+                                 }
+                                 //alert(i);
+                             },
+                             iconClass : "dijitCheckBoxIcon"
+                        }).placeAt(html_elem);
+
+                        schema_link = document.createElement("a");
+                        schema_link.id = "schema_link_" + i;
+                        schema_link.appendChild(document.createTextNode("?"));
+                        schema_link.style.cssText = "color: blue; text-decoration: underline; cursor: hand";
+
+
+                        //dojo.connect(schema_link,
+                        //"onmouseover",
+                        //function(){
+                        //this.getNode().style.cursor = "hand";
+                        //}
+                        //);
+                        dojo.connect(schema_link,
+                                     "onclick", 
+                                      function(){ 
+                                          alert("display schema"); 
+                                      }
+                                     );
+                        html_elem.appendChild( schema_link );
+
+                        html_elem.appendChild( document.createElement('br'));
+                //html_elem.innerHTML += 
+                //"<li>" 
+                //+ data["message"][i] 
+                //+ "</li>";
                     }
                 }
                 else{
                     alert( data["message"] );
                 }
-                html_elem.innerHTML += "</ul>";
+                //html_elem.innerHTML += "</ul>";
             },
             error: function(data,args){
+               alert(data);
                alert("trouble fetching the uploaded tables");
             }
         });
@@ -820,7 +864,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         prefix: "project_",
         hidden: false,
         onClick: function(e) {
-            fillWithIntervalTables( interval_table_p );    
+            //fillWithIntervalTables( interval_table_p );    
             table_dialog.show();   
         }
     });

@@ -19,7 +19,7 @@ sys.stdout = open( out_filename,'w')
 
 fields = cgi.FieldStorage()
 project_name = fields.getvalue("project_name")
-
+print project_name
 utils.printToServer( 'Content-type: text/json\n\n' )
 path = "%s/data/tracks/%s%s/interval_tables" % \
             (GlobalConfig.ROOT_DIR, \
@@ -30,7 +30,9 @@ interval_tables = []
 if os.path.exists( path ) :
     for listing in os.listdir( path ) :
         print listing
-        viewable =  listing.strip("%s_" % project_name).strip('.it')
+        viewable = listing.split('_')[1].split('.')[0]
+        #viewable =  listing.strip("%s_" % project_name).strip('.it')
+        print viewable
         interval_tables.append( viewable )
     message = json.dumps(interval_tables)
     status = '"OK"'
