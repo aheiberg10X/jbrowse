@@ -761,7 +761,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                 });
                 html_elem.innerHTML = "Use Tables: <br />";
                 if( data['status'] == "empty" ){
-                    alert("empty");
                 }
                 else if( data["status"] == 'ok' ){
                     var button, scheme_link;
