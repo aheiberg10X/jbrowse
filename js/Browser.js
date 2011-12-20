@@ -725,7 +725,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
  
     var query_dialog = new dijit.Dialog({
                     id : "query_dialog",
-                    title: "New Query",
+                    title: "New Query (under construction)",
         //style: "width: 500px; height: 200px",
                     content: query_dialog_div
                 });
@@ -760,15 +760,10 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                         w.destroyRecursive(true);
                 });
                 html_elem.innerHTML = "Use Tables: <br />";
-                //html_elem.innerHTML += "<ul>";
-                if( data['status'] == "EMPTY" ){
+                if( data['status'] == "empty" ){
                     alert("empty");
-                //html_elem.innerHTML += 
-                //"<li>" 
-                //+ data["message"]
-                ////+ "</li>";
                 }
-                else if( data["status"] == 'OK' ){
+                else if( data["status"] == 'ok' ){
                     var button, scheme_link;
                     for ( i in data["message"] ){
                         button = dijit.form.ToggleButton(
@@ -781,7 +776,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                                  else {
                                      alert("remove any 'use ...' from query box");
                                  }
-                                 //alert(i);
                              },
                              iconClass : "dijitCheckBoxIcon"
                         }).placeAt(html_elem);
@@ -790,7 +784,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                         schema_link.id = "schema_link_" + i;
                         schema_link.appendChild(document.createTextNode("?"));
                         schema_link.style.cssText = "color: blue; text-decoration: underline; cursor: hand";
-
 
                         //dojo.connect(schema_link,
                         //"onmouseover",
@@ -807,16 +800,11 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                         html_elem.appendChild( schema_link );
 
                         html_elem.appendChild( document.createElement('br'));
-                //html_elem.innerHTML += 
-                //"<li>" 
-                //+ data["message"][i] 
-                //+ "</li>";
                     }
                 }
                 else{
                     alert( data["message"] );
                 }
-                //html_elem.innerHTML += "</ul>";
             },
             error: function(data,args){
                alert(data);
@@ -832,26 +820,38 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             url: url,
             handleAs: "json",
             load: function(data,args){
-                html_elem.innerHTML = "Donor Genomes: <br />";
-                html_elem.innerHTML += "<ul>";
-                if( data['status'] == "empty" ){
-                    html_elem.innerHTML += 
-                        "<li>" 
-                        + data["message"]
-                        + "</li>";
+
+                var widgets = dijit.findWidgets(html_elem);
+                dojo.forEach(widgets, function(w) {
+                        w.destroyRecursive(true);
+                });
+                html_elem.innerHTML = "Query Donors: <br />";
+                if( data['status'] == "EMPTY" ){
+                    alert("empty");
                 }
                 else if( data["status"] == 'ok' ){
+                    var button, scheme_link;
                     for ( i in data["message"] ){
-                        html_elem.innerHTML += 
-                            "<li>" 
-                            + data["message"][i] 
-                            + "</li>";
+                        button = dijit.form.ToggleButton(
+                            {id : "donor_button_" + i,
+                             label : data["message"][i],
+                             onClick : function(){
+                                 if( this.checked ){
+                                     alert("change the query or set some interval variable to let the compiler know to only use the marked donors");
+                                 }
+                                 else {
+                                     alert("remove the marked donor from the query");
+                                 }
+                             },
+                             iconClass : "dijitCheckBoxIcon"
+                        }).placeAt(html_elem);
+
+                        html_elem.appendChild( document.createElement('br'));
                     }
                 }
                 else{
                     alert( data["message"] );
                 }
-                html_elem.innerHTML += "</ul>";
             },
             error: function(data,args){
                alert("trouble fetching the donor list");

@@ -30,15 +30,19 @@ interval_tables = []
 if os.path.exists( path ) :
     for listing in os.listdir( path ) :
         print listing
-        viewable = listing.split('_')[1].split('.')[0]
+        if listing.find( project_name ) == 0 :
+            viewable = listing[len(project_name)+1:].rsplit('.',1)[0]
+        else :
+            viewable = "## %s ##" % listing
+        #viewable = listing.split('_',1)[1].rsplit('.',1)[0]
         #viewable =  listing.strip("%s_" % project_name).strip('.it')
         print viewable
         interval_tables.append( viewable )
     message = json.dumps(interval_tables)
-    status = '"OK"'
+    status = "ok"
 else :
-    status = '"EMPTY"'
+    status = "empty"
     message = '"No tables loaded"'
 
 print message
-utils.printToServer( '{"status": %s, "message": %s }' % (status,message) )
+utils.printToServer( '{"status": "%s", "message": %s }' % (status,message) )

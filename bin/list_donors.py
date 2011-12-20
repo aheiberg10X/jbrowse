@@ -28,7 +28,8 @@ project_dir = "%s/data/tracks/%s%s/" \
 donors = []
 for donor in os.listdir( project_dir ) :
     if donor.startswith( GlobalConfig.DONOR_PREFIX ) :
-        donors.append( donor.strip( GlobalConfig.DONOR_PREFIX ) )
+        if donor.find( GlobalConfig.DONOR_PREFIX ) == 0 :
+            donors.append( donor[len(GlobalConfig.DONOR_PREFIX):] )
 
 if len(donors) == 0 :
     status = "empty"
