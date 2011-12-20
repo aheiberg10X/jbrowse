@@ -8,3 +8,5 @@ do
 done
 
 #perl bam_to_json_paired_cgi.pl NA18507 1 q2 not_linking
+
+# got done with chr14 on full dataset
