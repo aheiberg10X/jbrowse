@@ -9,7 +9,7 @@ import cgitb
 import utils
 cgitb.enable()
 
-from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR, DEBUG_DIR, TRACK_TEMPLATE, UNBOUND_CHROM
+from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR, DEBUG_DIR, TRACK_TEMPLATE, UNBOUND_CHROM, PROJECT_PREFIX
 
 perms = {"earthworm jim" : {"NA18507" : False}}
 
@@ -21,6 +21,7 @@ def getChildren( path ) :
     r.sort()
     return r
 
+#needed by spec, see[]
 def handleQuery( path ) :
     total = 0
     items = []
@@ -38,25 +39,38 @@ def handleQuery( path ) :
     print response
     utils.printToServer( response )
 
+#needed by spec, see[]
 def handlePath( path ) :
     item = makeItem( path )
     utils.printToServer( json.dumps( item ) )
 
 def getPrefix( path, name ) :
-    if name.startswith( PRIVATE_PREFIX ) :
-        return PRIVATE_PREFIX
+    if name.startswith( PROJECT_PREFIX ) :
+        return PROJECT_PREFIX
+    elif name.startswith( DONOR_PREFIX ) :
+        return DONOR_PREFIX
+    elif name.startswith( QUERY_PREFIX ) :
+        return QUERY_PREFIX
+    elif name.startswith( CHROM_PREFIX ) :
+        return CHROM_PREFIX
     else :
-        if os.path.isdir( path ) :
-            if name.startswith( QUERY_PREFIX ) :
-                return QUERY_PREFIX
-            elif name.startswith( CHROM_PREFIX ) :
-                return CHROM_PREFIX
-            elif name.startswith( DONOR_PREFIX ) :
-                return DONOR_PREFIX
-            else :
-                return PRIVATE_PREFIX
-        else :
-            return "file"
+        return PRIVATE_PREFIX
+
+#def getPrefix( path, name ) :
+    #if name.startswith( PRIVATE_PREFIX ) :
+        #return PRIVATE_PREFIX
+    #else :
+        #if os.path.isdir( path ) :
+            #if name.startswith( QUERY_PREFIX ) :
+                #return QUERY_PREFIX
+            #elif name.startswith( CHROM_PREFIX ) :
+                #return CHROM_PREFIX
+            #elif name.startswith( DONOR_PREFIX ) :
+                #return DONOR_PREFIX
+            #else :
+                #return PRIVATE_PREFIX
+        #else :
+            #return "file"
 
 def hasPermission( user, path, name ) :
     if user == 'su' : return True
@@ -76,11 +90,14 @@ def show( path, name ) :
 
 def makeItem( path ) :
     print "path: %s" % path
-    (head,parent_name,name) = path.rsplit('/',2)
-    parent= "%s/%s" % (head, parent_name)
+    (head,gparent_name,parent_name,name) = path.rsplit('/',3)
+    gparent = "%s/%s" % (head, gparent_name)
+    parent= "%s/%s" % (gparent, parent_name)
     #is_dir = os.path.isdir(path)
     prefix = getPrefix( path, name )
-    is_dir = prefix == CHROM_PREFIX or prefix == DONOR_PREFIX 
+    is_dir = prefix == DONOR_PREFIX or \
+             prefix == PROJECT_PREFIX
+            #prefix == CHROM_PREFIX or \
     item = {}
     if show( path, name) :
         name = utils.unprefix(name)
@@ -94,9 +111,12 @@ def makeItem( path ) :
 
         if prefix == QUERY_PREFIX : 
             assert parent_prefix == DONOR_PREFIX
+            item['project'] = gparent_name
             item['donor'] = parent_name
-            item['key'] = "%s/%s" % (parent_name,name)
-            item['url'] = "%s/trackData.json" % (TRACK_TEMPLATE % (parent_name, name, UNBOUND_CHROM))
+            item['key'] = "%s/%s/%s" % (gparent_name,parent_name,name)
+            tt = TRACK_TEMPLATE % \
+                    (gparent_name, parent_name, name, UNBOUND_CHROM)
+            item['url'] = "%s/trackData.json" % tt
             item['label'] = name
             item['type'] = 'FeatureTrack'
 

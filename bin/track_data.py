@@ -9,7 +9,7 @@ import cgitb
 import utils
 import filestore_dojotree
 cgitb.enable()
-from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR, DEBUG_DIR, TRACK_TEMPLATE, UNBOUND_CHROM
+from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR, DEBUG_DIR, TRACK_TEMPLATE, UNBOUND_CHROM, PROJECT_PREFIX
 
 #'static' track data, such as SequenceTracks, + query track data inferred from directory structure
 def getTrackData( root ) :
@@ -30,21 +30,26 @@ def getTrackData( root ) :
     trackData.append( seqtrack )
 
     #generate all the query trackdata
-    for listing in os.listdir(root) :
-        fullpath = "%s/%s" % (root,listing)
-        if listing.startswith( DONOR_PREFIX ) and \
-           os.path.isdir( fullpath ) :
-            for sublisting in os.listdir(fullpath) :
-                subfullpath = "%s/%s" % (fullpath,sublisting)
-                if sublisting.startswith( QUERY_PREFIX ) and \
-                   os.path.isdir(subfullpath) :
-                    item = filestore_dojotree.makeItem( subfullpath )
-                    properties = ["url","label","key","type"]
-                    entry = {}
-                    for p in properties :
-                        entry[p] = item[p]
-                    trackData.append(entry)
-                    print entry
+    for project in os.listdir(root) :
+        project_path = "%s/%s" % (root,project)
+        if project.startswith( PROJECT_PREFIX ) and \
+           os.path.isdir( project_path ) :
+            for donor in os.listdir(project_path) :
+                donor_path = "%s/%s" % (project_path,donor)
+                if donor.startswith( DONOR_PREFIX ) and \
+                   os.path.isdir(donor_path) :
+                    for query in os.listdir( donor_path ) :
+                        query_path = "%s/%s" % (donor_path, query)
+                        if query.startswith( QUERY_PREFIX ) and \
+                           os.path.isdir(query_path) :
+
+                            item = filestore_dojotree.makeItem( query_path )
+                            properties = ["url","label","key","type"]
+                            entry = {}
+                            for p in properties :
+                                entry[p] = item[p]
+                            trackData.append(entry)
+                            print entry
 
     utils.printToServer( json.dumps(trackData) );
 

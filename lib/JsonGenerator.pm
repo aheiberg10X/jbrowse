@@ -134,6 +134,8 @@ sub modifyJSFile {
       or die "couldn't close $file: $!";
 }
 
+# not used anymore, the track data information is implicit in the directory
+# structure (data/).  See bin/filestore_dojotree.py
 sub writeTrackEntry {
     my ($file, $entry) = @_;
     modifyJSFile($file, "trackInfo",
@@ -244,7 +246,7 @@ sub new {
     };
 
     $self->{sublistIndex} += 1 if ($self->{sublistIndex} == $lazyIndex);
-    $self->{features} = LazyNCList2->new($startIndex, $endIndex,
+    $self->{features} = LazyNCList->new($startIndex, $endIndex,
                                         $self->{sublistIndex},
                                         $lazyIndex,
                                         $measure,
