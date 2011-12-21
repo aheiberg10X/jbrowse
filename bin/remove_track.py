@@ -12,7 +12,7 @@ import GlobalConfig
 import utils
 #cgitb.enable()
 
-def removeQuery( donor, query_name, delete=False, filename = "../data/trackInfo.js" ) :
+def removeQuery( project, donor, query_name, delete=False, filename = "../data/trackInfo.js" ) :
 
     ##the name javascript expects the json to be loaded into
     #js_var_name = "trackInfo"
@@ -39,7 +39,7 @@ def removeQuery( donor, query_name, delete=False, filename = "../data/trackInfo.
     try :
         #chroms = range(1,23) + ['X','Y']
         #for c in chroms :
-        trackpath = GlobalConfig.TRACK_TEMPLATE % (donor, query_name, "truncated" )
+        trackpath = GlobalConfig.TRACK_TEMPLATE % (project, donor, query_name, "truncated" )
         querypath = trackpath.rsplit('/',1)[0]
         fullpath = "%s/%s" % (GlobalConfig.DATA_DIR, querypath)
         print "fullpath: %s" % fullpath
@@ -79,7 +79,7 @@ if __name__ == '__main__' :
         fields = cgi.parse()
         #utils.printToServer('<html><body><textarea>')
         #try :
-        (status, message) = removeQuery( fields["donor"][0], fields["query_name"][0], delete=True )
+        (status, message) = removeQuery( fields["project"][0], fields["donor"][0], fields["query_name"][0], delete=True )
         utils.printToServer( '{"status":"%s", "message":"%s"}' % (status,message) )
         #except Exception :
             #utils.printToServer( '{"status":"error", "message":"Something went wrong, check the logs"}' )
