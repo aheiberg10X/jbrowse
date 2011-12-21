@@ -245,13 +245,13 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
    ///////////////////////////////////////////////////////////////////////////////////////////////////////
    //                     Query Stuff
    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    var query_div = document.createElement("div");
-    query_div.id = "query_div";
+   //var query_div = document.createElement("div");
+   //query_div.id = "query_div";
     
     //the div to make bordercontainer out of
     var query_dialog_div = document.createElement("div");
     query_dialog_div.id = "query_dialog_div";
-    query_div.appendChild( query_dialog_div );
+    //query_div.appendChild( query_dialog_div );
 
     var query_right_div = document.createElement("div");
     query_dialog_div.appendChild( query_right_div );
@@ -265,10 +265,17 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     query_right_div.appendChild( query_donor_list_div );
 
     //query name, goes on the top
-    var query_name_p = document.createElement("p");
-    query_dialog_div.appendChild( query_name_p );
-    query_name_p.innerHTML = "Name <br />";
+    var query_name_div = document.createElement("div");
+    query_name_div.id = "query_name_div";
     
+    var query_name_p = document.createElement("p");
+    //query_name_div.appendChild( query_name_p );
+
+    query_name_p.innerHTML = "Name <br />";
+    //query_name_div.appendChild( query_name_p );
+
+    query_dialog_div.appendChild( query_name_p );
+
     var query_name = new dijit.form.ValidationTextBox(
             {id: "query_name",
              label: "Query Name",
@@ -311,11 +318,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
              style: "width: 200px; height: 500px; background-color: #ffffff;"
             }, query_right_div) ;
  
-   var query_form = new dijit.form.Form(
-           {id: "query_form",
-            encType : "multipart/form-data"},
-               query_div );
-     
+    
    var query_interval_table_cp = new dijit.layout.ContentPane(
             {id: "query_interval_table_cp",
              style: "height: 50%; background-color: #efefef",
@@ -328,11 +331,17 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
              region: "center"} 
              , query_donor_list_div);
 
+   //var query_form = new dijit.form.Form(
+   //{id: "query_form",
+   //encType : "multipart/form-data"},
+   //query_name_p);
+
     var query_name_cp = new dijit.layout.ContentPane(
             {id: "query_name_cp",
                 style: "background-color: #efefef",
              region: "center", 
              layoutPriority: "1"}, query_name_p);
+    
     
     //var query_box_cp = new dijit.layout.ContentPane(
     //{id: "query_box_cp",
@@ -402,9 +411,14 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         upload_div );
 
     brwsr.running_query = false;
-    var queryChromosomes = function( donor, chroms, trackkey, progress_chrom, messages ){
+    var queryChromosomes = function( project, donor, chroms, trackkey, progress_chrom, messages ){
+        var query_name = dojo.byId("query_name").value;
+        var query_box = dojo.byId("query_box").value;
         var args = {"query_donor" : donor, 
-                    "query_chrom" : chroms[0]};
+                    "query_chrom" : chroms[0],
+                    "query_box" : query_box,
+                    "query_name" : query_name,
+                    "query_project" : project};
         var url = "bin/run_query.py?" + dojo.objectToQuery(args);
         //TODO: security security SECURITY!! could manually pass in supposedly inaccessible donor name
         var xhrArgs = {
@@ -429,7 +443,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
                     if( chroms.length > 1 && brwsr.running_query ){
                         var n = chroms.slice(1);
-                        queryChromosomes( donor, n, trackkey, progress_chrom+1, messages);
+                        queryChromosomes( project, donor, n, trackkey, progress_chrom+1, messages);
                     }
                     else{
                         alert( messages.join('\n') );
@@ -471,9 +485,11 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     //TODO: won't need to do the disabling thing, correct?
     var runQuery = function(){
         if( tree.clickedItem.prefix != brwsr.globals["DONOR_PREFIX"] ){
-            alert("Trying to execute invalid option 'runQuery' on something other than a donor genome");
+            alert("Hardcoded to run against NA18507 until genome selection supported.");
         }
-        var donor = tree.clickedItem.name;  //dojo.byId("query_donor").value;
+        var donor = "NA18507";
+            //var donor = tree.clickedItem.name;  //dojo.byId("query_donor").value;
+        var project = tree.clickedItem.name;
         var query_name =  dojo.byId("query_name").value;
         var trackkey = donor + "/" + query_name;
         if( dojo.byId("query_box").value == "" ){
@@ -503,7 +519,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             });
             progress_bar.update({'indeterminate': true, 
                                  'label': 'Working on chr1...'});
-            queryChromosomes( donor, chroms, trackkey, 1, messages );
+            queryChromosomes( project, donor, chroms, trackkey, 1, messages );
         }
     };
 
