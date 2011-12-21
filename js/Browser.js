@@ -721,7 +721,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             hidden: false,
             onClick: function(e) {
                 var item = tree.clickedItem;
-                deleteQuery( item.donor, item.name ); 
+                deleteQuery( item.project, item.donor, item.name ); 
         }}));
 
     
@@ -982,8 +982,8 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         tree =  makeTree();
     };
 
-    var deleteQuery = function( donor, query_name ){
-        var args = {donor: donor, query_name: query_name};
+    var deleteQuery = function( project, donor, query_name ){
+        var args = {project: project, donor: donor, query_name: query_name};
         var url = "bin/remove_track.py?" + dojo.objectToQuery(args);
         var trackkey = donor +'/'+ query_name;
 
