@@ -62,6 +62,7 @@ fields = cgi.FieldStorage()
 query_name = fields.getvalue("query_name")
 donor = fields.getvalue("query_donor")
 chromnum = fields.getvalue("query_chrom")
+project = fields.getvalue("query_project");
 
 err_filename = "%s/query_error_%s.txt" % (GlobalConfig.DEBUG_DIR,chromnum)
 sys.stderr = open( err_filename,'w')
@@ -106,7 +107,7 @@ else :
 
     chrom = "chr%s" % chromnum
     source = '%s/genomequery/biosql_compiler/biosql/dst/%s' % (root,chrom)
-    trackpath = GlobalConfig.TRACK_TEMPLATE % (donor, query_name, chrom)
+    trackpath = GlobalConfig.TRACK_TEMPLATE % (project, donor, query_name, chrom)
     dest = "%s/data/%s" % (root, trackpath )
     #dest = "%s/data/tracks/chrom_%s/donor_%s/query_%s" % (root,chrom,donor,query_name)
 
