@@ -1,54 +1,78 @@
-if [ $# -ne 4 ] ; then
-	echo 'usage: ./run_biosql.sh <biosql_code> <donor> <chrom> <src_table_dir>'
+if [ $# -ne 3 ] ; then
+	echo 'usage: ./run_biosql.sh <biosql_code> <dst_dir> <src_table_dir>'
 	exit 
 fi
 
 input_sql=$1
-donor=$2
-c=$3
+#donor=$2
 interm_code="bytecode.txt"
-products_dir_prefx="dst"    #why did Christos use $3 here?
+products_dir_prefx=$2 #"dst"
 front_end_dir="front_end"
 back_end_dir="back_end"
-src_table_dir=$4 
+src_table_dir=$3 
 low_level_calls="low_level.sh"
 chr_info="chromo_length_info.txt"
-bam_prefx="$DONOR_DIR/$donor/chr"
-indx_prefx="$DONOR_DIR/$donor/chr"
+#bam_prefx="$DONOR_DIR/$donor/chr"
+#indx_prefx="$DONOR_DIR/$donor/chr"
 
 cd $BIOSQL_HOME
-rm -rf $src_table_dir/chr$c
+rm -rf $src_table_dir/chr*
 
 $front_end_dir/biosql < $input_sql > $interm_code
+
 
 if test -f $low_level_calls
 then
 	rm $low_level_calls
 fi
 
-
-chr="chr"$c
-chr_len=$(grep "^$c\>" $chr_info | cut -f2)
-bam_file=$bam_prefx$c".bam"
-indx_file=$bam_prefx$c".bam.mates.indx"
-products_dir=$products_dir_prefx/$chr
-
-if test ! -f $bam_file
-then
-    echo no $bam_file
-fi
-if test ! -f $indx_file
-then
-    echo no $indx_file
-fi
-
-if test ! -d $products_dir
-    then
-        mkdir $products_dir
-fi
-python code_generator.py $interm_code $products_dir $front_end_dir $back_end_dir $src_table_dir $bam_file $indx_file $chr $chr_len >> $low_level_calls
+genomes=`grep genome bytecode.txt | cut -d " " -f3` #get the individual genomes
+for donor in $genomes
+do ###complete things here
+	bam_prefx="$DONOR_DIR/$donor/chr"
+	indx_prefx="$DONOR_DIR/$donor/chr"
 
 
-chmod +x $low_level_calls
+	for c in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y
+	do
+		chr="chr"$c
+		chr_len=$(grep "^$c\>" $chr_info | cut -f2)
+		bam_file=$bam_prefx$c".bam"
+		indx_file=$bam_prefx$c".mates.indx"
+		#products_dir=$products_dir_prefx/$chr
+        echo $products_dir_prefx
+        echo $donor
+        echo $chr
+		products_dir=`printf "$products_dir_prefx" $donor $chr`
+        uh="hey"
 
-./$low_level_calls
+        echo products_dir $products_dir $uh
+
+		if test ! -f $bam_file
+		then
+			echo no bamfile $bam_file
+			continue
+		fi
+		if test ! -f $indx_file
+		then
+			echo no indxfile $indx_file
+			continue
+		fi
+		
+		#if test ! -d $products_dir_prefx/$donor
+		#then
+			#mkdir $products_dir_prefx/$donor
+		#fi
+		if test ! -d $products_dir
+		then
+				mkdir $products_dir
+		fi
+		
+		python code_generator.py $interm_code $products_dir $front_end_dir $back_end_dir $src_table_dir $bam_file $indx_file $chr $chr_len >> $low_level_calls
+
+	done
+done
+
+#chmod +x $low_level_calls
+#./$low_level_calls
+
