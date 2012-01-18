@@ -124,23 +124,22 @@ var Browser = function(params) {
             absMaxRender = 300;
             //remember: want to have slider at the top mean render 0
             var slider = new dijit.form.VerticalSlider(
-                            {name: "vertical",
-                             value: absMaxRender - brwsr.maxRender,
-                             minimum: 0,
-                             maximum: absMaxRender,
-                             intermediateChanges: false,
-                             style: "height: 100%;",
-                             onChange: function(value){ 
-                                            brwsr.maxRender = parseInt(value);
-                                            dojo.forEach( brwsr.view.tracks, 
-                                                          function(track){ 
-                                                              track.setMaxRender( absMaxRender-brwsr.maxRender );
-                                                              track.clear(); 
-                                                          } );
-                                            brwsr.view.showVisibleBlocks(true);
-                                        }
-                            },
-                            sliderDiv);
+                {name: "vertical",
+                 value: absMaxRender - brwsr.maxRender,
+                 minimum: 0,
+                 maximum: absMaxRender,
+                 intermediateChanges: false,
+                 style: "height: 100%;",
+                 onChange: function(value){ 
+                        brwsr.maxRender = parseInt(value);
+                        dojo.forEach( brwsr.view.tracks, 
+                                      function(track){ 
+                                          track.setMaxRender( absMaxRender-brwsr.maxRender );
+                                          track.clear(); 
+                                      } );
+                        brwsr.view.showVisibleBlocks(true);
+                   }
+                }, sliderDiv);
 
             //create location trapezoid
             brwsr.locationTrap = document.createElement("div");
@@ -204,7 +203,7 @@ var Browser = function(params) {
 
             //set up track list
             //var trackListDiv = brwsr.createTrackList(brwsr.container, params);
-            brwsr.createTrackList2( brwsr, containerWidget, params );
+            brwsr.createProjectExplorer( brwsr, containerWidget, params );
 
             containerWidget.startup();
 
@@ -240,19 +239,18 @@ var Browser = function(params) {
         });
 };
 
-Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
+Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     
-   ///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
    //                     Query Stuff
-   ///////////////////////////////////////////////////////////////////////////////////////////////////////
-   //var query_div = document.createElement("div");
-   //query_div.id = "query_div";
+////////////////////////////////////////////////////////////////////////
     
     //the div to make bordercontainer out of
     var query_dialog_div = document.createElement("div");
     query_dialog_div.id = "query_dialog_div";
     //query_div.appendChild( query_dialog_div );
 
+    // to make nested border container
     var query_right_div = document.createElement("div");
     query_dialog_div.appendChild( query_right_div );
 
@@ -305,7 +303,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             {id:"query_bc",
              title: "Query",
              design: 'headline',
-       //splitter: "true",
              style: "width: 500px; height: 500px; background-color: #FFFFFF;"
             }, query_dialog_div) ;
    
@@ -313,7 +310,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             {id:"query_right_bc",
              title: "Query",
              design: 'headline',
-       //splitter: "true",
              region: "right",
              style: "width: 200px; height: 500px; background-color: #ffffff;"
             }, query_right_div) ;
@@ -351,64 +347,6 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
 
     
    
-/////////////// upload table stuff //////////////////////////////////
-    
-    var table_dialog_div = document.createElement("div");
-    table_dialog_div.id = "table_dialog_div";
-
-    var upload_div = document.createElement("div");
-    upload_div.id = "upload_div";
-    table_dialog_div.appendChild( upload_div );
-
-    var interval_table_p = document.createElement("p");
-    interval_table_p.id = "interval_table_p";
-    interval_table_p.style.cssText = "border-top: solid 3px #cdcdcd; padding-top: 10px";
-    upload_div.appendChild( interval_table_p );
-    
-
-    var interval_table = document.createElement("input");
-    interval_table.type = "file";
-    interval_table.id = "interval_table";
-    interval_table.name = "interval_table";
-    interval_table.style.cssText = "border-top: 10px;";
-    upload_div.appendChild( interval_table );
-
-    var upload_button = new dijit.form.Button(
-            {id: "upload_button", 
-             label: "Upload",
-             style: "align-text: right;",
-             onClick: function(){ 
-                 args = {"project_name" : tree.selectedItem.name};
-                 url = "bin/upload_interval_table.py?" 
-                       + dojo.objectToQuery(args);
-                 dojo.io.iframe.send({
-                     url: url,
-                     method: "post",
-                     handleAs: "json",
-                     form: dojo.byId("upload_form"),
-                     load: function(data,ioArgs) {
-                         if( data['status'] == 'OK' ){
-                             alert("Table: '" 
-                                   + data['message'] 
-                                   + "' uploaded" );
-                             table_dialog.hide();
-                         }
-                         else{
-                             alert( data['message'] );
-                         }
-                     },
-                     error: function(response, ioArgs){
-                         alert(response);
-                     }        
-                })
-             }
-         }).placeAt( upload_div );
-
-    var upload_form = new dijit.form.Form(
-            {id: "upload_form",
-             method: "post",
-             encType : "multipart/form-data"},
-        upload_div );
 
     brwsr.running_query = false;
     var queryChromosomes = function( project, donor, chroms, trackkey, progress_chrom, messages ){
@@ -475,6 +413,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
                           display: 'none'
                     });
                 dojo.attr(stop_button.domNode, 'hidden', true);
+                setRunningQuery( false );
                 //progress_bar.update({'progress': 0});
             }
         };
@@ -519,6 +458,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
             });
             progress_bar.update({'indeterminate': true, 
                                  'label': 'Working on chr1...'});
+            
             queryChromosomes( project, donor, chroms, trackkey, 1, messages );
         }
     };
@@ -537,7 +477,65 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
     //region: "bottom", 
     //layoutPriority: "1"}, query_button_div);
 
+ /////////////// upload table stuff //////////////////////////////////
     
+    var table_dialog_div = document.createElement("div");
+    table_dialog_div.id = "table_dialog_div";
+
+    var upload_div = document.createElement("div");
+    upload_div.id = "upload_div";
+    table_dialog_div.appendChild( upload_div );
+
+    var interval_table_p = document.createElement("p");
+    interval_table_p.id = "interval_table_p";
+    interval_table_p.style.cssText = "border-top: solid 3px #cdcdcd; padding-top: 10px";
+    upload_div.appendChild( interval_table_p );
+    
+
+    var interval_table = document.createElement("input");
+    interval_table.type = "file";
+    interval_table.id = "interval_table";
+    interval_table.name = "interval_table";
+    interval_table.style.cssText = "border-top: 10px;";
+    upload_div.appendChild( interval_table );
+
+    var upload_button = new dijit.form.Button(
+            {id: "upload_button", 
+             label: "Upload",
+             style: "align-text: right;",
+             onClick: function(){ 
+                 args = {"project_name" : tree.selectedItem.name};
+                 url = "bin/upload_interval_table.py?" 
+                       + dojo.objectToQuery(args);
+                 dojo.io.iframe.send({
+                     url: url,
+                     method: "post",
+                     handleAs: "json",
+                     form: dojo.byId("upload_form"),
+                     load: function(data,ioArgs) {
+                         if( data['status'] == 'OK' ){
+                             alert("Table: '" 
+                                   + data['message'] 
+                                   + "' uploaded" );
+                             table_dialog.hide();
+                         }
+                         else{
+                             alert( data['message'] );
+                         }
+                     },
+                     error: function(response, ioArgs){
+                         alert(response);
+                     }        
+                })
+             }
+         }).placeAt( upload_div );
+
+    var upload_form = new dijit.form.Form(
+            {id: "upload_form",
+             method: "post",
+             encType : "multipart/form-data"},
+        upload_div );
+   
     /////////////////// New project form /////////////////////////////
     //
     var new_project_dialog_div = document.createElement("div");
@@ -918,34 +916,30 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
              onClick :
                 function(selected,e){ 
                     this.clickedItem = selected;
-                    //if( this.clickedItem.id == 'tree_root' ){
-                    //
-                    //}
-                    //else{
-                        var isVisualized = brwsr.view.isVisualized( selected.key );
-                        if( isVisualized ){ 
-                            visualize_menuitem.hidden = true;
-                            recall_menuitem.hidden = false;
-                        }
-                        else { 
-                            visualize_menuitem.hidden = false;
-                            recall_menuitem.hidden = true;
-                        }
-
-                        if( brwsr.running_query ){
-                            query_menuitem.hidden = true;
-                            pleasewait_menuitem.hidden = false;
-                        }
-                        else {
-                            query_menuitem.hidden = false;
-                            pleasewait_menuitem.hidden = true;
-                        }
-
-                        //hack to make left click work on tree
-                        //openOnLeftClick: true | is insufficient for whatever reason
-                        //when dealing with dijit.Trees
-                        pMenu._openMyself();
+                    var isVisualized = brwsr.view.isVisualized( selected.key );
+                    if( isVisualized ){ 
+                        visualize_menuitem.hidden = true;
+                        recall_menuitem.hidden = false;
                     }
+                    else { 
+                        visualize_menuitem.hidden = false;
+                        recall_menuitem.hidden = true;
+                    }
+
+                    if( brwsr.running_query ){
+                        query_menuitem.hidden = true;
+                        pleasewait_menuitem.hidden = false;
+                    }
+                    else {
+                        query_menuitem.hidden = false;
+                        pleasewait_menuitem.hidden = true;
+                    }
+
+                    //hack to make left click work on tree
+                    //openOnLeftClick: true | is insufficient for whatever reason
+                    //when dealing with dijit.Trees
+                    pMenu._openMyself();
+                }
                     //var trackkey = store.getValue(this.selectedItem, 'key');
                     //var isVisualized = brwsr.view.isVisualized( trackkey ); //f.length == 1;
                     //}
@@ -966,6 +960,7 @@ Browser.prototype.createTrackList2 = function(brwsr, parent, params) {
         var children = pMenu.getChildren();
         for( i in children ){
             child = children[i];
+            //set hidden or not depending on the menuitems prefix
             dojo.attr(child.domNode, 'hidden', (treeItem.prefix != child.prefix || child.hidden));
         } 
     });

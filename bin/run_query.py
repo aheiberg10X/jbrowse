@@ -17,9 +17,9 @@ use = re.compile(r'\s*use\s+(.*)\s*;')
 
 debugging = False 
 
-def copyIfExists( source, dest ) :
+def moveIfExists( source, dest ) :
     if os.path.exists( source ) :
-        shutil.copy( source, dest )
+        shutil.move( source, dest )
     else :
         print "\n%s doesn't exist!\n" % source
 
@@ -92,61 +92,90 @@ else :
     #chrom is 1..22 X Y
     src_table_dir = "%s/data/tracks/%s_%s/interval_tables" \
                     % (root, GlobalConfig.DONOR_PREFIX, donor)
+    
+    #leaving space for donor and chrom
+    trackpath = GlobalConfig.TRACK_TEMPLATE % \
+                (project, "%s", query_name, "%s")
+    
+    #trackpath = GlobalConfig.TRACK_TEMPLATE % \
+                #(project, donor, query_name, chrom)
+    product_dest = "%s/data/%s" % (root, trackpath )
+    #dest = "%s/data/%s" % (root, trackpath)
+
+
     pop = Popen(['bash', \
                  "../genomequery/biosql_compiler/biosql/run_biosql.sh", \
                  query_loc, \
-                 donor, \
-                 chromnum, \
+                 product_dest, \
                  src_table_dir], \
                 stdin=PIPE, stdout=PIPE, stderr=PIPE)
+
+    #pop = Popen(['bash', \
+                 #"../genomequery/biosql_compiler/biosql/run_biosql.sh", \
+                 #query_loc, \
+                 #donor, \
+                 #chromnum, \
+                 #src_table_dir], \
+                #stdin=PIPE, stdout=PIPE, stderr=PIPE)
     (out, err) = pop.communicate()
     sys.stdout.write( out )
     sys.stderr.write( err )
     t2 = time.time()
     print "done with run_biosql, took: %f s" % (t2-t1)
 
-    chrom = "chr%s" % chromnum
-    source = '%s/genomequery/biosql_compiler/biosql/dst/%s' % (root,chrom)
-    trackpath = GlobalConfig.TRACK_TEMPLATE % (project, donor, query_name, chrom)
-    dest = "%s/data/%s" % (root, trackpath )
-    #dest = "%s/data/tracks/chrom_%s/donor_%s/query_%s" % (root,chrom,donor,query_name)
+    #check bytecode for syntax error
+    #get genome list from bytecode
 
-    if not os.path.exists( dest ) :
-        os.makedirs( dest )
-    print "copying (change to moving!!) from %s to %s" % (source,dest)
+    fbyte = open("../genomequery/biosql_compiler/biosql/bytecode.txt")
+    first_line = fbyte.readline().lower()
+    fbyte.close()
+    if "syntax error" in first_line :
+        message = first_line.replace(':',';')
+        t = json.dumps({'status':'error','message':first_line})
+        utils.printToServer( t )
+        assert 1==9
 
-    #copy bam
-    copyIfExists( "%s/out.bam" % source, \
-                  "%s/%s_%s.bam" % (dest, query_name, chromnum) )
+    for donor in donors :
+        for chromnum in range(1,23) + ['X','Y'] :
+            chrom = "chr%s" % str(chromnum)
+            prefix = product_dest % (donor, chrom)
+            if not os.path.exists( dest ) :
+                os.makedirs( dest )
 
-    #copy query
-    #put the gq file in the query_ dir
-    copyIfExists( query_loc, "%s/../%s.gq" % (dest, query_name) )
+            #source = '%s/genomequery/biosql_compiler/biosql/dst/%s' % (root,chrom)
 
-    #copy histogram
-    histogram = "%s/out.hist" % source
-    copyIfExists( histogram, \
-                  "%s/%s_%s.hist" % (dest, query_name, chromnum) )
+            #copy bam
+            moveIfExists( "%s/out.bam" % prefix, \
+                          "%s/%s_%s.bam" % (prefix, query_name, chromnum) )
 
-    #copy intervals
-    copyIfExists( "%s/out.bam.short" % source, \
-                  "%s/%s_%s.intervals" % (dest, query_name, chromnum) )
-    #
-    t3 = time.time()
-    #print "done moving, took: %f s" % (t3-t2)
+            #copy query
+            #put the gq file in the query_ dir
+            moveIfExists( query_loc, \
+                          "%s/../%s.gq" % (prefix, query_name) )
 
-    print "starting bam2ncl"
-    pop = Popen(["./bam2ncl.pl", \
-                 donor, \
-                 chromnum, \
-                 query_name, \
-                 linking], \
-                stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    (out, err) = pop.communicate()
-    print err
-    print out
-    t4 = time.time()
-    print "done with bam2ncl, took: %f s" % (t4-t3)
-    print "returning %s" % out
-    utils.printToServer( out )
+            #copy histogram
+            moveIfExists( "%s/out.hist" % prefix, \
+                          "%s/%s_%s.hist" % (prefix, query_name, chromnum) )
+
+            #copy intervals
+            moveIfExists( "%s/out.bam.short" % prefix, \
+                          "%s/%s_%s.intervals" % (prefix, query_name, chromnum) )
+            #
+            t3 = time.time()
+            #print "done moving, took: %f s" % (t3-t2)
+
+            print "starting bam2ncl"
+            pop = Popen(["./bam2ncl.pl", \
+                         donor, \
+                         chromnum, \
+                         query_name, \
+                         linking], \
+                        stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            (out, err) = pop.communicate()
+            print err
+            print out
+            t4 = time.time()
+            print "done with bam2ncl, took: %f s" % (t4-t3)
+            print "returning %s" % out
+            utils.printToServer( out )
 
