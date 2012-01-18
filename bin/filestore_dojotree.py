@@ -95,9 +95,7 @@ def makeItem( path ) :
     parent= "%s/%s" % (gparent, parent_name)
     #is_dir = os.path.isdir(path)
     prefix = getPrefix( path, name )
-    is_dir = prefix == DONOR_PREFIX or \
-             prefix == PROJECT_PREFIX
-            #prefix == CHROM_PREFIX or \
+    is_dir = prefix == DONOR_PREFIX or prefix == PROJECT_PREFIX
     item = {}
     if show( path, name) :
         name = utils.unprefix(name)

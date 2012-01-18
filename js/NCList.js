@@ -106,7 +106,7 @@ NCList.prototype.iterHelper = function(arr, from, to, fun, finish,
     var len = arr.length;
     var i = this.binarySearch(arr, from, searchIndex);
     var rendered = 0;
-    while ((i < len)
+    while ((i < len) //&& rendered < maxRender
            && (i >= 0)
            && ((inc * arr[i][testIndex]) < (inc * to)) ) {
 
@@ -168,9 +168,9 @@ NCList.prototype.iterHelper = function(arr, from, to, fun, finish,
                     });
             }
         } else {
-            fun(arr[i], path.concat(i), maxRender);
+            keepIterating = fun(arr[i], path.concat(i), maxRender);
             rendered += 1;
-            keepIterating = true;
+            //keepIterating = true;
         }
 
 
@@ -192,10 +192,13 @@ NCList.prototype.iterHelper = function(arr, from, to, fun, finish,
         // with what comes out the first time (display depth 50 get rendered no problems)
         // , and this is easist to implement
 
-        if (arr[i][this.sublistIndex] && keepIterating)
-            this.iterHelper(arr[i][this.sublistIndex], from, to,
-                            fun, finish, inc, searchIndex, testIndex,
-                            path.concat(i), maxRender-1);
+        if (keepIterating) {
+            if (arr[i][this.sublistIndex] ){
+                this.iterHelper(arr[i][this.sublistIndex], from, to,
+                                fun, finish, inc, searchIndex, testIndex,
+                                path.concat(i), maxRender-1);
+            }
+        }
         i += inc;
     }
 };
