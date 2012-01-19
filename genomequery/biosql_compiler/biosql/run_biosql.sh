@@ -6,7 +6,7 @@ fi
 input_sql=$1
 #donor=$2
 interm_code="bytecode.txt"
-products_dir_prefx=$2 #"dst"
+dest_template=$2 #"dst"
 front_end_dir="front_end"
 back_end_dir="back_end"
 src_table_dir=$3 
@@ -39,14 +39,7 @@ do ###complete things here
 		chr_len=$(grep "^$c\>" $chr_info | cut -f2)
 		bam_file=$bam_prefx$c".bam"
 		indx_file=$bam_prefx$c".mates.indx"
-		#products_dir=$products_dir_prefx/$chr
-        echo $products_dir_prefx
-        echo $donor
-        echo $chr
-		products_dir=`printf "$products_dir_prefx" $donor $chr`
-        uh="hey"
-
-        echo products_dir $products_dir $uh
+		chrom_dir=`printf "$dest_template" $donor $chr`
 
 		if test ! -f $bam_file
 		then
@@ -58,21 +51,22 @@ do ###complete things here
 			echo no indxfile $indx_file
 			continue
 		fi
-		
-		#if test ! -d $products_dir_prefx/$donor
-		#then
-			#mkdir $products_dir_prefx/$donor
-		#fi
-		if test ! -d $products_dir
+
+        query_dir=${chrom_dir%/*}        
+		if test ! -d $query_dir
 		then
-				mkdir $products_dir
+		    mkdir $query_dir
+		fi
+		if test ! -d $chrom_dir
+		then
+		    mkdir $chrom_dir
 		fi
 		
-		python code_generator.py $interm_code $products_dir $front_end_dir $back_end_dir $src_table_dir $bam_file $indx_file $chr $chr_len >> $low_level_calls
+		python code_generator.py $interm_code $chrom_dir $front_end_dir $back_end_dir $src_table_dir $bam_file $indx_file $chr $chr_len >> $low_level_calls
 
 	done
 done
 
-#chmod +x $low_level_calls
-#./$low_level_calls
+chmod +x $low_level_calls
+./$low_level_calls
 

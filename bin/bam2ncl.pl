@@ -40,10 +40,11 @@ if( $profiling ){
     exit;
 }
 
-my $donor = $ARGV[0];
-my $chromnum = $ARGV[1];
+my $project = $ARGV[0];
+my $donor = $ARGV[1];
 my $query_name = $ARGV[2];
-my $linking = $ARGV[3];
+my $chromnum = $ARGV[3];
+my $linking = $ARGV[4];
 
 #for building our response to server
 my ($trackkey, $message);
@@ -51,29 +52,32 @@ my @messages = ();
 
 my $compress = 0;
 
-($trackkey, $message) = createTrack( $chromnum, $donor, $query_name, $linking, $compress );
+($trackkey, $message) = createTrack( $project, $donor, $query_name, $chromnum, $linking, $compress );
 push( @messages, "chr$chromnum : $message" );
 print $OUTPUT "affter chreatTrack for chr$chromnum\n";
 #}
 
 my $ext = ($compress ? "jsonz" : "json");
-my $new_entry_json = 
-     {
-      'label' => $query_name,
-      'key' => $trackkey,
-      'url' => sprintf( "$TRACK_TEMPLATE/trackData.$ext", 
-                        $donor, $query_name, $UNBOUND_CHROM ),
-      'type' => "FeatureTrack",
-     };
 
-my $return_json = '{"status":"OK", "message":"';
-$return_json .= join( '\n', @messages ); 
-$return_json .= '", "trackData":';
-$return_json .=  JSON::to_json($new_entry_json, {pretty => 1});
-$return_json .= '}';
+#creating the track data in run_query.py now
+#my $new_entry_json = 
+#{
+#'label' => $query_name,
+#'key' => $trackkey,
+#'url' => sprintf( "$TRACK_TEMPLATE/trackData.$ext", 
+#$project, $donor, $query_name, $UNBOUND_CHROM ),
+#'type' => "FeatureTrack",
+#};
 
-print $OUTPUT "returned json is: $return_json\n";
-print $return_json;
+#my $return_json = '{"status":"OK", "message":"';
+#$return_json .= join( '\n', @messages ); 
+#$return_json .= '", "trackData":';
+#$return_json .=  JSON::to_json($new_entry_json, {pretty => 1});
+#$return_json .= '}';
+#my $return = JSON::to_json($new_entry_json, {pretty=>1});
+
+#print $OUTPUT "return is: $return\n";
+print $message;
 
 close $OUTPUT;
 close ERROR;
@@ -82,18 +86,18 @@ close ERROR;
 
 sub createTrack {
     
-    my ($chromnum, $donor, $query_name, $bam_linking, $compress) = @_;
+    my ($project, $donor, $query_name, $chromnum, $bam_linking, $compress) = @_;
 
     my $host_chrom = "chr$chromnum";    
     my $template = $TRACK_TEMPLATE; 
     print $OUTPUT "template: $template\n";
-    my $targetdir = sprintf( "$DATA_DIR/$template", $donor, $query_name, $host_chrom );
+    my $targetdir = sprintf( "$DATA_DIR/$template", $project, $donor, $query_name, $host_chrom );
     print $OUTPUT "targetdir: $targetdir\n";
     $bam_linking = $bam_linking eq "linking";
     print $OUTPUT "bam_linking: $bam_linking\n";
 
     my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $key);
-    $key = "$donor/$query_name";
+    $key = "$project/$query_name";
     $trackLabel = $query_name;
     #my $bamFile = "$targetdir/$query_name.bam";
 

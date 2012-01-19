@@ -8,12 +8,12 @@ import re
 import shutil
 import sys
 sys.path.append("../lib")
-import GlobalConfig
+from GlobalConfig import ROOT_DIR, DATA_DIR, TRACK_TEMPLATE, PROJECT_PREFIX, DEBUG_DIR, UPLOAD_DIR, UNBOUND_CHROM
 import utils
 import time
 import os.path
 
-use = re.compile(r'\s*use\s+(.*)\s*;')
+importre = re.compile(r'\s*import\s+(.*)\s*;')
 
 debugging = False 
 
@@ -25,19 +25,20 @@ def moveIfExists( source, dest ) :
 
 #TODO: take the use _____ statements and
 #fill in with the path to that file (is this what the compiler will need?)
-def expandUses( query, donor_name ) :
+def expandImports( query, project_name ) :
+    
     path = "%s/data/tracks/%s%s/interval_tables" % \
-                (GlobalConfig.ROOT_DIR, \
-                 GlobalConfig.DONOR_PREFIX, \
-                 donor_name )
+                (ROOT_DIR, PROJECT_PREFIX, project_name )
     statements = query.split('\n')
     for i in range(len(statements)) :
-        #other use caveats?
-        if 'parsed_tables' not in statements[i].lower() and \
-            use.match(statements[i]) :
-            usepath = use.sub( r'%s/%s_\1.it' % (path,donor_name), statements[i] )
-            if os.path.exists( usepath ) :
-                statements[i] = "use %s;" % usepath
+        print statements[i]
+        if 'reads' not in statements[i].lower() and \
+            importre.match(statements[i]) :
+            importname = importre.sub( r'%s_\1' % (project_name), statements[i] )
+            importpath = "%s/%s.txt" % (path, importname)
+            print importpath
+            if os.path.exists( importpath ) :
+                statements[i] = "import %s;" % importname
             else :
                 return (False, "No such table \\'%s\\'" % statements[i])
 
@@ -47,40 +48,44 @@ utils.printToServer( 'Content-type: text/json\n\n' )
 #utils.printToServer( utils.textarea_opener )
 
 if debugging :
-    query = '''use parsed_tables;
-    import READS;
-    use genes222;
+    query_name = 'debug'
+    query = '''use parsed_tables
+genome NA18507;
+import READS;
+import genes;
 
-    H1=select count from READS mates(location,mate_loc) where location>=0 and mate_loc>=0 and ((mate_loc-location>1000 and mate_loc-location<2000000) or (location-mate_loc>1000 and location-mate_loc<2000000))
+H1=select interval_creation() from READS using intervals(location,
+                                                         mate_loc, both_mates) where location>=0 and mate_loc>=0 and
+((mate_loc-location>1000 and mate_loc-location<2000000) or
+ (location-mate_loc>1000 and location-mate_loc<2000000))
 
-    select * from H1 where countvec>5'''
+select * from H1 where interval_coverage>5'''
+    project = 'main'
 
-    print expandUses( query, 'NA18507' )[1]
+else :
+    fields = cgi.FieldStorage()
+    query_name = fields.getvalue("query_name")
+    query = fields.getvalue("query_box")
+    #donor = fields.getvalue("query_donor")
+    #chromnum = fields.getvalue("query_chrom")
+    project = fields.getvalue("query_project");
 
-
-fields = cgi.FieldStorage()
-query_name = fields.getvalue("query_name")
-donor = fields.getvalue("query_donor")
-chromnum = fields.getvalue("query_chrom")
-project = fields.getvalue("query_project");
-
-err_filename = "%s/query_error_%s.txt" % (GlobalConfig.DEBUG_DIR,chromnum)
+err_filename = "%s/query_error.txt" % (DEBUG_DIR)
 sys.stderr = open( err_filename,'w')
-out_filename = "%s/query_output_%s.txt" % (GlobalConfig.DEBUG_DIR,chromnum)
+out_filename = "%s/query_output.txt" % (DEBUG_DIR)
 sys.stdout = open( out_filename,'w')
 print "fields", fields
 
-(status, query) = expandUses( fields.getvalue("query_box"), donor )
-print query, "\n"
+(status, query) = expandImports( query, project )
+print "\n query", query, "\n"
 if not status :
     utils.printToServer( "{'status':'ERROR', 'message': '%s'}" % query )
 else :
-    linking = fields.getvalue("query_linking")
+    #linking = fields.getvalue("query_linking")
     linking = "linking";
-    root = GlobalConfig.ROOT_DIR
+    root = ROOT_DIR
 
-
-    query_loc = "%s/user_query.txt" % GlobalConfig.UPLOAD_DIR
+    query_loc = "%s/user_query.txt" % UPLOAD_DIR
     print "writing query to %s" % query_loc
 
     fuq = open( query_loc, 'wb')
@@ -90,12 +95,11 @@ else :
     print "popping run_biosql.sh"
     t1 = time.time()
     #chrom is 1..22 X Y
-    src_table_dir = "%s/data/tracks/%s_%s/interval_tables" \
-                    % (root, GlobalConfig.DONOR_PREFIX, donor)
+    src_table_dir = "%s/data/tracks/%s%s/interval_tables" \
+                    % (root, PROJECT_PREFIX, project)
     
     #leaving space for donor and chrom
-    trackpath = GlobalConfig.TRACK_TEMPLATE % \
-                (project, "%s", query_name, "%s")
+    trackpath = TRACK_TEMPLATE % (project, "%s", query_name, "%s")
     
     #trackpath = GlobalConfig.TRACK_TEMPLATE % \
                 #(project, donor, query_name, chrom)
@@ -128,19 +132,30 @@ else :
 
     fbyte = open("../genomequery/biosql_compiler/biosql/bytecode.txt")
     first_line = fbyte.readline().lower()
-    fbyte.close()
     if "syntax error" in first_line :
         message = first_line.replace(':',';')
         t = json.dumps({'status':'error','message':first_line})
+        fbyte.close()
         utils.printToServer( t )
         assert 1==9
+    else :
+        donors = []
+        for line in fbyte.readlines() :
+            if "genome" in line :
+                donors.append( line.split()[2] )
 
+    fbyte.close()
+
+    track_datas = []
+    messages = []
     for donor in donors :
-        for chromnum in range(1,23) + ['X','Y'] :
+        for chromnum in [str(x) for x in range(1,23) + ['X','Y']] :
             chrom = "chr%s" % str(chromnum)
             prefix = product_dest % (donor, chrom)
-            if not os.path.exists( dest ) :
-                os.makedirs( dest )
+
+            #if not os.path.exists( prefix ) :
+                #t = json.dumps({'status':'error','message':'Trouble creating the necessary folders'})
+                #utils.printToServer( t )
 
             #source = '%s/genomequery/biosql_compiler/biosql/dst/%s' % (root,chrom)
 
@@ -165,17 +180,38 @@ else :
             #print "done moving, took: %f s" % (t3-t2)
 
             print "starting bam2ncl"
-            pop = Popen(["./bam2ncl.pl", \
+            print "donor", donor, type(donor)
+            print "chromnum", chromnum, type(chromnum)
+            print "query_name", query_name, type(query_name)
+            print "linking", linking, type(linking)
+
+            pop = Popen(["perl", "bam2ncl.pl", \
+                         project, \
                          donor, \
-                         chromnum, \
                          query_name, \
+                         chromnum, \
                          linking], \
-                        stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                        stdout=PIPE, stderr=PIPE)
             (out, err) = pop.communicate()
-            print err
-            print out
+            messages.append(out)
+            print "\n\nerr: ", err
+            print "\n\nout: ", out
             t4 = time.time()
             print "done with bam2ncl, took: %f s" % (t4-t3)
-            print "returning %s" % out
-            utils.printToServer( out )
+            #print "returning %s" % out
+        
+
+        url = TRACK_TEMPLATE % (project, donor, query_name, UNBOUND_CHROM )
+        track_data = {'label' : query_name, \
+                      'key' : "%s/%s" % (project,query_name), \
+                      'url' : "%s/trackData.json" % url, \
+                      'type' : "FeatureTrack"}
+
+        track_datas.append( track_data )
+            
+          
+    messages = '\n'.join(messages)
+    response = json.dumps({'status':'OK','message':messages,'trackData':track_datas})
+    print "returning: ", response
+    utils.printToServer( response  )
 
