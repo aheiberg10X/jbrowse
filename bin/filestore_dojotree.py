@@ -113,7 +113,8 @@ def makeItem( path ) :
             assert parent_prefix == DONOR_PREFIX
             item['project'] = gparent_name
             item['donor'] = parent_name
-            item['key'] = "%s/%s/%s" % (gparent_name,parent_name,name)
+            #project/query_name
+            item['key'] = "%s/%s" % (gparent_name,name)
             tt = TRACK_TEMPLATE % \
                     (gparent_name, parent_name, name, UNBOUND_CHROM)
             item['url'] = "%s/trackData.json" % tt

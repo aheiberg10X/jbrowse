@@ -423,16 +423,17 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
 
     //TODO: won't need to do the disabling thing, correct?
     var runQuery = function(){
-        if( tree.clickedItem.prefix != brwsr.globals["DONOR_PREFIX"] ){
-            alert("Hardcoded to run against NA18507 until genome selection supported.");
+        if( tree.clickedItem.prefix != brwsr.globals["PROJECT_PREFIX"] ){
+            alert("Cannot run query from anything other than a project.");
+            return;
         }
-        var donor = "NA18507";
-            //var donor = tree.clickedItem.name;  //dojo.byId("query_donor").value;
         var project = tree.clickedItem.name;
         var query_name =  dojo.byId("query_name").value;
-        var trackkey = donor + "/" + query_name;
+
+
+        var trackkey = project + "/" + query_name;
         if( dojo.byId("query_box").value == "" ){
-            alert("You must enter a valid query");
+            alert("You must enter a query");
         }
         else if( query_name == "" ){
             alert("You must enter a name for ths query");
@@ -459,7 +460,65 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
             progress_bar.update({'indeterminate': true, 
                                  'label': 'Working on chr1...'});
             
-            queryChromosomes( project, donor, chroms, trackkey, 1, messages );
+            var query_name = dojo.byId("query_name").value;
+            var query_box = dojo.byId("query_box").value;
+            var args = {"query_box" : query_box,
+                        "query_name" : query_name,
+                        "query_project" : project};
+            var url = "bin/run_query.py?" + dojo.objectToQuery(args);
+            //TODO: security security SECURITY!! could manually pass in supposedly inaccessible donor name
+            var xhrArgs = {
+                url: url,
+                form: dojo.byId("query_form"),
+                handleAs: "json",
+                load: function(data,ioargs){
+                    //query has finished
+                    if( data["status"] == "OK" ){
+                        var progress = progress_bar.get("progress");
+                        progress_bar.update({'indeterminate': true, 'label': "All done"});
+                        for( i in data["trackData"] ){
+                            //if( dojo.indexOf( brwsr.tracks, trackkey ) == -1 ){
+                            brwsr.trackData.push( data["trackData"][i] );
+                            brwsr.tracks.push( data["trackData"][i].key );
+                        }
+
+                        alert( data["message"] );
+                        dojo.attr(progress_bar.domNode, 'hidden', true);
+                        dojo.style(dijit.byId('stop_button').domNode, {
+                              visibility: 'hidden',
+                              display: 'none'
+                        });
+                        setRunningQuery( false );
+                        refreshTree();
+                    }
+                    else {
+                        alert(data["message"]);
+                        dojo.attr(progress_bar.domNode, 'hidden', true);
+                        dojo.style(dijit.byId('stop_button').domNode, {
+                              visibility: 'hidden',
+                              display: 'none'
+                        });
+                        //dojo.attr(stop_button.domNode, 'hidden', true);
+                        setRunningQuery( false );
+                        //progress_bar.update({'progress': 0});
+                    }
+                },
+                error: function(error) {
+                    alert(error);
+                    dojo.attr(progress_bar.domNode, 'hidden', true);
+                        dojo.style(dijit.byId('stop_button').domNode, {
+                              visibility: 'hidden',
+                              display: 'none'
+                        });
+                    dojo.attr(stop_button.domNode, 'hidden', true);
+                    setRunningQuery( false );
+                    //progress_bar.update({'progress': 0});
+                }
+            };
+            //Call the asynchronous xhrPost
+            var deferred = dojo.xhrPost(xhrArgs);
+
+            //queryChromosomes( project, donor, chroms, trackkey, 1, messages );
         }
     };
 
