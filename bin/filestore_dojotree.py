@@ -12,6 +12,7 @@ cgitb.enable()
 from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR, DEBUG_DIR, TRACK_TEMPLATE, UNBOUND_CHROM, PROJECT_PREFIX
 
 perms = {"earthworm jim" : {"NA18507" : False}}
+dassembly = {"main":"hg18", "hg19":"hg19"}
 
 def getChildren( path ) :
     r = []
@@ -109,6 +110,13 @@ def makeItem( path ) :
                 'path' : path,
                 'prefix' : prefix}
 
+        if prefix == PROJECT_PREFIX :
+            if name in dassembly :
+                item['assembly'] = dassembly[name]
+            else :
+                item['assembly'] = "n/a"
+
+
         if prefix == QUERY_PREFIX : 
             assert parent_prefix == DONOR_PREFIX
             item['project'] = gparent_name
@@ -120,6 +128,12 @@ def makeItem( path ) :
             item['url'] = "%s/trackData.json" % tt
             item['label'] = name
             item['type'] = 'FeatureTrack'
+
+            if item['project'] in dassembly :
+                item['assembly'] = dassembly[item['project']]
+            else :
+                item['assembly'] = "n/a"
+
 
         if is_dir :
             item["children"] = getChildren( path )

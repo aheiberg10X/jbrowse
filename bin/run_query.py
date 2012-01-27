@@ -44,6 +44,9 @@ def expandImports( query, project_name ) :
 
     return (True, "\n".join( statements ))
 
+def validateGenomes( query, perms ) :
+    pass
+
 utils.printToServer( 'Content-type: text/json\n\n' )
 #utils.printToServer( utils.textarea_opener )
 
@@ -69,6 +72,7 @@ else :
     #donor = fields.getvalue("query_donor")
     #chromnum = fields.getvalue("query_chrom")
     project = fields.getvalue("query_project");
+    assembly = fields.getvalue("assembly");
 
 err_filename = "%s/query_error.txt" % (DEBUG_DIR)
 sys.stderr = open( err_filename,'w')
@@ -111,7 +115,8 @@ else :
                  "../genomequery/biosql_compiler/biosql/run_biosql.sh", \
                  query_loc, \
                  product_dest, \
-                 src_table_dir], \
+                 src_table_dir,
+                 assembly], \
                 stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
     #pop = Popen(['bash', \
