@@ -16,7 +16,7 @@ src_table_dir=$3
 
 interm_code="bytecode.txt"
 front_end_dir="front_end"
-back_end_dir="back_end"
+back_end_dir="back_end" #the directory where the src files of the back end are.
 low_level_calls="low_level.sh"
 chr_info="chromo_length_info$4.txt"
 #bam_prefx="$DONOR_DIR/$donor/chr"
@@ -34,7 +34,7 @@ fi
 
 genomes=`grep genome bytecode.txt | cut -d " " -f3` #get the individual genomes
 for donor in $genomes
-do ###complete things here
+do 
 	bam_prefx="$DONOR_DIR/$donor/chr"
 	indx_prefx="$DONOR_DIR/$donor/chr"
 

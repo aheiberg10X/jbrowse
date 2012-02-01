@@ -474,7 +474,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                   display: 'block'
             });
             progress_bar.update({'indeterminate': true, 
-                                 'label': 'Working on chr1...'});
+                                 'label': 'Working...'});
             
             var query_name = dojo.byId("query_name").value;
             var query_box = dojo.byId("query_box").value;
@@ -1036,14 +1036,23 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     //selective presentation of menu children depending on the tree.clickedItem 
     dojo.connect(pMenu, "_openMyself", this, function(e){
         var treeItem = dijit.getEnclosingWidget(e.target).item;
-        if( treeItem.root ){
-            treeItem.prefix = "root_";
+        var treeItem_prefix;
+        if( treeItem == null ){
+            treeItem_prefix = "none_";
+        }
+        else {
+            if( treeItem.root ){
+                treeItem_prefix = "root_";
+            }
+            else{
+                treeItem_prefix = treeItem.prefix;
+            }
         }
         var children = pMenu.getChildren();
         for( i in children ){
             child = children[i];
             //set hidden or not depending on the menuitems prefix
-            dojo.attr(child.domNode, 'hidden', (treeItem.prefix != child.prefix || child.hidden));
+            dojo.attr(child.domNode, 'hidden', (treeItem_prefix != child.prefix || child.hidden));
         } 
     });
 
@@ -1059,13 +1068,10 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
         tree =  makeTree();
     };
 
-    //TODO
-    //delteed query, tried again with old name, got denied
-    //problem is here?
     var deleteQuery = function( project, donor, query_name ){
         var args = {project: project, donor: donor, query_name: query_name};
         var url = "bin/remove_track.py?" + dojo.objectToQuery(args);
-        var trackkey = donor +'/'+ query_name;
+        var trackkey = project +'/'+ query_name;
 
         var xhrArgs = {
             url: url,
@@ -1100,14 +1106,17 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
         var matches = dojo.filter( brwsr.trackData, tester );
         if( matches.length == 0 ){ alert(" no matches"); }
         else if( matches.length == 1 ){
-            if( assembly != brwsr.assembly ){
+            if( assembly != brwsr.assembly && brwsr.assembly != "none"){
                 alert( "assembly doesn't match, recalling everything" );
-
                 //not what we want, use brwsr.tracks?
-                //var visualized_tracks = brwsr.viewDndWidget.getAllNodes();
-                //for( i in visualized_tracks ){
-                //visualized_tracks[i];
-                //}
+                var visualized_tracks = brwsr.viewDndWidget.getAllNodes();
+                var len = visualized_tracks.length;
+                var trackkey;
+                for( var i=0; i < len; i++ ){
+                    trackkey = visualized_tracks[i].track.key;
+                    recall(trackkey);
+                }
+                //TODO load appropriate DNA SequenceTrack
                 brwsr.setRefseq( assembly );
             }
             brwsr.viewDndWidget.insertNodes( false, [matches[0]] );
@@ -1127,6 +1136,10 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
         }
         //TODO, if all empty, set brwsr.assembly so that any track
         //can go in without a warning
+        if (brwsr.viewDndWidget.getAllNodes().length == 0 ){
+            brwsr.assembly = "none";
+        }
+
         brwsr.onVisibleTracksChanged();
 
     };
@@ -1277,6 +1290,8 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
         this.showTracks(params.defaultTracks);
     }
 
+    brwsr.assembly = dojo.cookie(this.container.id + "-assembly");
+
 };
 
 
@@ -1322,6 +1337,9 @@ Browser.prototype.onVisibleTracksChanged = function() {
                                function(track) { return track.name; });
     dojo.cookie(this.container.id + "-tracks",
                 trackLabels.join(","),
+                {expires: 60});
+    dojo.cookie(this.container.id + "-assembly",
+                this.assembly,
                 {expires: 60});
     this.view.showVisibleBlocks();
 };

@@ -189,13 +189,15 @@ else :
             print "chromnum", chromnum, type(chromnum)
             print "query_name", query_name, type(query_name)
             print "linking", linking, type(linking)
+            print "assembly ", assembly
 
             pop = Popen(["perl", "bam2ncl.pl", \
                          project, \
                          donor, \
                          query_name, \
                          chromnum, \
-                         linking], \
+                         linking, \
+                         assembly], \
                         stdout=PIPE, stderr=PIPE)
             (out, err) = pop.communicate()
             messages.append(out)

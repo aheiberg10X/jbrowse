@@ -19,13 +19,24 @@ use Cwd;
 use GlobalConfig;
 use Data::Dumper;
 
+my $project = $ARGV[0];
+my $donor = $ARGV[1];
+my $query_name = $ARGV[2];
+my $chromnum = $ARGV[3];
+my $linking = $ARGV[4];
+my $assembly = $ARGV[5];
+
 #### DEBUGGING OUTPUT ###
-open( my $OUTPUT, '>', $DEBUG_DIR . "/" . "bam_output.txt" ) or die $!;
-open ERROR,  '>', $DEBUG_DIR . "/" . "bam_error.txt"  or die $!;
+open( my $OUTPUT, '>', $DEBUG_DIR . "/" . "bam_output_$chromnum.txt" ) or die $!;
+open ERROR,  '>', $DEBUG_DIR . "/" . "bam_error_$chromnum.txt"  or die $!;
 STDERR->fdopen( \*ERROR,  'w' ) or die $!;
 #### DEBUGGING OUTPUT ###
 
-my $stream = 0;
+#for building our response to server
+my ($trackkey, $message);
+my @messages = ();
+
+#my $stream = 0;
 
 my $profiling = 0;
 if( $profiling ){
@@ -36,73 +47,44 @@ if( $profiling ){
     my $linking = "linking";
     my $histogram_filename = "$path/out.evidence.hist";
 
-    createTrack( $host_chrom, "NA18507", "test", "linking" );
+    ($trackkey, $message) = createTrack( "main", "NA18507", "test", "1", "linking", "hg18", "no_compress" );
+    print $OUTPUT "message: ", $message, "\n";
     exit;
 }
 
-my $project = $ARGV[0];
-my $donor = $ARGV[1];
-my $query_name = $ARGV[2];
-my $chromnum = $ARGV[3];
-my $linking = $ARGV[4];
-
-#for building our response to server
-my ($trackkey, $message);
-my @messages = ();
-
 my $compress = 0;
 
-($trackkey, $message) = createTrack( $project, $donor, $query_name, $chromnum, $linking, $compress );
-push( @messages, "chr$chromnum : $message" );
-print $OUTPUT "affter chreatTrack for chr$chromnum\n";
-#}
+($trackkey, $message) = createTrack( $project, $donor, $query_name, $chromnum, $linking, $assembly, $compress );
 
-my $ext = ($compress ? "jsonz" : "json");
-
-#creating the track data in run_query.py now
-#my $new_entry_json = 
-#{
-#'label' => $query_name,
-#'key' => $trackkey,
-#'url' => sprintf( "$TRACK_TEMPLATE/trackData.$ext", 
-#$project, $donor, $query_name, $UNBOUND_CHROM ),
-#'type' => "FeatureTrack",
-#};
-
-#my $return_json = '{"status":"OK", "message":"';
-#$return_json .= join( '\n', @messages ); 
-#$return_json .= '", "trackData":';
-#$return_json .=  JSON::to_json($new_entry_json, {pretty => 1});
-#$return_json .= '}';
-#my $return = JSON::to_json($new_entry_json, {pretty=>1});
-
-#print $OUTPUT "return is: $return\n";
+print $OUTPUT "return message: $message\n";
 print $message;
-
 close $OUTPUT;
 close ERROR;
 
 
-
 sub createTrack {
     
-    my ($project, $donor, $query_name, $chromnum, $bam_linking, $compress) = @_;
+    my ($project, $donor, $query_name, $chromnum, $bam_linking, $assembly, $compress ) = @_;
 
     my $host_chrom = "chr$chromnum";    
     my $template = $TRACK_TEMPLATE; 
-    print $OUTPUT "template: $template\n";
+
     my $targetdir = sprintf( "$DATA_DIR/$template", $project, $donor, $query_name, $host_chrom );
     print $OUTPUT "targetdir: $targetdir\n";
+    
     $bam_linking = $bam_linking eq "linking";
     print $OUTPUT "bam_linking: $bam_linking\n";
+    print $OUTPUT "assembly: $assembly\n";
 
     my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $key);
     $key = "$project/$query_name";
     $trackLabel = $query_name;
-    #my $bamFile = "$targetdir/$query_name.bam";
 
     my $interval_file = "$targetdir/$query_name\_$chromnum.intervals";
-    if( ! -e $interval_file ){ return ($key, "Nothing to visualize"); }
+    if( ! -e $interval_file ){ 
+        print $OUTPUT "interval file does not exist\n";
+        return ($key, "Nothing to visualize"); 
+    }
 
     my $bam_histogram_filename = "$targetdir/$query_name\_$chromnum.hist";
 
@@ -111,13 +93,13 @@ sub createTrack {
         my $OLDSEP = $/;
         local $/=undef;
         open FILE, $bam_histogram_filename or die $!;
-    
+         
         my $json_text = <FILE>;
         #delete whitespace
         $json_text =~ s/\s+/ /g;
         #delete variable assignment (i.e ' histogram = ...')
         $json_text =~ s/^.+= //;
-
+        
         $pregen_histograms = JSON::decode_json($json_text);
         close FILE; 
         $/ = $OLDSEP;
@@ -140,6 +122,8 @@ sub createTrack {
         # we're compressing
         $nclChunk *= 4 if $compress;
     }
+
+    print $OUTPUT "we here?\n";
 
     my $trackRel = "tracks";
     my $trackDir = "$DATA_DIR/$trackRel";
@@ -170,9 +154,16 @@ sub createTrack {
     #}
 
 
-    my @refSeqs = @{JsonGenerator::readJSON("$DATA_DIR/refSeqs.js", [], 1)};
+    #my @refSeqs = @{JsonGenerator::readJSON("$DATA_DIR/refSeqs.js", [], 1)};
+    print $OUTPUT "getting refSeqs\n";
+    my @refSeqs = @{JsonGenerator::readJSON("$DATA_DIR/refSeqs.js", [], 1)->{$assembly}};
+    print $OUTPUT "got refSeqs\n", Dumper(@refSeqs);
+    #TODO: grab out the entry corresponding to the correct assembly
+    # will have to pass this into the script 
+
     my ($refseq_start,$refseq_end,$refseq_name) = 0,0,"";
     foreach my $seqInfo (@refSeqs) {
+        #print $OUTPUT "onething: ", Dumper($seqInfo);
         if( $seqInfo->{name} eq $host_chrom ){
             $refseq_start = $seqInfo->{start};
             $refseq_end = $seqInfo->{end};
@@ -246,7 +237,7 @@ sub createTrack {
     
 
     if( $feature_count <= 0 ){
-    	return ($key, "There are 0 features");
+        return ($key, "There are 0 features");
     }
     #it could be that there are no gaps in reads,
     #meaning updateInterestingAreas never adds anything to IAs
@@ -270,13 +261,13 @@ sub createTrack {
         $bad_bam = 1;
     };
 #
-    my $message;
     if( $bad_bam ){
         $message = "Error with track generation";
     }
     else{
         $message = "Track generated successfully"
     }
+    
     return ($key, $message);
 }
 
