@@ -110,6 +110,10 @@ else :
     product_dest = "%s/data/%s" % (root, trackpath )
     #dest = "%s/data/%s" % (root, trackpath)
 
+    print query_loc, type(query_loc)
+    print product_dest, type(product_dest)
+    print src_table_dir, type(src_table_dir)
+    print assembly, type(assembly)
 
     pop = Popen(['bash', \
                  "../genomequery/biosql_compiler/biosql/run_biosql.sh", \
