@@ -21,9 +21,13 @@ def getTrackData( root ) :
     trackData = []
     
     #manually add the sequence trackdata
+    #TODO
+    #will have to add "seq/{assembly}/{refseq}" and change directory structure
+    #accordingly.  Remember to modify the prepare-refseq script to not overwrite    #hg18 that's already there.  Also, have to give each donor genome a 
+    # assembly field to be able to pass correctly to Christos's stuff
     seqtrack = \
     {"args" : {"chunkSize" : 20000}, \
-     "url" : "seq/{refseq}/", \
+     "url" : "seq/{assembly}/{refseq}/", \
      "type" : "SequenceTrack", \
      "label" : "DNA", \
      "key" : "DNA"}

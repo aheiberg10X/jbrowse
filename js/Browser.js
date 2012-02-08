@@ -50,7 +50,7 @@ var Browser = function(params) {
     dojo.require("dijit.ProgressBar");
     // end my stuff
 
-    var refSeqs = params.refSeqs;
+    this.refSeqs = params.refSeqs;
     this.trackData = params.trackData;
     this.globals = params.globals;
     this.deferredFunctions = [];
@@ -85,7 +85,8 @@ var Browser = function(params) {
             topPane.appendChild(overview);
             //try to come up with a good estimate of how big the location box
             //actually has to be
-            var maxBase = refSeqs.reduce(function(a,b) {return a.end > b.end ? a : b;}).end;
+            var initRefseq = "hg18";
+            var maxBase = brwsr.refSeqs[initRefseq].reduce(function(a,b) {return a.end > b.end ? a : b;}).end;
             var navbox = brwsr.createNavBox(topPane, (2 * (String(maxBase).length + (((String(maxBase).length / 3) | 0) / 2))) + 2, params);
 
             var viewElem = document.createElement("div");
@@ -147,21 +148,9 @@ var Browser = function(params) {
             topPane.appendChild(brwsr.locationTrap);
             topPane.style.overflow="hidden";
 
-            //set up ref seqs
-            brwsr.allRefs = {};
-            for (var i = 0; i < refSeqs.length; i++)
-                brwsr.allRefs[refSeqs[i].name] = refSeqs[i];
-
-            var refCookie = dojo.cookie(params.containerID + "-refseq");
-            brwsr.refSeq = refSeqs[0];
-            for (var i = 0; i < refSeqs.length; i++) {
-                brwsr.chromList.options[i] = new Option(refSeqs[i].name,
-                                                        refSeqs[i].name);
-                if (refSeqs[i].name.toUpperCase() == String(refCookie).toUpperCase()) {
-                    brwsr.refSeq = brwsr.allRefs[refSeqs[i].name];
-                    brwsr.chromList.selectedIndex = i;
-                }
-            }
+            //close in the containerID
+            brwsr.setRefseq = brwsr.closeSetRefseq(params.containerID);
+            brwsr.setRefseq(initRefseq); 
 
             dojo.connect(brwsr.chromList, "onchange", function(event) {
                     var oldLocMap = dojo.fromJson(dojo.cookie(brwsr.container.id + "-location")) || {};
@@ -237,6 +226,32 @@ var Browser = function(params) {
                 brwsr.deferredFunctions[i]();
             brwsr.deferredFunctions = [];
         });
+};
+
+Browser.prototype.closeSetRefseq = function(containerID){
+    return function(assembly){
+        var brwsr = this;
+        var refSeqs = brwsr.refSeqs[assembly];
+        //set up ref seqs
+        brwsr.allRefs = {};
+        for (var i = 0; i < refSeqs.length; i++)
+            brwsr.allRefs[refSeqs[i].name] = refSeqs[i];
+
+        var refCookie = dojo.cookie(containerID + "-refseq");
+        brwsr.refSeq = refSeqs[0];
+        for (var i = 0; i < refSeqs.length; i++) 
+        {
+            brwsr.chromList.options[i] = new Option(refSeqs[i].name,
+                                                    refSeqs[i].name);
+            if (refSeqs[i].name.toUpperCase() 
+                == String(refCookie).toUpperCase()) 
+            {
+                brwsr.refSeq = brwsr.allRefs[refSeqs[i].name];
+                brwsr.chromList.selectedIndex = i;
+            }
+        }
+        brwsr.assembly = assembly;
+    }
 };
 
 Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
@@ -349,79 +364,80 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
    
 
     brwsr.running_query = false;
-    var queryChromosomes = function( project, donor, chroms, trackkey, progress_chrom, messages ){
-        var query_name = dojo.byId("query_name").value;
-        var query_box = dojo.byId("query_box").value;
-        var args = {"query_donor" : donor, 
-                    "query_chrom" : chroms[0],
-                    "query_box" : query_box,
-                    "query_name" : query_name,
-                    "query_project" : project};
-        var url = "bin/run_query.py?" + dojo.objectToQuery(args);
-        //TODO: security security SECURITY!! could manually pass in supposedly inaccessible donor name
-        var xhrArgs = {
-            url: url,
-            form: dojo.byId("query_form"),
-            handleAs: "json",
-            load: function(data,ioargs){
-                if( data["status"] == "OK" ){
-                    var progress = progress_bar.get("progress");
-                    progress_bar.update({'indeterminate': true, 'label': "Chroms [1.."+progress_chrom+"] complete"});
-                    messages.push(data["message"]);
-                    var entry = data["trackData"];
-                    if( entry['key'] != trackkey ){
-                        alert( 'internal: trackkeys do not line up' );
-                    }
-                    
-                    if( dojo.indexOf( brwsr.tracks, trackkey ) == -1 ){
-                        brwsr.trackData.push( entry );
-                        brwsr.tracks.push( trackkey );
-                        refreshTree();
-                    }
+    //deprecated
+    /*var queryChromosomes = function( project, donor, chroms, trackkey, progress_chrom, messages ){*/
+    /*var query_name = dojo.byId("query_name").value;*/
+    /*var query_box = dojo.byId("query_box").value;*/
+    /*var args = {"query_donor" : donor, */
+    /*"query_chrom" : chroms[0],*/
+    /*"query_box" : query_box,*/
+    /*"query_name" : query_name,*/
+    /*"query_project" : project,*/
+    /*"assembly" : brwsr.assembly};*/
+    /*var url = "bin/run_query.py?" + dojo.objectToQuery(args);*/
+    /*//TODO: security security SECURITY!! could manually pass in supposedly inaccessible donor name*/
+    /*var xhrArgs = {*/
+    /*url: url,*/
+    /*form: dojo.byId("query_form"),*/
+    /*handleAs: "json",*/
+    /*load: function(data,ioargs){*/
+    /*if( data["status"] == "OK" ){*/
+    /*var progress = progress_bar.get("progress");*/
+    /*progress_bar.update({'indeterminate': true, 'label': "Chroms [1.."+progress_chrom+"] complete"});*/
+    /*messages.push(data["message"]);*/
+    /*var entry = data["trackData"];*/
+    /*if( entry['key'] != trackkey ){*/
+    /*alert( 'internal: trackkeys do not line up' );*/
+    /*}*/
 
-                    if( chroms.length > 1 && brwsr.running_query ){
-                        var n = chroms.slice(1);
-                        queryChromosomes( project, donor, n, trackkey, progress_chrom+1, messages);
-                    }
-                    else{
-                        alert( messages.join('\n') );
-                        dojo.attr(progress_bar.domNode, 'hidden', true);
-                        dojo.style(dijit.byId('stop_button').domNode, {
-                              visibility: 'hidden',
-                              display: 'none'
-                        });
-                        setRunningQuery( false );
-                    }
-                }
-                else {
-                    alert(data["message"]);
-                    dojo.attr(progress_bar.domNode, 'hidden', true);
-                    dojo.style(dijit.byId('stop_button').domNode, {
-                          visibility: 'hidden',
-                          display: 'none'
-                    });
-                    //dojo.attr(stop_button.domNode, 'hidden', true);
-                    setRunningQuery( false );
-                    //progress_bar.update({'progress': 0});
-                }
-            },
-            error: function(error) {
-                alert(error);
-                dojo.attr(progress_bar.domNode, 'hidden', true);
-                    dojo.style(dijit.byId('stop_button').domNode, {
-                          visibility: 'hidden',
-                          display: 'none'
-                    });
-                dojo.attr(stop_button.domNode, 'hidden', true);
-                setRunningQuery( false );
-                //progress_bar.update({'progress': 0});
-            }
-        };
-        //Call the asynchronous xhrPost
-        var deferred = dojo.xhrPost(xhrArgs);
-    }
+    /*if( dojo.indexOf( brwsr.tracks, trackkey ) == -1 ){*/
+    /*brwsr.trackData.push( entry );*/
+    /*brwsr.tracks.push( trackkey );*/
+    /*refreshTree();*/
+    /*}*/
 
-    //TODO: won't need to do the disabling thing, correct?
+    /*if( chroms.length > 1 && brwsr.running_query ){*/
+    /*var n = chroms.slice(1);*/
+    /*queryChromosomes( project, donor, n, trackkey, progress_chrom+1, messages);*/
+    /*}*/
+    /*else{*/
+    /*alert( messages.join('\n') );*/
+    /*dojo.attr(progress_bar.domNode, 'hidden', true);*/
+    /*dojo.style(dijit.byId('stop_button').domNode, {*/
+    /*visibility: 'hidden',*/
+    /*display: 'none'*/
+    /*});*/
+    /*setRunningQuery( false );*/
+    /*}*/
+    /*}*/
+    /*else {*/
+    /*alert(data["message"]);*/
+    /*dojo.attr(progress_bar.domNode, 'hidden', true);*/
+    /*dojo.style(dijit.byId('stop_button').domNode, {*/
+    /*visibility: 'hidden',*/
+    /*display: 'none'*/
+    /*});*/
+    /*//dojo.attr(stop_button.domNode, 'hidden', true);*/
+    /*setRunningQuery( false );*/
+    /*//progress_bar.update({'progress': 0});*/
+    /*}*/
+    /*},*/
+    /*error: function(error) {*/
+    /*alert(error);*/
+    /*dojo.attr(progress_bar.domNode, 'hidden', true);*/
+    /*dojo.style(dijit.byId('stop_button').domNode, {*/
+    /*visibility: 'hidden',*/
+    /*display: 'none'*/
+    /*});*/
+    /*dojo.attr(stop_button.domNode, 'hidden', true);*/
+    /*setRunningQuery( false );*/
+    /*//progress_bar.update({'progress': 0});*/
+    /*}*/
+    /*};*/
+    /*//Call the asynchronous xhrPost*/
+    /*var deferred = dojo.xhrPost(xhrArgs);*/
+    /*}*/
+
     var runQuery = function(){
         if( tree.clickedItem.prefix != brwsr.globals["PROJECT_PREFIX"] ){
             alert("Cannot run query from anything other than a project.");
@@ -458,13 +474,14 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                   display: 'block'
             });
             progress_bar.update({'indeterminate': true, 
-                                 'label': 'Working on chr1...'});
+                                 'label': 'Working...'});
             
             var query_name = dojo.byId("query_name").value;
             var query_box = dojo.byId("query_box").value;
             var args = {"query_box" : query_box,
                         "query_name" : query_name,
-                        "query_project" : project};
+                        "query_project" : project,
+                        "assembly" : tree.selectedItem.assembly};
             var url = "bin/run_query.py?" + dojo.objectToQuery(args);
             //TODO: security security SECURITY!! could manually pass in supposedly inaccessible donor name
             var xhrArgs = {
@@ -613,6 +630,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                          invalidMessage: 'Only alphanumeric characters' }
                      ).placeAt( project_name_p );
 
+    //TODO: prompt user to specific which assembly it references
     var new_project_button = new dijit.form.Button(
             {id: "new_project_button", 
              label: "Create Project",
@@ -693,8 +711,9 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
             hidden: false,
             onClick: function(e) {
                 var item = tree.clickedItem;
-                trackkey = item.key;
-                visualize(trackkey);
+                var trackkey = item.key;
+                var assembly = item.assembly;
+                visualize(trackkey, assembly);
             }
         });
     pMenu.addChild( visualize_menuitem );
@@ -736,6 +755,10 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
             }
         }));
     pMenu.addChild(
+            //TODO: don't want the project prefix in front of the imported
+            //a la 'main_genes'.  Maybe change this in run_query, instead 
+            //of printing the file we give the compiler, print the query 
+            //we got from the user
         new dijit.MenuItem({
             label: "View Text",
             prefix: "query_",
@@ -1013,14 +1036,23 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     //selective presentation of menu children depending on the tree.clickedItem 
     dojo.connect(pMenu, "_openMyself", this, function(e){
         var treeItem = dijit.getEnclosingWidget(e.target).item;
-        if( treeItem.root ){
-            treeItem.prefix = "root_";
+        var treeItem_prefix;
+        if( treeItem == null ){
+            treeItem_prefix = "none_";
+        }
+        else {
+            if( treeItem.root ){
+                treeItem_prefix = "root_";
+            }
+            else{
+                treeItem_prefix = treeItem.prefix;
+            }
         }
         var children = pMenu.getChildren();
         for( i in children ){
             child = children[i];
             //set hidden or not depending on the menuitems prefix
-            dojo.attr(child.domNode, 'hidden', (treeItem.prefix != child.prefix || child.hidden));
+            dojo.attr(child.domNode, 'hidden', (treeItem_prefix != child.prefix || child.hidden));
         } 
     });
 
@@ -1039,7 +1071,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     var deleteQuery = function( project, donor, query_name ){
         var args = {project: project, donor: donor, query_name: query_name};
         var url = "bin/remove_track.py?" + dojo.objectToQuery(args);
-        var trackkey = donor +'/'+ query_name;
+        var trackkey = project +'/'+ query_name;
 
         var xhrArgs = {
             url: url,
@@ -1067,15 +1099,26 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
         var deferred = dojo.xhrPost(xhrArgs);
     };
 
-    var visualize = function(trackkey){
+    var visualize = function(trackkey, assembly){
         var tester = function(item){
             return item["key"] == trackkey;
         }
         var matches = dojo.filter( brwsr.trackData, tester );
         if( matches.length == 0 ){ alert(" no matches"); }
         else if( matches.length == 1 ){
-            //visualize_button.set('label','Recall');
-            //visualize_button.onClick = function(){ recall(tree.selectedItem.key); };
+            if( assembly != brwsr.assembly && brwsr.assembly != "none"){
+                alert( "assembly doesn't match, recalling everything" );
+                //not what we want, use brwsr.tracks?
+                var visualized_tracks = brwsr.viewDndWidget.getAllNodes();
+                var len = visualized_tracks.length;
+                var trackkey;
+                for( var i=0; i < len; i++ ){
+                    trackkey = visualized_tracks[i].track.key;
+                    recall(trackkey);
+                }
+                //TODO load appropriate DNA SequenceTrack
+                brwsr.setRefseq( assembly );
+            }
             brwsr.viewDndWidget.insertNodes( false, [matches[0]] );
             brwsr.onVisibleTracksChanged();
         }
@@ -1091,6 +1134,12 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
             );
             brwsr.interestingAreas.removeTrack( trackkey );
         }
+        //TODO, if all empty, set brwsr.assembly so that any track
+        //can go in without a warning
+        if (brwsr.viewDndWidget.getAllNodes().length == 0 ){
+            brwsr.assembly = "none";
+        }
+
         brwsr.onVisibleTracksChanged();
 
     };
@@ -1196,7 +1245,8 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
             //return trackListCreate(track, hint);
         } 
         else {
-            var replaceData = {refseq: brwsr.refSeq.name};
+            var replaceData = {refseq: brwsr.refSeq.name, 
+                               assembly: "42"};
             var url = track.url.replace(/\{([^}]+)\}/g, function(match, group) {return replaceData[group];});
             var klass = eval(track.type);
             var newTrack = new klass(track, url, brwsr.refSeq,
@@ -1239,6 +1289,8 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     } else if (params.defaultTracks) {
         this.showTracks(params.defaultTracks);
     }
+
+    brwsr.assembly = dojo.cookie(this.container.id + "-assembly");
 
 };
 
@@ -1285,6 +1337,9 @@ Browser.prototype.onVisibleTracksChanged = function() {
                                function(track) { return track.name; });
     dojo.cookie(this.container.id + "-tracks",
                 trackLabels.join(","),
+                {expires: 60});
+    dojo.cookie(this.container.id + "-assembly",
+                this.assembly,
                 {expires: 60});
     this.view.showVisibleBlocks();
 };

@@ -16,12 +16,17 @@ out_filename = "%s/make_new_project_output.txt" % (GlobalConfig.DEBUG_DIR)
 sys.stdout = open( out_filename,'w')
 
 fields = cgi.FieldStorage()
-donor_name = fields.getvalue("project_name")
+project_name = fields.getvalue("project_name")
 
 utils.printToServer( 'Content-type: text/json\n\n' )
 try :
-    os.mkdir( "%s/data/tracks/%s%s" % \
-              (GlobalConfig.ROOT_DIR, GlobalConfig.PROJECT_PREFIX, donor_name) )
+    project_dir = "%s/data/tracks/%s%s" % \
+                   (GlobalConfig.ROOT_DIR, 
+                    GlobalConfig.PROJECT_PREFIX, 
+                    project_name) 
+
+    os.mkdir( project_dir )
+    os.mkdir( project_dir + "/interval_tables" )
     status = "ok"
     message = "good to go"
     print "made the directory"
