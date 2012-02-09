@@ -12,7 +12,7 @@ cgitb.enable()
 from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR, DEBUG_DIR, TRACK_TEMPLATE, UNBOUND_CHROM, PROJECT_PREFIX
 
 perms = {"earthworm jim" : {"NA18507" : False}}
-dassembly = {"main":"hg18", "hg19":"hg19"}
+dassembly = {"main":"hg18", "hg19":"hg19", "sangwoo":"hg18", "dev":"hg18", "anand":"hg19"}
 
 def getChildren( path ) :
     r = []
