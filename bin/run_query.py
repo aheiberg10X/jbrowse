@@ -101,10 +101,10 @@ else :
     #chrom is 1..22 X Y
     src_table_dir = "%s/data/tracks/%s%s/interval_tables" \
                     % (root, PROJECT_PREFIX, project)
-    
-    #leaving space for donor and chrom
+
+    #leavin space for donor and chrom
     trackpath = TRACK_TEMPLATE % (project, "%s", query_name, "%s")
-    
+
     #trackpath = GlobalConfig.TRACK_TEMPLATE % \
                 #(project, donor, query_name, chrom)
     product_dest = "%s/data/%s" % (root, trackpath )

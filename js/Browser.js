@@ -85,9 +85,13 @@ var Browser = function(params) {
             topPane.appendChild(overview);
             //try to come up with a good estimate of how big the location box
             //actually has to be
-            var initRefseq = "hg18";
-            var maxBase = brwsr.refSeqs[initRefseq].reduce(function(a,b) {return a.end > b.end ? a : b;}).end;
+            var init_assembly = "hg18";
+            var maxBase = brwsr.refSeqs[init_assembly].reduce(function(a,b) {return a.end > b.end ? a : b;}).end;
             var navbox = brwsr.createNavBox(topPane, (2 * (String(maxBase).length + (((String(maxBase).length / 3) | 0) / 2))) + 2, params);
+
+            //close in the containerID
+            //brwsr.setRefseq = brwsr.closeSetRefseq(params.containerID);
+            brwsr.setRefseq(init_assembly); 
 
             var viewElem = document.createElement("div");
             brwsr.container.appendChild(viewElem);
@@ -148,9 +152,6 @@ var Browser = function(params) {
             topPane.appendChild(brwsr.locationTrap);
             topPane.style.overflow="hidden";
 
-            //close in the containerID
-            brwsr.setRefseq = brwsr.closeSetRefseq(params.containerID);
-            brwsr.setRefseq(initRefseq); 
 
             dojo.connect(brwsr.chromList, "onchange", function(event) {
                     var oldLocMap = dojo.fromJson(dojo.cookie(brwsr.container.id + "-location")) || {};
@@ -228,9 +229,40 @@ var Browser = function(params) {
         });
 };
 
+
+Browser.prototype.setRefseq2 = function(assembly){
+    this.assembly = assembly;
+};
+
+
+Browser.prototype.setRefseq = function(assembly){
+    var brwsr = this;
+    var refSeqs = brwsr.refSeqs[assembly];
+    //set up ref seqs
+    brwsr.allRefs = {};
+    for (var i = 0; i < refSeqs.length; i++)
+        brwsr.allRefs[refSeqs[i].name] = refSeqs[i];
+
+    //var refCookie = dojo.cookie(containerID + "-refseq");
+    brwsr.refSeq = refSeqs[0];
+    for (var i = 0; i < refSeqs.length; i++) 
+    {
+        brwsr.chromList.options[i] = new Option(refSeqs[i].name,
+                                                refSeqs[i].name);
+        //if (refSeqs[i].name.toUpperCase() 
+        //== String(refCookie).toUpperCase()) 
+        //{
+        //brwsr.refSeq = brwsr.allRefs[refSeqs[i].name];
+        //brwsr.chromList.selectedIndex = i;
+        //}
+    }
+    brwsr.chromList.selectedIndex = 0;
+    brwsr.assembly = assembly;
+};
+
 Browser.prototype.closeSetRefseq = function(containerID){
+    var brwsr = this;
     return function(assembly){
-        var brwsr = this;
         var refSeqs = brwsr.refSeqs[assembly];
         //set up ref seqs
         brwsr.allRefs = {};
@@ -244,7 +276,7 @@ Browser.prototype.closeSetRefseq = function(containerID){
             brwsr.chromList.options[i] = new Option(refSeqs[i].name,
                                                     refSeqs[i].name);
             if (refSeqs[i].name.toUpperCase() 
-                == String(refCookie).toUpperCase()) 
+                    == String(refCookie).toUpperCase()) 
             {
                 brwsr.refSeq = brwsr.allRefs[refSeqs[i].name];
                 brwsr.chromList.selectedIndex = i;
@@ -1106,18 +1138,28 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
         var matches = dojo.filter( brwsr.trackData, tester );
         if( matches.length == 0 ){ alert(" no matches"); }
         else if( matches.length == 1 ){
-            if( assembly != brwsr.assembly && brwsr.assembly != "none"){
-                alert( "assembly doesn't match, recalling everything" );
+            if( assembly != brwsr.assembly ) 
+                //&& brwsr.assembly != "none"
+                //&& brwsr.assmebly != null)
+            {
+                alert( "The assemblies of the currently visualized queries do not match this one.  They will be recalled." );
                 //not what we want, use brwsr.tracks?
                 var visualized_tracks = brwsr.viewDndWidget.getAllNodes();
                 var len = visualized_tracks.length;
                 var trackkey;
                 for( var i=0; i < len; i++ ){
                     trackkey = visualized_tracks[i].track.key;
-                    recall(trackkey);
+                    //TODO
+                    //does this work, will it auto resolve the dna track to the new assembly?
+                    if(trackkey != 'DNA'){
+                        recall(trackkey);
+                    }
+
                 }
-                //TODO load appropriate DNA SequenceTrack
-                brwsr.setRefseq( assembly );
+                //TODO
+                //just use brwsr.showTracks here?
+                brwsr.setRefseq2(assembly);
+                //TODO reset trapezoid size
             }
             brwsr.viewDndWidget.insertNodes( false, [matches[0]] );
             brwsr.onVisibleTracksChanged();
@@ -1136,9 +1178,9 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
         }
         //TODO, if all empty, set brwsr.assembly so that any track
         //can go in without a warning
-        if (brwsr.viewDndWidget.getAllNodes().length == 0 ){
-            brwsr.assembly = "none";
-        }
+        //if (brwsr.viewDndWidget.getAllNodes().length == 0 ){
+        //brwsr.assembly = "none";
+        //}
 
         brwsr.onVisibleTracksChanged();
 
@@ -1246,7 +1288,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
         } 
         else {
             var replaceData = {refseq: brwsr.refSeq.name, 
-                               assembly: "42"};
+                               assembly: brwsr.assembly};
             var url = track.url.replace(/\{([^}]+)\}/g, function(match, group) {return replaceData[group];});
             var klass = eval(track.type);
             var newTrack = new klass(track, url, brwsr.refSeq,
@@ -1290,7 +1332,10 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
         this.showTracks(params.defaultTracks);
     }
 
-    brwsr.assembly = dojo.cookie(this.container.id + "-assembly");
+    var old_assembly = dojo.cookie(this.container.id + "-assembly");
+    if( old_assembly && old_assembly != "undefined" ){
+        brwsr.setRefseq( old_assembly );
+    }
 
 };
 
