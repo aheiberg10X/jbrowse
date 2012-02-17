@@ -876,6 +876,26 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
         }});
     pMenu.addChild( query_menuitem );
 
+
+    var fillQueryBoxHelper = function( areAdding, type, name ){
+        if( areAdding == 'adding' ){
+            var stuff = query_box.value.split("\n");
+            
+            if( type == 'genome' ){
+            }
+            else if( type == 'import' ){
+            }
+            else{
+            }
+            query_box.set('value', type + " " + name + ";\n" + query_box.value);
+        }
+        else{
+            var re = new RegExp( type + " " + name  + ";?\n?", 'gi' )
+            query_box.set('value', query_box.value.replace(re, ""));
+        }
+    };
+
+
     var fillWithIntervalTables = function( html_elem ){
         args = {"project_name" : tree.selectedItem.name};
         url = "bin/list_interval_tables.py?"+dojo.objectToQuery(args);
@@ -898,10 +918,12 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                              label : data["message"][i],
                              onClick : function(){
                                  if( this.checked ){
-                                     alert("take some action to insert 'use' statement into query box");
+                                     fillQueryBoxHelper( "adding", "import", data["message"][i] );
+                                     //alert("take some action to insert 'use' statement into query box");
                                  }
                                  else {
-                                     alert("remove any 'use ...' from query box");
+                                     fillQueryBoxHelper( "removing", "import", data["message"][i] );
+                                     //alert("remove any 'use ...' from query box");
                                  }
                              },
                              iconClass : "dijitCheckBoxIcon"
@@ -964,10 +986,10 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                              label : data["message"][i],
                              onClick : function(){
                                  if( this.checked ){
-                                     alert("change the query or set some interval variable to let the compiler know to only use the marked donors");
+                                     fillQueryBoxHelper( "adding", "genome", data["message"][i] );
                                  }
                                  else {
-                                     alert("remove the marked donor from the query");
+                                     fillQueryBoxHelper( "removing", "genome", data["message"][i] );
                                  }
                              },
                              iconClass : "dijitCheckBoxIcon"
