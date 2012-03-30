@@ -106,7 +106,7 @@ NCList.prototype.iterHelper = function(arr, from, to, fun, finish,
     var len = arr.length;
     var i = this.binarySearch(arr, from, searchIndex);
     var rendered = 0;
-    while ((i < len) //&& rendered < maxRender
+    while ((i < len) //&& keepIterating//&& rendered < maxRender
            && (i >= 0)
            && ((inc * arr[i][testIndex]) < (inc * to)) ) {
 
@@ -198,6 +198,9 @@ NCList.prototype.iterHelper = function(arr, from, to, fun, finish,
                                 fun, finish, inc, searchIndex, testIndex,
                                 path.concat(i), maxRender-1);
             }
+        }
+        else{
+            var a = 5;
         }
         i += inc;
     }

@@ -170,6 +170,7 @@ var Browser = function(params) {
             //hook up GenomeView
             var gv = new GenomeView(viewElem, 250, brwsr.refSeq, 1/200);
             brwsr.view = gv;
+            brwsr.view.allowVisualization = false;
             brwsr.viewElem = viewElem;
             //gv.setY(0);
             viewElem.view = gv;
@@ -1053,12 +1054,18 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                 function(selected,e){ 
                     this.clickedItem = selected;
                     var isVisualized = brwsr.view.isVisualized( selected.key );
-                    if( isVisualized ){ 
-                        visualize_menuitem.hidden = true;
-                        recall_menuitem.hidden = false;
+                    if( brwsr.view.allowVisualization ){
+                        if( isVisualized ){ 
+                            visualize_menuitem.hidden = true;
+                            recall_menuitem.hidden = false;
+                        }
+                        else { 
+                            visualize_menuitem.hidden = false;
+                            recall_menuitem.hidden = true;
+                        }
                     }
-                    else { 
-                        visualize_menuitem.hidden = false;
+                    else {
+                        visualize_menuitem.hidden = true;
                         recall_menuitem.hidden = true;
                     }
 
@@ -1164,7 +1171,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                 //&& brwsr.assembly != "none"
                 //&& brwsr.assmebly != null)
             {
-                alert( "The assemblies of the currently visualized queries do not match this one.  They will be recalled." );
+                alert( "The assembly of the currently visualized queries do not match this one.  They will be recalled." );
                 //not what we want, use brwsr.tracks?
                 var visualized_tracks = brwsr.viewDndWidget.getAllNodes();
                 var len = visualized_tracks.length;
