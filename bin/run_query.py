@@ -184,7 +184,10 @@ else :
             #copy intervals
             moveIfExists( "%s/out.bam.short" % prefix, \
                           "%s/%s_%s.intervals" % (prefix, query_name, chromnum) )
-            #
+            #TODO
+            #Christos will now be naming it *.intervals
+
+
             t3 = time.time()
             #print "done moving, took: %f s" % (t3-t2)
 

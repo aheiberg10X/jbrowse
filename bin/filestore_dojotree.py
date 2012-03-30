@@ -12,7 +12,11 @@ cgitb.enable()
 from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR, DEBUG_DIR, TRACK_TEMPLATE, UNBOUND_CHROM, PROJECT_PREFIX
 
 perms = {"earthworm jim" : {"NA18507" : False}}
-dassembly = {"main":"hg18", "hg19":"hg19", "sangwoo":"hg18", "dev":"hg18", "anand":"hg19"}
+dassembly = {"main":"hg18", \
+             "hg19":"hg19", \
+             "sangwoo":"hg18", \
+             "dev":"hg18", \
+             "anand":"hg19"}
 
 def getChildren( path ) :
     r = []
@@ -133,7 +137,23 @@ def makeItem( path ) :
                 item['assembly'] = dassembly[item['project']]
             else :
                 item['assembly'] = "n/a"
+            
+            #TODO
+            #examine the url (use chr1) to look for *.bam, *.interval, *.txt
+            dkey_ext = {"has_bam" :      ".bam", \
+                        "has_interval" : ".interval", \
+                        "has_txt" :      ".txt" }
 
+            for key in dkey_ext :
+                item[key] = False
+    
+            folder = "%s/data/%s" % (ROOT_DIR, tt.replace( UNBOUND_CHROM, 'chr1' ) )
+            #TODO
+            #more specific than just looking for a .txt file?
+            for thing in os.listdir( folder ) :
+                for key in dkey_ext :
+                    if thing.lower().endswith( dkey_ext[key] ) :
+                        item[key] = True
 
         if is_dir :
             item["children"] = getChildren( path )

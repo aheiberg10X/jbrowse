@@ -27,8 +27,10 @@ try :
 
     os.mkdir( project_dir )
     os.mkdir( project_dir + "/interval_tables" )
-    status = "ok"
-    message = "good to go"
+    #status = "ok"
+    #message = "good to go"
+    status = "not ok"
+    message = "Need to alter make_new_project.py to update the project:assembly dictionary in filestore_dojotree.py"
     print "made the directory"
 except OSError as e :
     status = "error"

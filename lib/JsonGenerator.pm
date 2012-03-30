@@ -352,7 +352,7 @@ sub generateTrack {
         #set $i to reflect how many histograms were pre-generated
     }
     else {
-	die "pregen_histograms needs to be defined\n";
+    	die "pregen_histograms needs to be defined\n";
     }
     ### pregen histogram meta ###
     #############################

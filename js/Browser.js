@@ -761,32 +761,55 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
             }
         });
     pMenu.addChild( recall_menuitem) ;
-    pMenu.addChild(
+
+    var downloadFile = function( ext ){
+        return function(e) {
+            var selected = tree.clickedItem;
+            var query_name = selected.name; 
+            var project_name = selected.project;
+            var donor_name = selected.donor;
+            var host_chrom = brwsr.refSeq.name;
+            var chromnum = host_chrom.substring(3);
+            var url = "data/" + 
+                       sprintf( sprintf( globals.TRACK_TEMPLATE, 
+                                         globals.PROJECT_PREFIX,
+                                         globals.DONOR_PREFIX, 
+                                         globals.QUERY_PREFIX,
+                                         globals.CHROM_PREFIX ),
+                                project_name, 
+                                donor_name, 
+                                query_name,
+                                brwsr.refSeq.name ) + 
+                       "/" + query_name + "_" + chromnum + "." + ext;
+            window.location = url;
+        }
+    };
+
+    var download_bam_menuitem = 
         new dijit.MenuItem({
-            label: "Download",
+            label: "Download BAM",
             prefix: "query_",
             hidden: false,
-            onClick: function(e) {
-                var selected = tree.clickedItem;
-                var query_name = selected.name; 
-                var project_name = selected.project;
-                var donor_name = selected.donor;
-                var host_chrom = brwsr.refSeq.name;
-                var chromnum = host_chrom.substring(3);
-                var url = "data/" + 
-                           sprintf( sprintf( globals.TRACK_TEMPLATE, 
-                                             globals.PROJECT_PREFIX,
-                                             globals.DONOR_PREFIX, 
-                                             globals.QUERY_PREFIX,
-                                             globals.CHROM_PREFIX ),
-                                    project_name, 
-                                    donor_name, 
-                                    query_name,
-                                    brwsr.refSeq.name ) + 
-                           "/" + query_name + "_" + chromnum + ".bam";
-                window.location = url;
-            }
-        }));
+            onClick: downloadFile("bam") });
+    pMenu.addChild( download_bam_menuitem );
+
+    var download_interval_menuitem = 
+        new dijit.MenuItem({
+            label: "Download BAM",
+            prefix: "query_",
+            hidden: false,
+            onClick: downloadFile("interval") });
+    pMenu.addChild( download_interval_menuitem );
+
+    var download_txt_menuitem = 
+        new dijit.MenuItem({
+            label: "Download BAM",
+            prefix: "query_",
+            hidden: false,
+            onClick: downloadFile("txt") });
+    pMenu.addChild( download_txt_menuitem );
+
+
     pMenu.addChild(
             //TODO: don't want the project prefix in front of the imported
             //a la 'main_genes'.  Maybe change this in run_query, instead 
@@ -1078,6 +1101,10 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                         pleasewait_menuitem.hidden = true;
                     }
 
+                    download_bam_menuitem.hidden = !selected.has_bam;
+                    download_interval_menuitem.hidden = !selected.has_interval;
+                    download_txt_menuitem.hidden = !selected.has_txt;
+                    
                     //hack to make left click work on tree
                     //openOnLeftClick: true | is insufficient for whatever reason
                     //when dealing with dijit.Trees
