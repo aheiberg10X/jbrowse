@@ -138,14 +138,15 @@ def makeItem( path ) :
             else :
                 item['assembly'] = "n/a"
             
-            #TODO
-            #examine the url (use chr1) to look for *.bam, *.interval, *.txt
-            dkey_ext = {"has_bam" :      ".bam", \
-                        "has_interval" : ".interval", \
-                        "has_txt" :      ".txt" }
+            #Associate these three keys with each query menuitem
+            #It will tell the browser how many of each filetype we
+            #have in the chrom folders
+            dkey_ext = {"num_bams" :      ".bam", \
+                        "num_intervals" : ".interval", \
+                        "num_txts" :      ".txt" }
 
             for key in dkey_ext :
-                item[key] = False
+                item[key] = 0
     
             folder = "%s/data/%s" % (ROOT_DIR, tt.replace( UNBOUND_CHROM, 'chr1' ) )
             #TODO
@@ -153,7 +154,7 @@ def makeItem( path ) :
             for thing in os.listdir( folder ) :
                 for key in dkey_ext :
                     if thing.lower().endswith( dkey_ext[key] ) :
-                        item[key] = True
+                        item[key] += 1
 
         if is_dir :
             item["children"] = getChildren( path )

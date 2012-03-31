@@ -770,18 +770,34 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
             var donor_name = selected.donor;
             var host_chrom = brwsr.refSeq.name;
             var chromnum = host_chrom.substring(3);
-            var url = "data/" + 
-                       sprintf( sprintf( globals.TRACK_TEMPLATE, 
-                                         globals.PROJECT_PREFIX,
-                                         globals.DONOR_PREFIX, 
-                                         globals.QUERY_PREFIX,
-                                         globals.CHROM_PREFIX ),
-                                project_name, 
-                                donor_name, 
-                                query_name,
-                                brwsr.refSeq.name ) + 
-                       "/" + query_name + "_" + chromnum + "." + ext;
-            window.location = url;
+            
+            var ext_count = 0;
+            if( ext == "bam" ){
+                ext_count = selected.num_bams;
+            }
+            else if( ext == "interval" ){
+                ext_count = selected.num_intervals;
+            }
+            else if( ext == "txt" ){
+                ext_count = selected.num_txts;
+            }
+            //TODO
+            //interpolate i into each file to be donwloaded
+            for( var i=1; i <= ext_count; i++ ){
+                var url = "data/" + 
+                           sprintf( sprintf( globals.TRACK_TEMPLATE, 
+                                             globals.PROJECT_PREFIX,
+                                             globals.DONOR_PREFIX, 
+                                             globals.QUERY_PREFIX,
+                                             globals.CHROM_PREFIX ),
+                                    project_name, 
+                                    donor_name, 
+                                    query_name,
+                                    brwsr.refSeq.name ) + 
+                           "/" + query_name + "_" + chromnum + "." + ext;
+                window.open(url);
+                //window.location = url;
+            }
         }
     };
 
@@ -795,7 +811,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
 
     var download_interval_menuitem = 
         new dijit.MenuItem({
-            label: "Download BAM",
+            label: "Download intervals",
             prefix: "query_",
             hidden: false,
             onClick: downloadFile("interval") });
@@ -803,7 +819,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
 
     var download_txt_menuitem = 
         new dijit.MenuItem({
-            label: "Download BAM",
+            label: "Download txt",
             prefix: "query_",
             hidden: false,
             onClick: downloadFile("txt") });
@@ -1101,9 +1117,9 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                         pleasewait_menuitem.hidden = true;
                     }
 
-                    download_bam_menuitem.hidden = !selected.has_bam;
-                    download_interval_menuitem.hidden = !selected.has_interval;
-                    download_txt_menuitem.hidden = !selected.has_txt;
+                    download_bam_menuitem.hidden = selected.num_bams == 0;
+                    download_interval_menuitem.hidden = selected.num_intervals == 0;
+                    download_txt_menuitem.hidden = selected.num_txts == 0;
                     
                     //hack to make left click work on tree
                     //openOnLeftClick: true | is insufficient for whatever reason

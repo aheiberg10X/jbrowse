@@ -168,6 +168,9 @@ else :
 
             #source = '%s/genomequery/biosql_compiler/biosql/dst/%s' % (root,chrom)
 
+            #TODO
+            #move ALL the files, change the names
+
             #copy bam
             moveIfExists( "%s/out.bam" % prefix, \
                           "%s/%s_%s.bam" % (prefix, query_name, chromnum) )
@@ -183,7 +186,7 @@ else :
 
             #copy intervals
             moveIfExists( "%s/out.bam.short" % prefix, \
-                          "%s/%s_%s.intervals" % (prefix, query_name, chromnum) )
+                          "%s/%s_%s.interval" % (prefix, query_name, chromnum) )
             #TODO
             #Christos will now be naming it *.intervals
 
@@ -191,14 +194,14 @@ else :
             t3 = time.time()
             #print "done moving, took: %f s" % (t3-t2)
 
-            print "starting bam2ncl"
+            print "starting interval2ncl"
             print "donor", donor, type(donor)
             print "chromnum", chromnum, type(chromnum)
             print "query_name", query_name, type(query_name)
             print "linking", linking, type(linking)
             print "assembly ", assembly
 
-            pop = Popen(["perl", "bam2ncl.pl", \
+            pop = Popen(["perl", "interval2ncl.pl", \
                          project, \
                          donor, \
                          query_name, \
@@ -206,12 +209,13 @@ else :
                          linking, \
                          assembly], \
                         stdout=PIPE, stderr=PIPE)
+
             (out, err) = pop.communicate()
             messages.append(out)
             print "\n\nerr: ", err
             print "\n\nout: ", out
             t4 = time.time()
-            print "done with bam2ncl, took: %f s" % (t4-t3)
+            print "done with interval2ncl, took: %f s" % (t4-t3)
             #print "returning %s" % out
         
 
