@@ -20,8 +20,10 @@ debugging = False
 def moveIfExists( source, dest ) :
     if os.path.exists( source ) :
         shutil.move( source, dest )
+        return True
     else :
         print "\n%s doesn't exist!\n" % source
+        return False
 
 #TODO: take the use _____ statements and
 #fill in with the path to that file (is this what the compiler will need?)
@@ -64,6 +66,7 @@ H1=select interval_creation() from READS using intervals(location,
 
 select * from H1 where interval_coverage>5'''
     project = 'main'
+    assembly = "hg18"
 
 else :
     fields = cgi.FieldStorage()
@@ -78,7 +81,6 @@ err_filename = "%s/query_error.txt" % (DEBUG_DIR)
 sys.stderr = open( err_filename,'w')
 out_filename = "%s/query_output.txt" % (DEBUG_DIR)
 sys.stdout = open( out_filename,'w')
-print "fields", fields
 
 (status, query) = expandImports( query, project )
 print "\n query", query, "\n"
@@ -123,13 +125,6 @@ else :
                  assembly], \
                 stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
-    #pop = Popen(['bash', \
-                 #"../genomequery/biosql_compiler/biosql/run_biosql.sh", \
-                 #query_loc, \
-                 #donor, \
-                 #chromnum, \
-                 #src_table_dir], \
-                #stdin=PIPE, stdout=PIPE, stderr=PIPE)
     (out, err) = pop.communicate()
     sys.stdout.write( out )
     sys.stderr.write( err )
@@ -143,7 +138,7 @@ else :
     first_line = fbyte.readline().lower()
     if "syntax error" in first_line :
         message = first_line.replace(':',';')
-        t = json.dumps({'status':'error','message':first_line})
+        t = json.dumps({'status':'Query Syntax Error','message':first_line})
         fbyte.close()
         utils.printToServer( t )
         assert 1==9
@@ -154,6 +149,9 @@ else :
                 donors.append( line.split()[2] )
 
     fbyte.close()
+
+    #TODO
+    #change query, strip project name from import
 
     track_datas = []
     messages = []
@@ -168,26 +166,56 @@ else :
 
             #source = '%s/genomequery/biosql_compiler/biosql/dst/%s' % (root,chrom)
 
-            #TODO
-            #move ALL the files, change the names
-
             #copy bam
-            moveIfExists( "%s/out.bam" % prefix, \
-                          "%s/%s_%s.bam" % (prefix, query_name, chromnum) )
+            query_indices = []
+            if os.path.exists( prefix ) :
+                for file in os.listdir( prefix ) :
+                    (head,ext) = file.rsplit('.',1)
+                    if ext == "bam" or ext == "interval" or ext == "txt" :
+                        splt = head.rsplit("+",1)
+                        #mapjoin occurred, and there are multiple files
+                        if len(splt) == 2 :
+                            (head, i) = splt
+                            if i not in query_indices : query_indices.append(i)
+                            #target = "%s/out+%s.%s" % (prefix,i,ext)
+                            #dest = "%s/%s_%s_%s.%s" % (prefix, query_name, \
+                                                   #chromnum, i, ext)
+                        else :
+                            target = "%s/out.%s" % (prefix,ext)
+                            dest = "%s/out+0.%s" % (prefix,ext)
+                            if 0 not in query_indices : query_indices.append("0")
+                            moveIfExists( target, dest )
 
+            print "query_indices", query_indices
+
+            #for i in range(100) :  
+                #if not moveIfExists( target, dest ) : 
+                    #break
+            # 
+            ##copy intervals
+            #for i in range(100) :
+                #target = "%s/out_%d.interval" % (prefix,i)
+                #dest = "%s/%s_%s_%d.interval" % (prefix,query_name,chromnum,i)
+                #if not moveIfExists( target, dest ) : 
+                    #break
+           # 
+            ##copy txts
+            #for i in range(100) :
+                #target = "%s/out_%d.txt" % (prefix,i)
+                #dest = "%s/%s_%s_%d.txt" % (prefix,query_name,chromnum,i)
+                #if not moveIfExists( target, dest ) : 
+                    #break
+    
             #copy query
             #put the gq file in the query_ dir
             moveIfExists( query_loc, \
                           "%s/../%s.gq" % (prefix, query_name) )
 
             #copy histogram
-            moveIfExists( "%s/out.hist" % prefix, \
-                          "%s/%s_%s.hist" % (prefix, query_name, chromnum) )
+            #moveIfExists( "%s/out.hist" % prefix, \
+                          #"%s/%s_%s.hist" % (prefix, query_name, chromnum) )
 
-            #copy intervals
-            moveIfExists( "%s/out.bam.short" % prefix, \
-                          "%s/%s_%s.interval" % (prefix, query_name, chromnum) )
-            #TODO
+                        #TODO
             #Christos will now be naming it *.intervals
 
 
@@ -201,11 +229,14 @@ else :
             print "linking", linking, type(linking)
             print "assembly ", assembly
 
+            #TODO
+            #right now query_indices is ignored
             pop = Popen(["perl", "interval2ncl.pl", \
                          project, \
                          donor, \
                          query_name, \
                          chromnum, \
+                         ','.join(query_indices), \
                          linking, \
                          assembly], \
                         stdout=PIPE, stderr=PIPE)

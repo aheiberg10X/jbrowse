@@ -23,8 +23,9 @@ my $project = $ARGV[0];
 my $donor = $ARGV[1];
 my $query_name = $ARGV[2];
 my $chromnum = $ARGV[3];
-my $linking = $ARGV[4];
-my $assembly = $ARGV[5];
+my $query_indices = $ARGV[4];
+my $linking = $ARGV[5];
+my $assembly = $ARGV[6];
 
 #### DEBUGGING OUTPUT ###
 open( my $OUTPUT, '>', $DEBUG_DIR . "/" . "bam_output_$chromnum.txt" ) or die $!;
@@ -54,17 +55,18 @@ if( $profiling ){
 
 my $compress = 0;
 
-($trackkey, $message) = createTrack( $project, $donor, $query_name, $chromnum, $linking, $assembly, $compress );
+($trackkey, $message) = createTrack( $project, $donor, $query_name, $chromnum, $query_indices, $linking, $assembly, $compress );
 
 print $OUTPUT "return message: $message\n";
 print $message;
 close $OUTPUT;
 close ERROR;
 
-
+#TODO
+#incorporate $query_indices into visualization, right now it is ignored
 sub createTrack {
     
-    my ($project, $donor, $query_name, $chromnum, $bam_linking, $assembly, $compress ) = @_;
+    my ($project, $donor, $query_name, $chromnum, $query_indices, $bam_linking, $assembly, $compress ) = @_;
 
     my $host_chrom = "chr$chromnum";    
     my $template = $TRACK_TEMPLATE; 
@@ -80,7 +82,12 @@ sub createTrack {
     $key = "$project/$query_name";
     $trackLabel = $query_name;
 
-    my $interval_file = "$targetdir/$query_name\_$chromnum.intervals";
+    #TODO
+    #do all of them?  do the last (currently)?
+    my @splt = split( ",", $query_indices );
+    my $query_index = @splt[-1];
+    my $interval_file = "$targetdir/out+$query_index.interval";
+    #my $interval_file = "$targetdir/$query_name\_$chromnum.intervals";
     if( ! -e $interval_file ){ 
         print $OUTPUT "interval file does not exist\n";
         return ($key, "Nothing to visualize"); 
@@ -192,7 +199,7 @@ sub createTrack {
 
     open( FINT, '<', $interval_file );
     my $line = <FINT>;
-    my @splt = split('\t', $line);i
+    @splt = split('\t', $line);i
     my $len = scalar(@splt);
     print $OUTPUT "splt is @splt and length is $len";
     my $is_single_reads = $len < 6;

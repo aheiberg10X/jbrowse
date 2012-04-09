@@ -78,6 +78,7 @@ var Browser = function(params) {
             brwsr.container.genomeBrowser = brwsr;
             var topPane = document.createElement("div");
             brwsr.container.appendChild(topPane);
+            topPane.className = "topPane";
 
             var overview = document.createElement("div");
             overview.className = "overview";
@@ -771,19 +772,20 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
             var host_chrom = brwsr.refSeq.name;
             var chromnum = host_chrom.substring(3);
             
-            var ext_count = 0;
+            var ixs = [];
             if( ext == "bam" ){
-                ext_count = selected.num_bams;
+                ixs = selected.bam_ixs.split(",");
             }
             else if( ext == "interval" ){
-                ext_count = selected.num_intervals;
+                ixs = selected.interval_ixs.split(",");
             }
             else if( ext == "txt" ){
-                ext_count = selected.num_txts;
+                ixs = selected.txt_ixs.split(",");
             }
             //TODO
             //interpolate i into each file to be donwloaded
-            for( var i=1; i <= ext_count; i++ ){
+            for( var j=0; j < ixs.length; j++ ){
+                var i = ixs[j];
                 var url = "data/" + 
                            sprintf( sprintf( globals.TRACK_TEMPLATE, 
                                              globals.PROJECT_PREFIX,
@@ -794,8 +796,11 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                                     donor_name, 
                                     query_name,
                                     brwsr.refSeq.name ) + 
-                           "/" + query_name + "_" + chromnum + "." + ext;
+                           //"/" + query_name + "_" + chromnum + 
+                                 //"_" + i + "." + ext;
+                           "/out+" + i + "." + ext;
                 window.open(url);
+                //setTimeout(function() {},1250);
                 //window.location = url;
             }
         }
@@ -1117,9 +1122,9 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                         pleasewait_menuitem.hidden = true;
                     }
 
-                    download_bam_menuitem.hidden = selected.num_bams == 0;
-                    download_interval_menuitem.hidden = selected.num_intervals == 0;
-                    download_txt_menuitem.hidden = selected.num_txts == 0;
+                    download_bam_menuitem.hidden = selected.bam_ixs.length == 0;
+                    download_interval_menuitem.hidden = selected.interval_ixs.length == 0;
+                    download_txt_menuitem.hidden = selected.txt_ixs.length == 0;
                     
                     //hack to make left click work on tree
                     //openOnLeftClick: true | is insufficient for whatever reason

@@ -140,21 +140,33 @@ def makeItem( path ) :
             
             #Associate these three keys with each query menuitem
             #It will tell the browser how many of each filetype we
-            #have in the chrom folders
-            dkey_ext = {"num_bams" :      ".bam", \
-                        "num_intervals" : ".interval", \
-                        "num_txts" :      ".txt" }
+            #have in the chrom folders.  
+            #(Remember: Using the counts for chr1)
+            dkey_ext = {"bam_ixs" :      ".bam", \
+                        "interval_ixs" : ".interval", \
+                        "txt_ixs" :      ".txt" }
 
             for key in dkey_ext :
-                item[key] = 0
-    
+                item[key] = [] 
+   
             folder = "%s/data/%s" % (ROOT_DIR, tt.replace( UNBOUND_CHROM, 'chr1' ) )
             #TODO
             #more specific than just looking for a .txt file?
             for thing in os.listdir( folder ) :
                 for key in dkey_ext :
                     if thing.lower().endswith( dkey_ext[key] ) :
-                        item[key] += 1
+                        (head, ext) = thing.rsplit(".",1)
+                
+                        #the new run_query will 
+                        splt = head.rsplit("+",1)
+                        if len(splt) == 2 :
+                            (head, i) = splt
+                        else :
+                            i = "0" 
+                        item[key].append( i )
+                        break
+            for key in dkey_ext :
+                item[key] = ",".join( item[key] ) 
 
         if is_dir :
             item["children"] = getChildren( path )
