@@ -19,7 +19,10 @@ div.container {
     z-index: 0;
 }
 
-div.topPane {
+/*div.topPane {*/
+/*visibility: hidden;*/
+/*}*/
+div.slider {
     visibility: hidden;
 }
 
