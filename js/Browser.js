@@ -78,6 +78,7 @@ var Browser = function(params) {
             brwsr.container.genomeBrowser = brwsr;
             var topPane = document.createElement("div");
             brwsr.container.appendChild(topPane);
+            topPane.className = "topPane";
 
             var overview = document.createElement("div");
             overview.className = "overview";
@@ -170,6 +171,7 @@ var Browser = function(params) {
             //hook up GenomeView
             var gv = new GenomeView(viewElem, 250, brwsr.refSeq, 1/200);
             brwsr.view = gv;
+            brwsr.view.allowVisualization = false;
             brwsr.viewElem = viewElem;
             //gv.setY(0);
             viewElem.view = gv;
@@ -760,18 +762,30 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
             }
         });
     pMenu.addChild( recall_menuitem) ;
-    pMenu.addChild(
-        new dijit.MenuItem({
-            label: "Download",
-            prefix: "query_",
-            hidden: false,
-            onClick: function(e) {
-                var selected = tree.clickedItem;
-                var query_name = selected.name; 
-                var project_name = selected.project;
-                var donor_name = selected.donor;
-                var host_chrom = brwsr.refSeq.name;
-                var chromnum = host_chrom.substring(3);
+
+    var downloadFile = function( ext ){
+        return function(e) {
+            var selected = tree.clickedItem;
+            var query_name = selected.name; 
+            var project_name = selected.project;
+            var donor_name = selected.donor;
+            var host_chrom = brwsr.refSeq.name;
+            var chromnum = host_chrom.substring(3);
+            
+            var ixs = [];
+            if( ext == "bam" ){
+                ixs = selected.bam_ixs.split(",");
+            }
+            else if( ext == "interval" ){
+                ixs = selected.interval_ixs.split(",");
+            }
+            else if( ext == "txt" ){
+                ixs = selected.txt_ixs.split(",");
+            }
+            //TODO
+            //interpolate i into each file to be donwloaded
+            for( var j=0; j < ixs.length; j++ ){
+                var i = ixs[j];
                 var url = "data/" + 
                            sprintf( sprintf( globals.TRACK_TEMPLATE, 
                                              globals.PROJECT_PREFIX,
@@ -782,10 +796,41 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                                     donor_name, 
                                     query_name,
                                     brwsr.refSeq.name ) + 
-                           "/" + query_name + "_" + chromnum + ".bam";
-                window.location = url;
+                           //"/" + query_name + "_" + chromnum + 
+                                 //"_" + i + "." + ext;
+                           "/out+" + i + "." + ext;
+                window.open(url);
+                //setTimeout(function() {},1250);
+                //window.location = url;
             }
-        }));
+        }
+    };
+
+    var download_bam_menuitem = 
+        new dijit.MenuItem({
+            label: "Download BAM(s)",
+            prefix: "query_",
+            hidden: false,
+            onClick: downloadFile("bam") });
+    pMenu.addChild( download_bam_menuitem );
+
+    var download_interval_menuitem = 
+        new dijit.MenuItem({
+            label: "Download interval(s)",
+            prefix: "query_",
+            hidden: false,
+            onClick: downloadFile("interval") });
+    pMenu.addChild( download_interval_menuitem );
+
+    var download_txt_menuitem = 
+        new dijit.MenuItem({
+            label: "Download txt(s)",
+            prefix: "query_",
+            hidden: false,
+            onClick: downloadFile("txt") });
+    pMenu.addChild( download_txt_menuitem );
+
+
     pMenu.addChild(
             //TODO: don't want the project prefix in front of the imported
             //a la 'main_genes'.  Maybe change this in run_query, instead 
@@ -876,6 +921,26 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
         }});
     pMenu.addChild( query_menuitem );
 
+
+    var fillQueryBoxHelper = function( areAdding, type, name ){
+        if( areAdding == 'adding' ){
+            var stuff = query_box.value.split("\n");
+            
+            if( type == 'genome' ){
+            }
+            else if( type == 'import' ){
+            }
+            else{
+            }
+            query_box.set('value', type + " " + name + ";\n" + query_box.value);
+        }
+        else{
+            var re = new RegExp( type + " " + name  + ";?\n?", 'gi' )
+            query_box.set('value', query_box.value.replace(re, ""));
+        }
+    };
+
+
     var fillWithIntervalTables = function( html_elem ){
         args = {"project_name" : tree.selectedItem.name};
         url = "bin/list_interval_tables.py?"+dojo.objectToQuery(args);
@@ -898,10 +963,12 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                              label : data["message"][i],
                              onClick : function(){
                                  if( this.checked ){
-                                     alert("take some action to insert 'use' statement into query box");
+                                     fillQueryBoxHelper( "adding", "import", data["message"][i] );
+                                     //alert("take some action to insert 'use' statement into query box");
                                  }
                                  else {
-                                     alert("remove any 'use ...' from query box");
+                                     fillQueryBoxHelper( "removing", "import", data["message"][i] );
+                                     //alert("remove any 'use ...' from query box");
                                  }
                              },
                              iconClass : "dijitCheckBoxIcon"
@@ -964,10 +1031,10 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                              label : data["message"][i],
                              onClick : function(){
                                  if( this.checked ){
-                                     alert("change the query or set some interval variable to let the compiler know to only use the marked donors");
+                                     fillQueryBoxHelper( "adding", "genome", data["message"][i] );
                                  }
                                  else {
-                                     alert("remove the marked donor from the query");
+                                     fillQueryBoxHelper( "removing", "genome", data["message"][i] );
                                  }
                              },
                              iconClass : "dijitCheckBoxIcon"
@@ -1031,12 +1098,18 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                 function(selected,e){ 
                     this.clickedItem = selected;
                     var isVisualized = brwsr.view.isVisualized( selected.key );
-                    if( isVisualized ){ 
-                        visualize_menuitem.hidden = true;
-                        recall_menuitem.hidden = false;
+                    if( brwsr.view.allowVisualization ){
+                        if( isVisualized ){ 
+                            visualize_menuitem.hidden = true;
+                            recall_menuitem.hidden = false;
+                        }
+                        else { 
+                            visualize_menuitem.hidden = false;
+                            recall_menuitem.hidden = true;
+                        }
                     }
-                    else { 
-                        visualize_menuitem.hidden = false;
+                    else {
+                        visualize_menuitem.hidden = true;
                         recall_menuitem.hidden = true;
                     }
 
@@ -1049,6 +1122,10 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                         pleasewait_menuitem.hidden = true;
                     }
 
+                    download_bam_menuitem.hidden = selected.bam_ixs.length == 0;
+                    download_interval_menuitem.hidden = selected.interval_ixs.length == 0;
+                    download_txt_menuitem.hidden = selected.txt_ixs.length == 0;
+                    
                     //hack to make left click work on tree
                     //openOnLeftClick: true | is insufficient for whatever reason
                     //when dealing with dijit.Trees
@@ -1142,7 +1219,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                 //&& brwsr.assembly != "none"
                 //&& brwsr.assmebly != null)
             {
-                alert( "The assemblies of the currently visualized queries do not match this one.  They will be recalled." );
+                alert( "The assembly of the currently visualized queries do not match this one.  They will be recalled." );
                 //not what we want, use brwsr.tracks?
                 var visualized_tracks = brwsr.viewDndWidget.getAllNodes();
                 var len = visualized_tracks.length;

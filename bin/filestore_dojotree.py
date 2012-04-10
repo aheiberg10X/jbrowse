@@ -12,7 +12,11 @@ cgitb.enable()
 from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR, DEBUG_DIR, TRACK_TEMPLATE, UNBOUND_CHROM, PROJECT_PREFIX
 
 perms = {"earthworm jim" : {"NA18507" : False}}
-dassembly = {"main":"hg18", "hg19":"hg19", "sangwoo":"hg18", "dev":"hg18", "anand":"hg19"}
+dassembly = {"main":"hg18", \
+             "hg19":"hg19", \
+             "sangwoo":"hg18", \
+             "dev":"hg18", \
+             "anand":"hg19"}
 
 def getChildren( path ) :
     r = []
@@ -117,7 +121,36 @@ def makeItem( path ) :
                 item['assembly'] = dassembly[item['project']]
             else :
                 item['assembly'] = "n/a"
+            
+            #Associate these three keys with each query menuitem
+            #It will tell the browser how many of each filetype we
+            #have in the chrom folders.  
+            #(Remember: Using the counts for chr1)
+            dkey_ext = {"bam_ixs" :      ".bam", \
+                        "interval_ixs" : ".interval", \
+                        "txt_ixs" :      ".txt" }
 
+            for key in dkey_ext :
+                item[key] = [] 
+   
+            folder = "%s/data/%s" % (ROOT_DIR, tt.replace( UNBOUND_CHROM, 'chr1' ) )
+            #TODO
+            #more specific than just looking for a .txt file?
+            for thing in os.listdir( folder ) :
+                for key in dkey_ext :
+                    if thing.lower().endswith( dkey_ext[key] ) :
+                        (head, ext) = thing.rsplit(".",1)
+                
+                        #the new run_query will 
+                        splt = head.rsplit("+",1)
+                        if len(splt) == 2 :
+                            (head, i) = splt
+                        else :
+                            i = "0" 
+                        item[key].append( i )
+                        break
+            for key in dkey_ext :
+                item[key] = ",".join( item[key] ) 
 
         if is_dir :
             item["children"] = getChildren( path )

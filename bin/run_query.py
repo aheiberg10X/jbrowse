@@ -20,8 +20,10 @@ debugging = False
 def moveIfExists( source, dest ) :
     if os.path.exists( source ) :
         shutil.move( source, dest )
+        return True
     else :
         print "\n%s doesn't exist!\n" % source
+        return False
 
 #TODO: take the use _____ statements and
 #fill in with the path to that file (is this what the compiler will need?)
@@ -64,6 +66,7 @@ H1=select interval_creation() from READS using intervals(location,
 
 select * from H1 where interval_coverage>5'''
     project = 'main'
+    assembly = "hg18"
 
 else :
     fields = cgi.FieldStorage()
@@ -78,7 +81,6 @@ err_filename = "%s/query_error.txt" % (DEBUG_DIR)
 sys.stderr = open( err_filename,'w')
 out_filename = "%s/query_output.txt" % (DEBUG_DIR)
 sys.stdout = open( out_filename,'w')
-print "fields", fields
 
 (status, query) = expandImports( query, project )
 print "\n query", query, "\n"
@@ -123,13 +125,6 @@ else :
                  assembly], \
                 stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
-    #pop = Popen(['bash', \
-                 #"../genomequery/biosql_compiler/biosql/run_biosql.sh", \
-                 #query_loc, \
-                 #donor, \
-                 #chromnum, \
-                 #src_table_dir], \
-                #stdin=PIPE, stdout=PIPE, stderr=PIPE)
     (out, err) = pop.communicate()
     sys.stdout.write( out )
     sys.stderr.write( err )
@@ -143,7 +138,7 @@ else :
     first_line = fbyte.readline().lower()
     if "syntax error" in first_line :
         message = first_line.replace(':',';')
-        t = json.dumps({'status':'error','message':first_line})
+        t = json.dumps({'status':'Query Syntax Error','message':first_line})
         fbyte.close()
         utils.printToServer( t )
         assert 1==9
@@ -154,6 +149,9 @@ else :
                 donors.append( line.split()[2] )
 
     fbyte.close()
+
+    #TODO
+    #change query, strip project name from import
 
     track_datas = []
     messages = []
@@ -166,49 +164,85 @@ else :
                 #t = json.dumps({'status':'error','message':'Trouble creating the necessary folders'})
                 #utils.printToServer( t )
 
-            #source = '%s/genomequery/biosql_compiler/biosql/dst/%s' % (root,chrom)
+            #Look for the files created by run_biosql.sh
+            #do some renaming so filestore.py can recognize things
+            #     (.bam.short -> .interval)
+            #     (if no query index, make it look like 0)
+            #Also get the different query indexes (versions of each file type)
+            #interval2ncl.pl needs it.  
+            query_indices = []
+            if os.path.exists( prefix ) :
+                for file in os.listdir( prefix ) :
+                    splt = file.rsplit('.')
+                    head = splt[0]
+                    ext = splt[-1]
+                    print "head",head,"ext",ext
+                    if ext == "bam" or ext == "short" or ext == "txt" :
 
-            #copy bam
-            moveIfExists( "%s/out.bam" % prefix, \
-                          "%s/%s_%s.bam" % (prefix, query_name, chromnum) )
+                        if ext == "short" :
+                            ext = "interval"
+
+                        splt = head.rsplit("+",1)
+                        #mapjoin occurred, and there are multiple files
+                        if len(splt) == 2 :
+                            (head, i) = splt
+                            if i not in query_indices : query_indices.append(i)
+                            if ext == "interval" :
+                                target = "%s/%s" % (prefix,file)
+                                dest = "%s/out+%s.%s" % \
+                                        (prefix, query_name, ext )
+                                moveIfExists( target, dest )
+                        #singleton
+                        else :
+                            target = "%s/%s" % (prefix,file)
+                            dest = "%s/out+0.%s" % (prefix,ext)
+                            if 0 not in query_indices : query_indices.append("0")
+                            moveIfExists( target, dest )
+
+            print "query_indices", query_indices
 
             #copy query
             #put the gq file in the query_ dir
             moveIfExists( query_loc, \
                           "%s/../%s.gq" % (prefix, query_name) )
 
-            #copy histogram
-            moveIfExists( "%s/out.hist" % prefix, \
-                          "%s/%s_%s.hist" % (prefix, query_name, chromnum) )
+            #TODO
+            #will there be multiple hists?  If so have apply above logic to
+            #.hist as well
+            #moveIfExists( "%s/out.hist" % prefix, \
+                          #"%s/%s_%s.hist" % (prefix, query_name, chromnum) )
 
-            #copy intervals
-            moveIfExists( "%s/out.bam.short" % prefix, \
-                          "%s/%s_%s.intervals" % (prefix, query_name, chromnum) )
-            #
+                        #TODO
+
             t3 = time.time()
             #print "done moving, took: %f s" % (t3-t2)
 
-            print "starting bam2ncl"
+            print "starting interval2ncl"
             print "donor", donor, type(donor)
             print "chromnum", chromnum, type(chromnum)
             print "query_name", query_name, type(query_name)
             print "linking", linking, type(linking)
             print "assembly ", assembly
 
-            pop = Popen(["perl", "bam2ncl.pl", \
+            #TODO
+            #right now qiuery_indices is ignored (not true uses biggest index to            #break into visualizable json files
+            query_indices.sort()
+            pop = Popen(["perl", "interval2ncl.pl", \
                          project, \
                          donor, \
                          query_name, \
                          chromnum, \
+                         ','.join(query_indices), \
                          linking, \
                          assembly], \
                         stdout=PIPE, stderr=PIPE)
+
             (out, err) = pop.communicate()
             messages.append(out)
             print "\n\nerr: ", err
             print "\n\nout: ", out
             t4 = time.time()
-            print "done with bam2ncl, took: %f s" % (t4-t3)
+            print "done with interval2ncl, took: %f s" % (t4-t3)
             #print "returning %s" % out
         
 
