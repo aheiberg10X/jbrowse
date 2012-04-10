@@ -57,22 +57,6 @@ def getPrefix( path, name ) :
     else :
         return PRIVATE_PREFIX
 
-#def getPrefix( path, name ) :
-    #if name.startswith( PRIVATE_PREFIX ) :
-        #return PRIVATE_PREFIX
-    #else :
-        #if os.path.isdir( path ) :
-            #if name.startswith( QUERY_PREFIX ) :
-                #return QUERY_PREFIX
-            #elif name.startswith( CHROM_PREFIX ) :
-                #return CHROM_PREFIX
-            #elif name.startswith( DONOR_PREFIX ) :
-                #return DONOR_PREFIX
-            #else :
-                #return PRIVATE_PREFIX
-        #else :
-            #return "file"
-
 def hasPermission( user, path, name ) :
     if user == 'su' : return True
     else :
