@@ -179,8 +179,8 @@ else :
                     print "head",head,"ext",ext
                     if ext == "bam" or ext == "short" or ext == "txt" :
 
-                        if ext == "short" :
-                            ext = "interval"
+                        #if ext == "short" :
+                            #ext = "interval"
 
                         splt = head.rsplit("+",1)
                         #mapjoin occurred, and there are multiple files
