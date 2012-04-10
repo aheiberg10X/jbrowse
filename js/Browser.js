@@ -808,7 +808,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
 
     var download_bam_menuitem = 
         new dijit.MenuItem({
-            label: "Download BAM",
+            label: "Download BAM(s)",
             prefix: "query_",
             hidden: false,
             onClick: downloadFile("bam") });
@@ -816,7 +816,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
 
     var download_interval_menuitem = 
         new dijit.MenuItem({
-            label: "Download intervals",
+            label: "Download interval(s)",
             prefix: "query_",
             hidden: false,
             onClick: downloadFile("interval") });
@@ -824,7 +824,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
 
     var download_txt_menuitem = 
         new dijit.MenuItem({
-            label: "Download txt",
+            label: "Download txt(s)",
             prefix: "query_",
             hidden: false,
             onClick: downloadFile("txt") });

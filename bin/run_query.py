@@ -164,60 +164,55 @@ else :
                 #t = json.dumps({'status':'error','message':'Trouble creating the necessary folders'})
                 #utils.printToServer( t )
 
-            #source = '%s/genomequery/biosql_compiler/biosql/dst/%s' % (root,chrom)
-
-            #copy bam
+            #Look for the files created by run_biosql.sh
+            #do some renaming so filestore.py can recognize things
+            #     (.bam.short -> .interval)
+            #     (if no query index, make it look like 0)
+            #Also get the different query indexes (versions of each file type)
+            #interval2ncl.pl needs it.  
             query_indices = []
             if os.path.exists( prefix ) :
                 for file in os.listdir( prefix ) :
-                    (head,ext) = file.rsplit('.',1)
-                    if ext == "bam" or ext == "interval" or ext == "txt" :
+                    splt = file.rsplit('.')
+                    head = splt[0]
+                    ext = splt[-1]
+                    print "head",head,"ext",ext
+                    if ext == "bam" or ext == "short" or ext == "txt" :
+
+                        if ext == "short" :
+                            ext = "interval"
+
                         splt = head.rsplit("+",1)
                         #mapjoin occurred, and there are multiple files
                         if len(splt) == 2 :
                             (head, i) = splt
                             if i not in query_indices : query_indices.append(i)
-                            #target = "%s/out+%s.%s" % (prefix,i,ext)
-                            #dest = "%s/%s_%s_%s.%s" % (prefix, query_name, \
-                                                   #chromnum, i, ext)
+                            if ext == "interval" :
+                                target = "%s/%s" % (prefix,file)
+                                dest = "%s/out+%s.%s" % \
+                                        (prefix, query_name, ext )
+                                moveIfExists( target, dest )
+                        #singleton
                         else :
-                            target = "%s/out.%s" % (prefix,ext)
+                            target = "%s/%s" % (prefix,file)
                             dest = "%s/out+0.%s" % (prefix,ext)
                             if 0 not in query_indices : query_indices.append("0")
                             moveIfExists( target, dest )
 
             print "query_indices", query_indices
 
-            #for i in range(100) :  
-                #if not moveIfExists( target, dest ) : 
-                    #break
-            # 
-            ##copy intervals
-            #for i in range(100) :
-                #target = "%s/out_%d.interval" % (prefix,i)
-                #dest = "%s/%s_%s_%d.interval" % (prefix,query_name,chromnum,i)
-                #if not moveIfExists( target, dest ) : 
-                    #break
-           # 
-            ##copy txts
-            #for i in range(100) :
-                #target = "%s/out_%d.txt" % (prefix,i)
-                #dest = "%s/%s_%s_%d.txt" % (prefix,query_name,chromnum,i)
-                #if not moveIfExists( target, dest ) : 
-                    #break
-    
             #copy query
             #put the gq file in the query_ dir
             moveIfExists( query_loc, \
                           "%s/../%s.gq" % (prefix, query_name) )
 
-            #copy histogram
+            #TODO
+            #will there be multiple hists?  If so have apply above logic to
+            #.hist as well
             #moveIfExists( "%s/out.hist" % prefix, \
                           #"%s/%s_%s.hist" % (prefix, query_name, chromnum) )
 
                         #TODO
-            #Christos will now be naming it *.intervals
-
 
             t3 = time.time()
             #print "done moving, took: %f s" % (t3-t2)
@@ -230,7 +225,8 @@ else :
             print "assembly ", assembly
 
             #TODO
-            #right now query_indices is ignored
+            #right now qiuery_indices is ignored (not true uses biggest index to            #break into visualizable json files
+            query_indices.sort()
             pop = Popen(["perl", "interval2ncl.pl", \
                          project, \
                          donor, \
