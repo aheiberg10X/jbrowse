@@ -177,7 +177,7 @@ else :
                     head = splt[0]
                     ext = splt[-1]
                     print "head",head,"ext",ext
-                    if ext == "bam" or ext == "short" or ext == "txt" :
+                    if ext == "bam" or ext == "interval" or ext == "txt" :
 
                         #if ext == "short" :
                             #ext = "interval"
