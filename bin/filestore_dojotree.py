@@ -165,6 +165,7 @@ def makeItem( path ) :
                             i = "0" 
                         item[key].append( i )
                         break
+                    
             for key in dkey_ext :
                 item[key] = ",".join( item[key] ) 
 
