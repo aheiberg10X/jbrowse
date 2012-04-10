@@ -799,7 +799,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                                     brwsr.refSeq.name ) + 
                            //"/" + query_name + "_" + chromnum + 
                                  //"_" + i + "." + ext;
-                           "/out+" + i + "." + ext;
+                           "/out_" + host_chrom + "+" + i + "." + ext;
                 window.open(url);
                 //setTimeout(function() {},1250);
                 //window.location = url;

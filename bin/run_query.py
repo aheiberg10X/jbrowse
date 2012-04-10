@@ -187,15 +187,15 @@ else :
                         if len(splt) == 2 :
                             (head, i) = splt
                             if i not in query_indices : query_indices.append(i)
-                            if ext == "interval" :
-                                target = "%s/%s" % (prefix,file)
-                                dest = "%s/out+%s.%s" % \
-                                        (prefix, query_name, ext )
-                                moveIfExists( target, dest )
+                            
+                            target = "%s/%s" % (prefix,file)
+                            dest = "%s/out_%s+%s.%s" % \
+                                    (prefix, chrom, i, ext )
+                            moveIfExists( target, dest )
                         #singleton
                         else :
                             target = "%s/%s" % (prefix,file)
-                            dest = "%s/out+0.%s" % (prefix,ext)
+                            dest = "%s/out_%s+0.%s" % (prefix,chrom,ext)
                             if 0 not in query_indices : query_indices.append("0")
                             moveIfExists( target, dest )
 
