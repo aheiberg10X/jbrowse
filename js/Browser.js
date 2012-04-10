@@ -118,6 +118,7 @@ var Browser = function(params) {
 
             //for depth slider
             var sliderPane = document.createElement("div");
+            sliderPane.className = "slider";
             brwsr.container.appendChild( sliderPane );
             var sliderPaneWidget = new dijit.layout.ContentPane(
                                         {region: "right",
