@@ -1,0 +1,76 @@
+Suppose we would like to look for deletions on genome NA18506 (the child of 
+the African Yoruban trio). Typically, Deletions are indicated by pairs of reads
+whose alignment distance is unrealistically long (lenght discordant clones). 
+So, one would like to look for regions on the genome of NA18506 which overlap with
+at least a number (say 5) of length discordant clones.
+
+Here is how I could specify those requirements in GQL:
+
+>>>>Open q_del.txt and copy line by line to Jbrowse by explaining what is going on.
+
+1. First of all we need to find all length discordant clones.
+2. Then we create a special table of intervals from the location and the 
+mate_location of the clones above.
+3. Afterwards we search for regions that are covered by at least 5 such intervals
+4. Since we are interested in the evidence, i.e. the actual reads that support 
+our findings, we need to join the regions that we found with the discordant
+reads and print the output.
+
+---------------------------------
+
+Suppose now we wish to check whether our findings agree with the deletion
+results that are reported by Conrad et.al. Nature Genetics Dec 2005.
+
+Here is a table of deletions that we downloaded from the UCSC browser and
+contains results from that paper 
+
+>>>> Open NA18506_known_deletions.txt and show how it looks like.
+
+How would we modify the previous query to compare our findings?
+
+Note that we don't need any more the supporting evidence of reads. So we write
+a new query that uses the same methodology as before except for the last merging
+with reads
+
+>>> Write a new query by pasting everything before out. Then paste the last 2
+>>> lines of q_overlap_known.txt
+
+Now, we take the regions that we found and check whether they overlap with the
+findings of Conrad et al (table NA18506_known_deletions)
+
+... wait after the experiment completes. 
+
+Notice that not all areas that Conrad reports appear in our results. Is there
+anything wrong with our assumptions??? 
+
+Here is a new experiment that we would like to perform: Upload a table with
+those areas of Conrad that do not appear in our results and look for length 
+discordant clones that overlap with them.
+
+Let's call this table missing_deletions.
+
+Here is how a query would look like: 
+
+>>>copy the contents of q_evidence_disc.txt
+
+We simply locate discordant clones and intersect them with the missing regions.
+
+...after the query completes.
+
+Note that only 1 region overlaps with discordant clones... What happens to
+others? Let's try to collect the concordant clones that overlap with the same
+regions
+
+>>>copy the contents of q_evidence_conc.txt run the experiment and make a note
+>>>that those areas are covered by concordant clones.
+
+---------------------------
+
+OK now let's try to find what happens with the areas that we report but Conrad
+does not. For this experiment we would like to print the concordant reads that
+either overlap with the areas that we report or with the neighborhood of those
+areas.
+
+Here is the new query:
+
+>>>> copy the contents from q_del.concordant.txt and interpret the output....

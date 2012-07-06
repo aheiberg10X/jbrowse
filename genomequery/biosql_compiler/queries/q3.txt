@@ -1,0 +1,10 @@
+table READS (string id, string read_str, integer length, string
+qvals,string chromo, integer location, char strand, string
+match_descr, string mate_chromo, integer mate_loc, char mate_strand);
+
+table ANNOT (string id, string chr, integer begin , integer end);
+
+select id, id from READS, ANNOT where (chromo == chr)
+
+
+

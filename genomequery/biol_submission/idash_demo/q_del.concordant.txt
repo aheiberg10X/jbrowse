@@ -1,0 +1,36 @@
+include<tables.txt>
+genome NA18506;
+
+Discordant=select * from READS 
+where location>=0 and mate_loc>=0 and 
+(
+	(mate_loc-location>1000 and mate_loc-location<100000) 
+or 
+	(location-mate_loc>1000 and location-mate_loc<100000)
+)
+
+Concordant=select * from READS
+where location>=0 and mate_loc>=0 and
+(
+	(mate_loc+100-location>250 and mate_loc+100-location<400) 
+or 
+	(location+100-mate_loc>250 and location+100-mate_loc<400)
+)
+
+Disc2Intrvl=select create_intervals() from Discordant using intervals(location, mate_loc, both_mates)
+
+
+Deep_Intrvl=select merge_intervals(interval_count > 5) from Disc2Intrvl
+
+out=select * from MAPJOIN Deep_Intrvl, H1 using intervals(location, mate_loc, both_mates)
+
+out_left=select * from MAPJOIN Deep_Intrvl, Concordant using intervals(location+1000, mate_loc+1000, both_mates)
+
+out_right=select * from MAPJOIN Deep_Intrvl, Concordant using intervals(location-1000, mate_loc-1000, both_mates)
+
+out_center=select * from MAPJOIN Deep_Intrvl, Concordant using intervals(location, mate_loc, both_mates)
+
+print out
+print out_left
+print out_right
+print out_center

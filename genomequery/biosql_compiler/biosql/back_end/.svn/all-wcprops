@@ -1,0 +1,287 @@
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/7909/genomequery/biosql_compiler/biosql/back_end
+END
+Reads.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Reads.cpp
+END
+prod_out.H1rd_condition.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/prod_out.H1rd_condition.cpp
+END
+Text_table.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Text_table.hpp
+END
+Histogram.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Histogram.hpp
+END
+Interval_tree.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Interval_tree.cpp
+END
+Reads.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Reads.hpp
+END
+join_condition.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/join_condition.cpp
+END
+Bit_vector.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Bit_vector.hpp
+END
+txt_intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/txt_intervals.cpp
+END
+Intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Intervals.cpp
+END
+Fvector.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Fvector.cpp
+END
+Interval_tree.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Interval_tree.hpp
+END
+Joined.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Joined.cpp
+END
+prod_out.2.out.spot_checktxt_intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/prod_out.2.out.spot_checktxt_intervals.cpp
+END
+rd_condition.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/rd_condition.cpp
+END
+Intervals.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Intervals.hpp
+END
+Fvector.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Fvector.hpp
+END
+Joined.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Joined.hpp
+END
+defs.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/defs.cpp
+END
+prod_out_center.3.out_center.C1rd_intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/prod_out_center.3.out_center.C1rd_intervals.cpp
+END
+prod_out.READSrd_condition.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/prod_out.READSrd_condition.cpp
+END
+prod_H1.READSrd_condition.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/prod_H1.READSrd_condition.cpp
+END
+gmon.out
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/gmon.out
+END
+txt_condition.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/txt_condition.cpp
+END
+exceptions.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/exceptions.hpp
+END
+defs.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/defs.hpp
+END
+prod_out.3.out.H1rd_intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/prod_out.3.out.H1rd_intervals.cpp
+END
+prod_out.C1rd_condition.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/prod_out.C1rd_condition.cpp
+END
+prod_out.2.out.H3intrvl_intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/prod_out.2.out.H3intrvl_intervals.cpp
+END
+intrvl_intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/intrvl_intervals.cpp
+END
+prod_out_left.3.out_left.C1rd_intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/prod_out_left.3.out_left.C1rd_intervals.cpp
+END
+tst.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/tst.cpp
+END
+prod_out_right.3.out_right.C1rd_intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/prod_out_right.3.out_right.C1rd_intervals.cpp
+END
+Command.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Command.cpp
+END
+prod_C1.READSrd_condition.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/prod_C1.READSrd_condition.cpp
+END
+prod_out.3.out.C1rd_intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/prod_out.3.out.C1rd_intervals.cpp
+END
+Command.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Command.hpp
+END
+intrvl_condition.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/intrvl_condition.cpp
+END
+join_intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/join_intervals.cpp
+END
+Table.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Table.cpp
+END
+all_tools.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/all_tools.cpp
+END
+prod_H2.2.H2.H1rd_intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/prod_H2.2.H2.H1rd_intervals.cpp
+END
+Text_table.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Text_table.cpp
+END
+makefile
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/makefile
+END
+Table.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Table.hpp
+END
+rd_intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/rd_intervals.cpp
+END
+Histogram.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/back_end/Histogram.cpp
+END

@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/7912/genomequery/gql/back_end/default_custom_files
+END
+intrvl_condition.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/!svn/ver/7912/genomequery/gql/back_end/default_custom_files/intrvl_condition.cpp
+END
+intrvl_intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/!svn/ver/7912/genomequery/gql/back_end/default_custom_files/intrvl_intervals.cpp
+END
+join_condition.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/7912/genomequery/gql/back_end/default_custom_files/join_condition.cpp
+END
+txt_condition.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/7912/genomequery/gql/back_end/default_custom_files/txt_condition.cpp
+END
+join_intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/7912/genomequery/gql/back_end/default_custom_files/join_intervals.cpp
+END
+txt_intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/7912/genomequery/gql/back_end/default_custom_files/txt_intervals.cpp
+END
+rd_condition.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/7912/genomequery/gql/back_end/default_custom_files/rd_condition.cpp
+END
+rd_intervals.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/7912/genomequery/gql/back_end/default_custom_files/rd_intervals.cpp
+END

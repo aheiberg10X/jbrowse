@@ -1,0 +1,83 @@
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/7910/genomequery/biosql_compiler/biosql/front_end
+END
+biosql.h
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/front_end/biosql.h
+END
+biosql.y
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/front_end/biosql.y
+END
+biosql_defs.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/front_end/biosql_defs.h
+END
+q2.txt
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/front_end/q2.txt
+END
+q3.txt
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/front_end/q3.txt
+END
+q_del.txt
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/front_end/q_del.txt
+END
+biosql.l
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/front_end/biosql.l
+END
+biosql.output
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/front_end/biosql.output
+END
+tables.txt
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/front_end/tables.txt
+END
+lex.yy.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/front_end/lex.yy.c
+END
+biosql.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/front_end/biosql.c
+END
+q_del.concordant.txt
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/front_end/q_del.concordant.txt
+END
+makefile
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/7892/genomequery/biosql_compiler/biosql/front_end/makefile
+END

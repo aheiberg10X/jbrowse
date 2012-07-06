@@ -1,0 +1,34 @@
+\begin{thebibliography}{1}
+
+\bibitem{Durbin2010}
+{1000 Genomes Project Consortium}, R.~Durbin, G.~Abecasis, D.~Altshuler,
+  A.~Auton, L.~Brooks, R.~Durbin, R.~Gibbs, M.~Hurles, and G.~McVean.
+\newblock {{A} map of human genome variation from population-scale sequencing}.
+\newblock {\em Nature}, 467:1061--1073, Oct 2010.
+
+\bibitem{nclist}
+A.~V. Alekseyenko and C.~J. Lee.
+\newblock Nested containment list (nclist): a new algorithm for accelerating
+  interval query of genome alignment and interval databases.
+\newblock {\em Bioinformatics}, 23(11):1386--1393, 2007.
+
+\bibitem{Altshuler05}
+D.~Altshuler, L.~Brooks, A.~Chakravarti, F.~Collins, M.~Daly, P.~Donnelly, and
+  I.~H. Consortium.
+\newblock {A haplotype map of the human genome}.
+\newblock {\em Nature}, 437(7063):1299--1320, Oct 2005.
+
+\bibitem{Kozanitis2011}
+C.~Kozanitis, C.~Saunders, S.~Kruglyak, V.~Bafna, and G.~Varghese.
+\newblock {{C}ompressing genomic sequence fragments using {S}lim{G}ene}.
+\newblock {\em J. Comput. Biol.}, 18:401--413, Mar 2011.
+
+\bibitem{sambam}
+{The SAM/BAM format}.
+\newblock http://samtools.sourceforge.net/SAM1.pdf.
+
+\bibitem{VCF}
+Variant call format.
+\newblock \url{http://vcftools.sourceforge.net/specs.html}.
+
+\end{thebibliography}

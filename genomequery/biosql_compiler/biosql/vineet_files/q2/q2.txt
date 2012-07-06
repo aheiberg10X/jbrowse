@@ -1,0 +1,7 @@
+use parsed_tables
+import READS;
+
+H1=select interval_creation() from READS
+where location>=0 
+
+select * from H1 where interval_coverage>200

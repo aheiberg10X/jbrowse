@@ -1,0 +1,11 @@
+use parsed_tables
+import READS;
+
+H1=select interval_creation() from READS using intervals (location,mate_loc,both_mates) 
+where location>=0 and 
+mate_loc>=0 and 
+(
+(mate_loc-location>1000 and mate_loc-location<100000) or (location-mate_loc>1000 and location-mate_loc<100000)
+)
+
+select * from H1 where interval_coverage>3

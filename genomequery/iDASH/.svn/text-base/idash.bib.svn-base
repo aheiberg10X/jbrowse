@@ -1,0 +1,174 @@
+@STRING{JCB = "Journal of Computational Biology"}
+@STRING{RECOMB = "Proceedings of the Annual International Conference on Computational Molecular Biology ({RECOMB})"}
+@STRING{RECOMB2003 = "Proceedings of the Seventh Annual International Conference on Computational Molecular Biology ({RECOMB})"}
+@STRING{RECOMB2002 = "Proceedings of the Sixth Annual International Conference on Computational Molecular Biology ({RECOMB})"}
+@STRING{RECOMB2001 = "Proceedings of the Fifth Annual International Conference on Computational Molecular Biology ({RECOMB})"}
+@STRING{RECOMB2000 = "Proceedings of the Fourth Annual International Conference on Computational Molecular Biology ({RECOMB})"}
+@STRING{RECOMB1999 = "Proceedings of the Third Annual International Conference on Computational Molecular Biology ({RECOMB})"}
+@STRING{RECOMB1998 = "Proceedings of the Second Annual International Conference on Computational Molecular Biology ({RECOMB})"}
+@STRING{RECOMB1998 = "Proceedings of the First Annual International Conference on Computational Molecular Biology ({RECOMB})"}
+@STRING{WABI2002 = "Proceedings of the Second International Workshop on Algorithms in Bioinformatics ({WABI})"}
+@STRING{ESA2001 = "Proceedings of the Ninth Annual European Symposium on Algorithms ({ESA})"}
+@STRING{ESA2002 = "Proceedings of the Tenth Annual European Symposium on Algorithms ({ESA})"}
+@STRING{ISMB2000 = "Proceedings of the Eighth International Conference on Intelligent Systems for Molecular Biology ({ISMB})"}
+@STRING{AJHG = "American Journal of Human Genetics"}
+@STRING{HMG = "Human Molecular Genetics"}
+
+
+
+
+@Unpublished{Kim2012,
+  title = 	 "{Resolving architecture of copy number variation using paired end sequencing}",
+  author = 	 {Kim, S. and Paton, T. and Mevedev, P. and Bafna, V.},
+  note = 	 {(submitted)},
+  OPTkey = 	 {},
+  OPTmonth = 	 {},
+  OPTyear = 	 {},
+  OPTannote = 	 {}
+}
+
+@Article{Kinsella2012,
+   Author="Kinsella, M.  and Bafna, V. ",
+   Title="{{C}ombinatorics of the {B}reakage-{F}usion-{B}ridge {M}echanism}",
+   Journal="J Comput Biol",
+   Year="2012",
+   Pages=" ",
+   Month="Apr"
+}
+
+% 22303377 
+@Article{Udpa2011,
+   Author="Udpa, N.  and Zhou, D.  and Haddad, G. G.  and Bafna, V. ",
+   Title="{{T}ests of selection in pooled case-control data: an empirical study}",
+   Journal="Front Genet",
+   Year="2011",
+   Volume="2",
+   Pages="83"
+}
+
+
+
+@Unpublished{Bafna2011,
+  author = 	 "{Bafna, V. and Deutsch, A. and Heiberg, A. and
+                  Kozanitis, C. and Ohno-Machado, L. and Varghese, G.}",
+  title = 	 {Abstractions for Genomics: Or, which way to the Genomic Information Age?},
+  note = 	 {(submitted)},
+  OPTkey = 	 {},
+  OPTmonth = 	 {},
+  OPTyear = 	 {},
+  OPTannote = 	 {}
+}
+
+% 21330288 Acknowledges grant 
+@Article{Kinsella2011,
+   Author="Kinsella, M.  and Harismendy, O.  and Nakano, M.  and Frazer, K. A.  and Bafna, V. ",
+   Title="{{S}ensitive gene fusion detection using ambiguously mapping {R}{N}{A}-{S}eq read pairs}",
+   Journal="Bioinformatics",
+   Year="2011",
+   Volume="27",
+   Pages="1068--1075",
+   Month="Apr"
+}
+
+
+@InProceedings{conf:kozanitis2010,
+  author = 	 {Kozanitis, C. and Saunders, C. and Kriglyak, S. and Bafna, V. and Varghese, G.},
+  title = 	 "{Compressing genomic sequence fragments using SlimGene}",
+  OPTcrossref =  {},
+  OPTkey = 	 {},
+  booktitle =    RECOMB,
+  pages = 	 {310-424},
+  year = 	 {2010},
+  OPTeditor = 	 {},
+  OPTvolume = 	 {},
+  OPTnumber = 	 {},
+  OPTseries = 	 {},
+  OPTaddress = 	 {},
+  OPTmonth = 	 {},
+  OPTorganization = {},
+  OPTpublisher = {},
+  note = 	 {(Accepted for publication in Jnl. of Computational Biology)},
+  OPTannote = 	 {}
+}
+
+% Acknowldeges grant
+@Article{Lo2011,
+AUTHOR = {Lo, Christine and Bashir, Ali and Bansal, Vikas and Bafna, Vineet},
+TITLE = {Strobe sequence design for Haplotype assembly},
+JOURNAL = {BMC Bioinformatics},
+VOLUME = {12},
+YEAR = {2011},
+NUMBER = {Suppl 1},
+PAGES = {S24},
+URL = {http://www.biomedcentral.com/1471-2105/12/S1/S24},
+DOI = {10.1186/1471-2105-12-S1-S24},
+ISSN = {1471-2105},
+}
+
+
+
+% 17803354 
+@Article{levy2007,
+   Author="Levy, S. and Sutton, G. and Ng, P.C. and Feuk, L. and Halpern, A.L. and Walenz, B.P. and Axelrod, N. and Huang, J. and Kirkness, E.F. and Denisov, G. and Lin, Y. and MacDonald, J.R. and Pang, A.W. and Shago, M. and Stockwell, T.B. and Tsiamouri, A. and Bafna, V. and Bansal, V. and Kravitz, S.A. and Busam, D.A. and Beeson, K.Y. and McIntosh, T.C. and Remington, K.A. and Abril, J.F. and Gill, J. and Borman, J. and Rogers, Y.H. and Frazier, M.E. and Scherer, S.W. and Strausberg, R.L. and Venter, J.C.",
+   Title="{{T}he diploid genome sequence of an individual human}",
+   Journal="PLoS Biol.",
+   Year="2007",
+   Volume="5",
+   Pages="e254",
+   Month="Sep"
+}
+
+% Acknowledges grant
+@Article{Kozanitis2011,
+   Author="Kozanitis, C.  and Saunders, C.  and Kruglyak, S.  and Bafna, V.  and Varghese, G. ",
+   Title="{{C}ompressing genomic sequence fragments using {S}lim{G}ene}",
+   Journal="J. Comput. Biol.",
+   Year="2011",
+   Volume="18",
+   Pages="401--413",
+   Month="Mar"
+}
+
+% 21118518  Acknowledges grant
+@Article{Harismendy2010,
+   Author="Harismendy, O.  and Bansal, V.  and Bhatia, G.  and Nakano, M.  and Scott, M.  and Wang, X.  and Dib, C.  and Turlotte, E.  and Sipe, J. C.  and Murray, S. S.  and Deleuze, J. F.  and Bafna, V.  and Topol, E. J.  and Frazer, K. A. ",
+   Title="{{P}opulation sequencing of two endocannabinoid metabolic genes identifies rare and common regulatory variants associated with extreme obesity and metabolite level}",
+   Journal="Genome Biol.",
+   Year="2010",
+   Volume="11",
+   Pages="R118"
+}
+
+% 21262834 (does not acknowledge) 
+@Article{Zhou2011,
+   Author="Zhou, D.  and Udpa, N.  and Gersten, M.  and Visk, D. W.  and Bashir, A.  and Xue, J.  and Frazer, K. A.  and Posakony, J. W.  and Subramaniam, S.  and Bafna, V.  and Haddad, G. G. ",
+   Title="{{E}xperimental selection of hypoxia-tolerant {D}rosophila melanogaster}",
+   Journal="Proc. Natl. Acad. Sci. U.S.A.",
+   Year="2011",
+   Volume="108",
+   Pages="2349--2354",
+   Month="Feb"
+}
+
+
+% 20976246 
+@Article{bhatia2010,
+   Author="Bhatia, G.  and Bansal, V.  and Harismendy, O.  and Schork, N. J.  and Topol, E. J.  and Frazer, K.  and Bafna, V. ",
+   Title="{{A} covering method for detecting genetic associations between rare variants and common phenotypes}",
+   Journal="PLoS Comput. Biol.",
+   Year="2010",
+   Volume="6",
+   Pages="e1000954"
+}
+
+% 20871107 
+@Article{brinza2010,
+   Author="Brinza, D.  and Schultz, M.  and Tesler, G.  and Bafna, V. ",
+   Title="{{R}{A}{P}{I}{D} detection of gene-gene interactions in genome-wide association studies}",
+   Journal="Bioinformatics",
+   Year="2010",
+   Volume="26",
+   Pages="2856--2862",
+   Month="Nov"
+}
+

@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/7889/genomequery/biol_submission/evidence_del_NA18506/zoom_ins
+END
+q_evidence_conc.txt
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svn/!svn/ver/7889/genomequery/biol_submission/evidence_del_NA18506/zoom_ins/q_evidence_conc.txt
+END
+q_evidence_disc.txt
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svn/!svn/ver/7889/genomequery/biol_submission/evidence_del_NA18506/zoom_ins/q_evidence_disc.txt
+END
+conc_out.bam.short
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/!svn/ver/7889/genomequery/biol_submission/evidence_del_NA18506/zoom_ins/conc_out.bam.short
+END
+disc_out.bam.short
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/!svn/ver/7886/genomequery/biol_submission/evidence_del_NA18506/zoom_ins/disc_out.bam.short
+END
+conc_out.bam
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/!svn/ver/7887/genomequery/biol_submission/evidence_del_NA18506/zoom_ins/conc_out.bam
+END
+disc_out.bam
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/!svn/ver/7886/genomequery/biol_submission/evidence_del_NA18506/zoom_ins/disc_out.bam
+END

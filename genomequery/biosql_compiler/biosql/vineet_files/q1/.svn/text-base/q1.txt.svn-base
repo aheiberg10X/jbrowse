@@ -1,0 +1,27 @@
+use parsed_tables
+import READS;
+import genes;
+#table READS (string id, string read_str, integer length, string
+#qvals,string chromo, integer location, char strand, string
+#match_descr, string mate_chromo, integer mate_loc, char mate_strand);
+
+#table genes (string annot_id, string chr, integer begin, integer end);
+
+H1=select * from genes where
+annot_id=="uc010cza.1" or
+annot_id=="uc010cyz.1" or
+annot_id=="uc010cyy.1" or
+annot_id=="uc010cyx.1" or
+annot_id=="uc010afa.1" or
+annot_id=="uc010aez.1" or
+annot_id=="uc010miv.1" or
+annot_id=="uc010gor.1" or
+annot_id=="uc010gnz.1" or
+annot_id=="uc010gny.1" or
+annot_id=="uc010gnx.1"
+
+H2=select * from READS where location>0
+
+H3=select * from MAPJOIN H1 using intervals(begin, end),H2 using intervals (location, location+length, both_mates)
+
+select * from H3 where location>0

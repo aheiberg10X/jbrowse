@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/7912/genomequery/gql/queries
+END
+q_ins_noprint.txt
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/7912/genomequery/gql/queries/q_ins_noprint.txt
+END
+q_del.txt
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/7912/genomequery/gql/queries/q_del.txt
+END
+q_inv_noprint.txt
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/7912/genomequery/gql/queries/q_inv_noprint.txt
+END
+q_del.concordant_noprint.txt
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/7912/genomequery/gql/queries/q_del.concordant_noprint.txt
+END
+q_ins.txt
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/7912/genomequery/gql/queries/q_ins.txt
+END
+q_inv.txt
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/7912/genomequery/gql/queries/q_inv.txt
+END
+q_del.concordant.txt
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/7912/genomequery/gql/queries/q_del.concordant.txt
+END
+q_del_noprint.txt
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/7912/genomequery/gql/queries/q_del_noprint.txt
+END

@@ -1,0 +1,841 @@
+#chr chr1
+#chr chr2
+#chr chr3
+#chr chr4
+#chr chr5
+#chr chr6
+#chr chr7
+#chr chr8
+#chr chr9
+#chr chr10
+#chr chr11
+#chr chr12
+#chr chr13
+#chr chr14
+#chr chr15
+#chr chr16
+#chr chr17
+#chr chr18
+#chr chr19
+#chr chr20
+#chr chr21
+#chr chr22
+#chr chrX
+#chr chrY
+#chr chr1
+real 0.00 user 0.00 sys 0.00 avg_mem(KB) 0 max_resident(KB) 2304 avg_resident(KB) 0
+#chr chr2
+#chr chr3
+#chr chr4
+#chr chr5
+#chr chr6
+#chr chr7
+#chr chr8
+#chr chr9
+#chr chr10
+#chr chr11
+#chr chr12
+#chr chr13
+#chr chr14
+#chr chr15
+#chr chr16
+#chr chr17
+#chr chr18
+#chr chr19
+#chr chr20
+#chr chr21
+#chr chr22
+#chr chrX
+#chr chrY
+#chr chr1
+real 0.00 user 0.00 sys 0.00 avg_mem(KB) 0 max_resident(KB) 2304 avg_resident(KB) 0
+#chr chr2
+#chr chr3
+#chr chr4
+#chr chr5
+#chr chr6
+#chr chr7
+#chr chr8
+#chr chr9
+#chr chr10
+#chr chr11
+#chr chr12
+#chr chr13
+#chr chr14
+#chr chr15
+#chr chr16
+#chr chr17
+#chr chr18
+#chr chr19
+#chr chr20
+#chr chr21
+#chr chr22
+#chr chrX
+#chr chrY
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Command exited with non-zero status 139
+real 0.94 user 0.67 sys 0.13 avg_mem(KB) 0 max_resident(KB) 143088 avg_resident(KB) 0
+#chr chr2
+#chr chr3
+#chr chr4
+#chr chr5
+#chr chr6
+#chr chr7
+#chr chr8
+#chr chr9
+#chr chr10
+#chr chr11
+#chr chr12
+#chr chr13
+#chr chr14
+#chr chr15
+#chr chr16
+#chr chr17
+#chr chr18
+#chr chr19
+#chr chr20
+#chr chr21
+#chr chr22
+#chr chrX
+#chr chrY
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Command exited with non-zero status 139
+real 0.92 user 0.67 sys 0.12 avg_mem(KB) 0 max_resident(KB) 143088 avg_resident(KB) 0
+#chr chr2
+#chr chr3
+#chr chr4
+#chr chr5
+#chr chr6
+#chr chr7
+#chr chr8
+#chr chr9
+#chr chr10
+#chr chr11
+#chr chr12
+#chr chr13
+#chr chr14
+#chr chr15
+#chr chr16
+#chr chr17
+#chr chr18
+#chr chr19
+#chr chr20
+#chr chr21
+#chr chr22
+#chr chrX
+#chr chrY
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.18 user 1.67 sys 0.24 avg_mem(KB) 0 max_resident(KB) 143360 avg_resident(KB) 0
+#chr chr2
+#chr chr3
+#chr chr4
+#chr chr5
+#chr chr6
+#chr chr7
+#chr chr8
+#chr chr9
+#chr chr10
+#chr chr11
+#chr chr12
+#chr chr13
+#chr chr14
+#chr chr15
+#chr chr16
+#chr chr17
+#chr chr18
+#chr chr19
+#chr chr20
+#chr chr21
+#chr chr22
+#chr chrX
+#chr chrY
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.19 user 1.62 sys 0.29 avg_mem(KB) 0 max_resident(KB) 143232 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.20 user 1.59 sys 0.30 avg_mem(KB) 0 max_resident(KB) 143232 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.18 user 1.58 sys 0.31 avg_mem(KB) 0 max_resident(KB) 143376 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.25 user 1.68 sys 0.26 avg_mem(KB) 0 max_resident(KB) 143280 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.19 user 1.59 sys 0.32 avg_mem(KB) 0 max_resident(KB) 143376 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.21 user 1.68 sys 0.25 avg_mem(KB) 0 max_resident(KB) 143344 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.19 user 1.57 sys 0.34 avg_mem(KB) 0 max_resident(KB) 143360 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.23 user 1.59 sys 0.34 avg_mem(KB) 0 max_resident(KB) 143248 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.20 user 1.59 sys 0.31 avg_mem(KB) 0 max_resident(KB) 143248 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.21 user 1.57 sys 0.34 avg_mem(KB) 0 max_resident(KB) 143264 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.15 user 1.56 sys 0.32 avg_mem(KB) 0 max_resident(KB) 143360 avg_resident(KB) 0
+#chr chr1
+real 0.00 user 0.00 sys 0.00 avg_mem(KB) 0 max_resident(KB) 2320 avg_resident(KB) 0
+#chr chr1
+real 0.00 user 0.00 sys 0.00 avg_mem(KB) 0 max_resident(KB) 2320 avg_resident(KB) 0
+#chr chr1
+real 0.00 user 0.00 sys 0.00 avg_mem(KB) 0 max_resident(KB) 2304 avg_resident(KB) 0
+#chr chr1
+./low_level.sh: 2: whoop: not found
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.17 user 1.59 sys 0.29 avg_mem(KB) 0 max_resident(KB) 143408 avg_resident(KB) 0
+#chr chr1
+./low_level.sh: 2: whoop: not found
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.17 user 1.55 sys 0.35 avg_mem(KB) 0 max_resident(KB) 143232 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.22 user 1.65 sys 0.29 avg_mem(KB) 0 max_resident(KB) 143392 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.19 user 1.48 sys 0.43 avg_mem(KB) 0 max_resident(KB) 143248 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.24 user 1.63 sys 0.33 avg_mem(KB) 0 max_resident(KB) 143376 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 2.16 user 1.61 sys 0.26 avg_mem(KB) 0 max_resident(KB) 143248 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 1.03 user 0.73 sys 0.18 avg_mem(KB) 0 max_resident(KB) 147120 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 0.95 user 0.71 sys 0.12 avg_mem(KB) 0 max_resident(KB) 147104 avg_resident(KB) 0
+#chr chr1
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+terminate called after throwing an instance of 'negative_coverage*'
+Aborted
+terminate called after throwing an instance of 'std::ios_base::failure'
+  what():  basic_ios::clear
+Aborted
+Segmentation fault
+Segmentation fault
+Command exited with non-zero status 139
+real 0.94 user 0.69 sys 0.13 avg_mem(KB) 0 max_resident(KB) 146992 avg_resident(KB) 0
