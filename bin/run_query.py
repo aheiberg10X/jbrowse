@@ -93,10 +93,14 @@ else :
 
     query_loc = "%s/user_query.txt" % UPLOAD_DIR
     print "writing query to %s" % query_loc
+    print "this is what writing:", query
 
     fuq = open( query_loc, 'wb')
     fuq.write( query)
     fuq.close()
+
+    if os.path.exists( query_loc ) :
+        print "query loc exists here"
 
     print "popping run_biosql.sh"
     t1 = time.time()
@@ -116,9 +120,15 @@ else :
     print product_dest, type(product_dest)
     print src_table_dir, type(src_table_dir)
     print assembly, type(assembly)
+    biosql_home = os.environ['BIOSQL_HOME']
+    print "biosql_home", biosql_home
+
+
+    #assert 1 == 0
 
     pop = Popen(['bash', \
-                 "../genomequery/biosql_compiler/biosql/run_biosql.sh", \
+                 #"../genomequery/biosql_compiler/biosql/run_biosql.sh", \
+                 biosql_home + "/run_biosql.sh", \
                  query_loc, \
                  product_dest, \
                  src_table_dir,
@@ -134,7 +144,8 @@ else :
     #check bytecode for syntax error
     #get genome list from bytecode
 
-    fbyte = open("../genomequery/biosql_compiler/biosql/bytecode.txt")
+    #fbyte = open("../genomequery/biosql_compiler/biosql/bytecode.txt")
+    fbyte = open(biosql_home + "/bytecode.txt")
     first_line = fbyte.readline().lower()
     if "syntax error" in first_line :
         message = first_line.replace(':',';')
@@ -146,9 +157,10 @@ else :
         donors = []
         for line in fbyte.readlines() :
             if "genome" in line :
-                donors.append( line.split()[2] )
+                donors.append( line.split()[1] )
 
     fbyte.close()
+
 
     #TODO
     #change query, strip project name from import
@@ -244,6 +256,8 @@ else :
             t4 = time.time()
             print "done with interval2ncl, took: %f s" % (t4-t3)
             #print "returning %s" % out
+
+
         
 
         url = TRACK_TEMPLATE % (project, donor, query_name, UNBOUND_CHROM )
@@ -253,6 +267,7 @@ else :
                       'type' : "FeatureTrack"}
 
         track_datas.append( track_data )
+
             
           
     messages = '\n'.join(messages)
