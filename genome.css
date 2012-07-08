@@ -23,7 +23,7 @@ div.container {
 /*visibility: hidden;*/
 /*}*/
 div.slider {
-    visibility: hidden;
+    /*visibility: hidden;*/
 }
 
 div.dragWindow {
@@ -32,7 +32,7 @@ div.dragWindow {
     z-index: 1;
     cursor: url("openhand.cur");
     /*background-color: #999999;*/
-    visibility: hidden;
+    /*visibility: hidden;*/
 }
 
 div.locationTrap {

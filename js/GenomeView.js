@@ -1067,11 +1067,12 @@ GenomeView.prototype.trackIterate = function(callback) {
 };
 
 GenomeView.prototype.isVisualized = function( trackkey ) {
-     var filterer = function( track ){ 
-                        return track.key == trackkey;
-                    };
+     var filterer = 
+         function( track ){ 
+             return track.key.substring(0,trackkey.length) == trackkey;
+         };
      var f = dojo.filter( this.tracks, filterer );
-     return f.length == 1;
+     return f.length >= 1;
 };
 /* this function must be called whenever tracks in the GenomeView
  * are added, removed, or reordered

@@ -61,7 +61,10 @@ sub readJSON {
 }
 
 sub writeJSON {
+
     my ($file, $toWrite, $opts, $compress) = @_;
+
+    #open( my $OUTPUT2, '>', $DEBUG_DIR . "/" . "bam_output_writeJSON.txt" ) or die $!;
 
     # create JSON object
     my $json = new JSON;
@@ -94,6 +97,11 @@ sub writeJSON {
     # }
 
     # write
+    #print $OUTPUT2 "trying to open $file\n";
+    #my $derp = new IO::File "/home/andrew/file.txt", O_CREAT | O_WRONLY;
+    #print $derp "hello!";
+    #close $derp;
+
     my $fh = new IO::File $file, O_WRONLY | O_CREAT
       or die "couldn't open $file: $!";
     flock $fh, LOCK_EX;
@@ -106,6 +114,9 @@ sub writeJSON {
     $fh->print($json->encode($toWrite));
     $fh->close()
       or die "couldn't close $file: $!";
+
+  #print $OUTPUT2 "did it?\n";
+  #close $OUTPUT2;
 
 }
 
@@ -204,19 +215,19 @@ sub new {
     #$featureCount = $refEnd * $density_estimate unless defined($featureCount);
 
     $self->{hists} = [];
-    #if( ! defined $pregen_histograms ){
-        ## initialize histogram arrays to all zeroes
-        #for (my $i = 0; $i <= $#multiples; $i++) {
-            #my $binBases = $self->{histBinBases} * $multiples[$i];
-            #$self->{hists}->[$i] = [(0) x ceil($refEnd / $binBases)];
-            #my $temp = ceil($refEnd / $binBases);
-#
+    if( ! defined $pregen_histograms ){
+    # initialize histogram arrays to all zeroes
+        for (my $i = 0; $i <= $#multiples; $i++) {
+            my $binBases = $self->{histBinBases} * $multiples[$i];
+            $self->{hists}->[$i] = [(0) x ceil($refEnd / $binBases)];
+            my $temp = ceil($refEnd / $binBases);
+    
             #print $OUTPUT "zoom level $i has $temp bins\n";
-#
-            ## somewhat arbitrarily cut off the histograms at 100 bins
-            #last if $binBases * 100 > $refEnd;
-        #}
-    #}
+    
+             # somewhat arbitrarily cut off the histograms at 100 bins
+            last if $binBases * 100 > $refEnd;
+        }
+    }
     #else do nothing, wait until generateTrack to pull in pregen data
 
     
@@ -303,7 +314,10 @@ sub hasFeatures {
 }
 
 sub generateTrack {
+    #open( my $OUTPUT, '>', $DEBUG_DIR . "/" . "bam_output_JsonGen.txt" ) or die $!;
+    #print $OUTPUT "hey there jsongen\n";
     my ($self, $featureCount) = @_;
+
     $self->{count} = $featureCount;
 
     my $ext = $self->{ext};
@@ -330,11 +344,13 @@ sub generateTrack {
     for ($i = 1; $i <= $#multiples; $i++) {
         last if ($self->{histBinBases} * $multiples[$i]) > $histBinThresh;
     }
+
     
     if( $DEBUG ){ 
         my $temp = $self->{histBinBases};
     }
 
+    #print $OUTPUT "zero\n";
     my @histogramMeta;
     #############################
     ### pregen hisogram meta ###
@@ -351,19 +367,21 @@ sub generateTrack {
         $i = 1; #($#multiples + 1) - $num_pregen_hists + 1;
         #set $i to reflect how many histograms were pre-generated
     }
-    else {
-    	die "pregen_histograms needs to be defined\n";
-    }
+    #else {
+    #print "unhffffff\n";
+    #die "pregen_histograms needs to be defined\n";
+    #}
     ### pregen histogram meta ###
     #############################
    
+    #print $OUTPUT "one\n";
 
     # Generate more zoomed-out histograms so that the client doesn't
     # have to load all of the histogram data when there's a lot of it.
     for (my $j = $i - 1; $j <= $#multiples; $j += 1) {
         my $curHist = $self->{hists}->[$j];
         last unless defined($curHist);
-
+        #print $OUTPUT "j: $j\n";
         my $histBases;
         if( ! defined $self->{pregen_histograms} ){
             $histBases = $self->{histBinBases} * $multiples[$j];
@@ -371,7 +389,7 @@ sub generateTrack {
         else{
             $histBases = $self->{pregen_histograms}->[$j]->{basesPerBin};
         }
-    
+        #print $OUTPUT "here\n";
         #TODO OPTIMIZE
         #this seems like a huge waste:
         #   why create chunks at all, why not just loop through
@@ -379,12 +397,15 @@ sub generateTrack {
         #   writeJSON needs a stand-along array to deal with,
         #   maybe alter it a big to accept two ints, start and end?
         my $chunks = chunkArray($curHist, $histChunkSize);
+        #print $OUTPUT "wat $#{$chunks}\n";
         for (my $i = 0; $i <= $#{$chunks}; $i++) {
+            #print $OUTPUT "i: $i histBases: $histBases\n";
             writeJSON($self->{outDir} . "/hist-$histBases-$i.$ext",
                       $chunks->[$i],
                       {pretty => 0},
                       $self->{compress});
         }
+        #print $OUTPUT "the worest\n";
         push @histogramMeta,
             {
                 basesPerBin => $histBases,
@@ -395,6 +416,7 @@ sub generateTrack {
                 }
             };
     }
+    #print $OUTPUT "two\n";
 
     my @histStats;
     for (my $j = $i - 1; $j <= $#multiples; $j++) {
@@ -409,7 +431,7 @@ sub generateTrack {
         push @histStats, {'bases' => $binBases,
                           arrayStats($self->{hists}->[$j])};
     }
-
+    #print $OUTPUT "three\n";
     my $trackData = {
                      'label' =>
                          $self->{label},
@@ -452,6 +474,9 @@ sub generateTrack {
               $trackData,
               {pretty => 0, max_depth => MAX_JSON_DEPTH},
               $self->{compress});
+
+          #print $OUTPUT "four\n";
+          #close $OUTPUT;
 
 }
 
