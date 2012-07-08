@@ -49,10 +49,19 @@ def getTrackData( root ) :
 
                             item = filestore_dojotree.makeItem( query_path )
                             properties = ["url","label","key","type"]
-                            entry = {}
-                            for p in properties :
-                                entry[p] = item[p]
-                            trackData.append(entry)
+                            if len(item["sub_results"]) > 0 :
+                                for sr in item["sub_results"] :
+                                    entry = {}
+                                    for p in properties :
+                                        entry[p] = item[p]
+                                    entry["key"] = item["key"]+"/"+sr
+                                    entry["url"] = item["url"] % sr
+                                    trackData.append(entry)
+                            else :
+                                entry = {}
+                                for p in properties :
+                                    entry[p] = item[p]
+                                trackData.append(entry)
                             print entry
 
     utils.printToServer( json.dumps(trackData) );

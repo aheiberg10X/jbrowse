@@ -23,9 +23,13 @@ my $project = $ARGV[0];
 my $donor = $ARGV[1];
 my $query_name = $ARGV[2];
 my $chromnum = $ARGV[3];
-my $query_indices = $ARGV[4];
+my $interval_file = $ARGV[4];
 my $linking = $ARGV[5];
 my $assembly = $ARGV[6];
+
+if( not defined $chromnum ){ 
+    $chromnum = "profile";
+    $interval_file = "abc";}
 
 #### DEBUGGING OUTPUT ###
 open( my $OUTPUT, '>', $DEBUG_DIR . "/" . "bam_output_$chromnum.txt" ) or die $!;
@@ -48,14 +52,14 @@ if( $profiling ){
     my $linking = "linking";
     my $histogram_filename = "$path/out.evidence.hist";
 
-    ($trackkey, $message) = createTrack( "main", "NA18507", "test", "1", "linking", "hg18", "no_compress" );
+    ($trackkey, $message) = createTrack( "dev", "NA18506", "delconc", "1", "/home/andrew/jbrowse/data/tracks/project_dev/donor_NA18506/query_delconc/chrom_chr1/out+1.interval", "linking", "hg18", 0 );
     print $OUTPUT "message: ", $message, "\n";
     exit;
 }
 
 my $compress = 0;
 
-($trackkey, $message) = createTrack( $project, $donor, $query_name, $chromnum, $query_indices, $linking, $assembly, $compress );
+($trackkey, $message) = createTrack( $project, $donor, $query_name, $chromnum, $interval_file, $linking, $assembly, $compress );
 
 print $OUTPUT "return message: $message\n";
 print $message;
@@ -66,17 +70,21 @@ close ERROR;
 #incorporate $query_indices into visualization, right now it is ignored
 sub createTrack {
     
-    my ($project, $donor, $query_name, $chromnum, $query_indices, $bam_linking, $assembly, $compress ) = @_;
+    my ($project, $donor, $query_name, $chromnum, $interval_file, $bam_linking, $assembly, $compress ) = @_;
 
     my $host_chrom = "chr$chromnum";    
     my $template = $TRACK_TEMPLATE; 
 
-    my $targetdir = sprintf( "$DATA_DIR/$template", $project, $donor, $query_name, $host_chrom );
+    #my $targetdir = sprintf( "$DATA_DIR/$template", $project, $donor, $query_name, $host_chrom );
+    my @splt = split( "/", $interval_file );
+    print $OUTPUT @splt[0..$#splt-1];
+    my $targetdir = join( "/", @splt[0..$#splt-1] );
     print $OUTPUT "targetdir: $targetdir\n";
     
     $bam_linking = $bam_linking eq "linking";
     print $OUTPUT "bam_linking: $bam_linking\n";
     print $OUTPUT "assembly: $assembly\n";
+    print $OUTPUT "interval file $interval_file\n";
 
     my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $key);
     $key = "$project/$query_name";
@@ -84,33 +92,43 @@ sub createTrack {
 
     #TODO
     #do all of them?  do the last (currently)?
-    my @splt = split( ",", $query_indices );
-    my $query_index = @splt[-1];
-    my $interval_file = "$targetdir/out+$query_index.interval";
+    #my @splt = split( ",", $query_indices );
+    #my $query_index = @splt[-1];
+    #my $interval_file = "$targetdir/out+$query_index.interval";
     #my $interval_file = "$targetdir/$query_name\_$chromnum.intervals";
     if( ! -e $interval_file ){ 
-        print $OUTPUT "interval file does not exist\n";
+        print $OUTPUT "interval file $interval_file does not exist\n";
         return ($key, "Nothing to visualize"); 
     }
 
-    my $bam_histogram_filename = "$targetdir/$query_name\_$chromnum.hist";
+    #my $bam_histogram_filename = "$targetdir/$query_name\_$chromnum.hist";
 
+    my @splt = split("\\.", $interval_file);
+    print $OUTPUT "i hate perl @splt";
+    print $OUTPUT $splt[0];
+    my $interval_file_name = $splt[0];
+    my $bam_histogram_filename = "$interval_file_name.hist";
+    print $OUTPUT "histo file $bam_histogram_filename\n";
     my $pregen_histograms;
-    if( defined $bam_histogram_filename ){
-        my $OLDSEP = $/;
-        local $/=undef;
-        open FILE, $bam_histogram_filename or die $!;
-         
-        my $json_text = <FILE>;
-        #delete whitespace
-        $json_text =~ s/\s+/ /g;
-        #delete variable assignment (i.e ' histogram = ...')
-        $json_text =~ s/^.+= //;
-        
-        $pregen_histograms = JSON::decode_json($json_text);
-        close FILE; 
-        $/ = $OLDSEP;
+    #if( defined $bam_histogram_filename ){
+    if( ! -e $bam_histogram_filename ) {
+        print $OUTPUT "ussing dummy hist in $DATA_DIR\n";
+        $bam_histogram_filename = "$DATA_DIR/dummy.hist";
     }
+    print $OUTPUT "historgram file exists\n";
+    my $OLDSEP = $/;
+    local $/=undef;
+    open FILE, $bam_histogram_filename or die $!;
+     
+    my $json_text = <FILE>;
+    #delete whitespace
+    $json_text =~ s/\s+/ /g;
+    #delete variable assignment (i.e ' histogram = ...')
+    $json_text =~ s/^.+= //;
+    
+    $pregen_histograms = JSON::decode_json($json_text);
+    close FILE; 
+    $/ = $OLDSEP;
 
     my $defaultClass = "transcript";
     my $defaultSubfeatureClasses = {"forward","forward-strand",
@@ -199,7 +217,7 @@ sub createTrack {
 
     open( FINT, '<', $interval_file );
     my $line = <FINT>;
-    @splt = split('\t', $line);i
+    @splt = split('\t', $line);
     my $len = scalar(@splt);
     print $OUTPUT "splt is @splt and length is $len";
     my $is_single_reads = $len < 6;

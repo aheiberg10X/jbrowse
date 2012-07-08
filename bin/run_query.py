@@ -166,6 +166,7 @@ else :
     #change query, strip project name from import
 
     track_datas = []
+    trackkeys = {}
     messages = []
     for donor in donors :
         for chromnum in [str(x) for x in range(1,23) + ['X','Y']] :
@@ -185,31 +186,82 @@ else :
             query_indices = []
             if os.path.exists( prefix ) :
                 for file in os.listdir( prefix ) :
-                    splt = file.rsplit('.')
-                    head = splt[0]
-                    ext = splt[-1]
-                    print "head",head,"ext",ext
-                    if ext == "bam" or ext == "interval" or ext == "txt" :
+                    splt = file.split('.')
+                    head, ext = splt[0], splt[-1]
+                    if ext == "interval" or ext == "short" :
+                    #if ext == "short" :
+                        t3 = time.time()
+                        #print "done moving, took: %f s" % (t3-t2)
 
-                        #if ext == "short" :
-                            #ext = "interval"
+                        print "starting interval2ncl for ", file
+                        print "donor", donor, type(donor)
+                        print "chromnum", chromnum, type(chromnum)
+                        print "query_name", query_name, type(query_name)
+                        print "linking", linking, type(linking)
+                        print "assembly ", assembly
 
-                        splt = head.rsplit("+",1)
-                        #mapjoin occurred, and there are multiple files
-                        if len(splt) == 2 :
-                            (head, i) = splt
-                            if i not in query_indices : query_indices.append(i)
-                            
-                            target = "%s/%s" % (prefix,file)
-                            dest = "%s/out_%s+%s.%s" % \
-                                    (prefix, chrom, i, ext )
-                            moveIfExists( target, dest )
-                        #singleton
+                        fldr = prefix + "/" + head
+                        os.mkdir( fldr )
+                        moveIfExists( prefix+"/"+file, fldr )
+                        moveIfExists( prefix+"/"+head+".hist", fldr )
+
+                        #TODO
+                        #right now qiuery_indices is ignored (not true uses biggest index to            #break into visualizable json files
+                        query_indices.sort()
+                        pop = Popen(["perl", "interval2ncl.pl", \
+                                     project, \
+                                     donor, \
+                                     query_name, \
+                                     chromnum, \
+                                     fldr + "/" + file, \
+                                     linking, \
+                                     assembly], \
+                                    stdout=PIPE, stderr=PIPE)
+
+                        (out, err) = pop.communicate()
+                        messages.append(out)
+                        print "\n\nerr: ", err
+                        print "\n\nout: ", out
+                        t4 = time.time()
+                        print "done with interval2ncl, took: %f s" % (t4-t3)
+
+                        url = TRACK_TEMPLATE % (project, donor, query_name, UNBOUND_CHROM ) + "/" + head
+                        key = "%s/%s/%s" % (project,query_name,head)
+                        track_data = {'label' : query_name+"/"+head, \
+                                      'key' : key, \
+                                      'url' : "%s/trackData.json" % url, \
+                                      'type' : "FeatureTrack"}
+                        if key in trackkeys :
+                            pass
                         else :
-                            target = "%s/%s" % (prefix,file)
-                            dest = "%s/out_%s+0.%s" % (prefix,chrom,ext)
-                            if 0 not in query_indices : query_indices.append("0")
-                            moveIfExists( target, dest )
+                            track_datas.append( track_data )
+                            trackkeys[key] = 1
+
+                    #splt = file.rsplit('.',1)
+                    #head = splt[0]
+                    #ext = splt[1]
+                    #print "head",head,"ext",ext
+                    #if ext == "short" or ext == "interval" or ext == "txt" :
+#
+                        ##if ext == "short" :
+                            ##ext = "interval"
+#
+                        #splt = head.rsplit("+",1)
+                        ##mapjoin occurred, and there are multiple files
+                        #if len(splt) == 2 :
+                            #(head, i) = splt
+                            #if i not in query_indices : query_indices.append(i)
+                           # 
+                            #target = "%s/%s" % (prefix,file)
+                            #dest = "%s/out_%s+%s.%s" % \
+                                    #(prefix, chrom, i, ext )
+                            #moveIfExists( target, dest )
+                        ##singleton
+                        #else :
+                            #target = "%s/%s" % (prefix,file)
+                            #dest = "%s/out_%s+0.%s" % (prefix,chrom,ext)
+                            #if 0 not in query_indices : query_indices.append("0")
+                            #moveIfExists( target, dest )
 
             print "query_indices", query_indices
 
@@ -226,48 +278,12 @@ else :
 
                         #TODO
 
-            t3 = time.time()
-            #print "done moving, took: %f s" % (t3-t2)
-
-            print "starting interval2ncl"
-            print "donor", donor, type(donor)
-            print "chromnum", chromnum, type(chromnum)
-            print "query_name", query_name, type(query_name)
-            print "linking", linking, type(linking)
-            print "assembly ", assembly
-
-            #TODO
-            #right now qiuery_indices is ignored (not true uses biggest index to            #break into visualizable json files
-            query_indices.sort()
-            pop = Popen(["perl", "interval2ncl.pl", \
-                         project, \
-                         donor, \
-                         query_name, \
-                         chromnum, \
-                         ','.join(query_indices), \
-                         linking, \
-                         assembly], \
-                        stdout=PIPE, stderr=PIPE)
-
-            (out, err) = pop.communicate()
-            messages.append(out)
-            print "\n\nerr: ", err
-            print "\n\nout: ", out
-            t4 = time.time()
-            print "done with interval2ncl, took: %f s" % (t4-t3)
-            #print "returning %s" % out
+                        #print "returning %s" % out
 
 
         
 
-        url = TRACK_TEMPLATE % (project, donor, query_name, UNBOUND_CHROM )
-        track_data = {'label' : query_name, \
-                      'key' : "%s/%s" % (project,query_name), \
-                      'url' : "%s/trackData.json" % url, \
-                      'type' : "FeatureTrack"}
-
-        track_datas.append( track_data )
-
+        
             
           
     messages = '\n'.join(messages)
