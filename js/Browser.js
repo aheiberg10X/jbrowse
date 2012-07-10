@@ -301,8 +301,8 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     //query_div.appendChild( query_dialog_div );
 
     // to make nested border container
-    var query_right_div = document.createElement("div");
-    query_dialog_div.appendChild( query_right_div );
+    //var query_right_div = document.createElement("div");
+    //query_dialog_div.appendChild( query_right_div );
 
     //holds the uploaded tables stuff, goes on the bottom right
     var query_interval_table_p = document.createElement("div");
@@ -318,11 +318,14 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     
     var query_name_p = document.createElement("p");
     //query_name_div.appendChild( query_name_p );
+    query_dialog_div.appendChild( query_name_p );
+
+    var query_button_p = document.createElement("p");
+    query_dialog_div.appendChild( query_button_p );
 
     query_name_p.innerHTML = "Name <br />";
     //query_name_div.appendChild( query_name_p );
 
-    query_dialog_div.appendChild( query_name_p );
 
     var query_name = new dijit.form.ValidationTextBox(
             {id: "query_name",
@@ -336,7 +339,6 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     //var query_box_p = document.createElement("p");
     //query_box_p.id = "query_box_p";
     query_name_p.innerHTML += "<br /><br />Query<br />";
-    query_dialog_div.appendChild( query_name_p );
 
     var query_box = new dijit.form.Textarea(
                         {id : "query_box",
@@ -356,13 +358,13 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
              style: "width: 900px; height: 600px; background-color: #FFFFFF;"
             }, query_dialog_div) ;
    
-   var query_right_bc = new dijit.layout.BorderContainer(
+  /* var query_right_bc = new dijit.layout.BorderContainer(
             {id:"query_right_bc",
              title: "Query",
              design: 'headline',
              region: "bottom",  //right
              style: "width: 200px; height: 500px; background-color: #ffffff;"
-            }, query_right_div) ;
+            }, query_right_div) ;*/
  
   /*  
    var query_interval_table_cp = new dijit.layout.ContentPane(
@@ -389,6 +391,12 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
              region: "center", 
              layoutPriority: "1"}, query_name_p);
     
+    var query_button_cp = new dijit.layout.ContentPane(
+            {id: "query_button_cp",
+style: "height: 10%; background-color: #ffffff; border: none;",
+             region: "bottom", 
+             layoutPriority: "1"}, query_button_p);
+
     
     //var query_box_cp = new dijit.layout.ContentPane(
     //{id: "query_box_cp",
@@ -581,7 +589,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
              label: "Run Query",
              style: "align-text: left; margin-top: 30px;",
              onClick: runQuery
-            }).placeAt( query_name_p) ;
+            }).placeAt( query_button_p) ;
 
     //var query_button_cp = new dijit.layout.ContentPane(
     //{id: "query_button_cp",

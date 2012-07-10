@@ -281,10 +281,10 @@ sub createTrack {
     };
 #
     if( $bad_bam ){
-        $message = "Error with track generation";
+        $message = "$host_chrom - $interval_file: Error with track generation";
     }
     else{
-        $message = "Track generated successfully"
+        $message = "$host_chrom - $interval_file: Track generated successfully"
     }
     
     return ($key, $message);

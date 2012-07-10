@@ -82,7 +82,8 @@ sys.stderr = open( err_filename,'w')
 out_filename = "%s/query_output.txt" % (DEBUG_DIR)
 sys.stdout = open( out_filename,'w')
 
-(status, query) = expandImports( query, project )
+#(status, query) = expandImports( query, project )
+status = True
 print "\n query", query, "\n"
 if not status :
     utils.printToServer( "{'status':'ERROR', 'message': '%s'}" % query )
@@ -189,7 +190,6 @@ else :
                     splt = file.split('.')
                     head, ext = splt[0], splt[-1]
                     if ext == "interval" or ext == "short" :
-                    #if ext == "short" :
                         t3 = time.time()
                         #print "done moving, took: %f s" % (t3-t2)
 
@@ -281,11 +281,10 @@ else :
                         #print "returning %s" % out
 
 
-        
 
-        
-            
-          
+    if len(messages) == 0 :
+        messages.append("The query did not have a print statement.\nNothing to visualize.")
+
     messages = '\n'.join(messages)
     response = json.dumps({'status':'OK','message':messages,'trackData':track_datas})
     print "returning: ", response
