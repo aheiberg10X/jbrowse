@@ -306,11 +306,11 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
 
     //holds the uploaded tables stuff, goes on the bottom right
     var query_interval_table_p = document.createElement("div");
-    query_right_div.appendChild( query_interval_table_p );
+    //query_right_div.appendChild( query_interval_table_p );
 
     //holds the list of donor genomes
     var query_donor_list_div = document.createElement("div");
-    query_right_div.appendChild( query_donor_list_div );
+    //query_right_div.appendChild( query_donor_list_div );
 
     //query name, goes on the top
     var query_name_div = document.createElement("div");
@@ -353,18 +353,18 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
             {id:"query_bc",
              title: "Query",
              design: 'headline',
-             style: "width: 500px; height: 500px; background-color: #FFFFFF;"
+             style: "width: 900px; height: 600px; background-color: #FFFFFF;"
             }, query_dialog_div) ;
    
    var query_right_bc = new dijit.layout.BorderContainer(
             {id:"query_right_bc",
              title: "Query",
              design: 'headline',
-             region: "right",
+             region: "bottom",  //right
              style: "width: 200px; height: 500px; background-color: #ffffff;"
             }, query_right_div) ;
  
-    
+  /*  
    var query_interval_table_cp = new dijit.layout.ContentPane(
             {id: "query_interval_table_cp",
              style: "height: 50%; background-color: #efefef",
@@ -376,6 +376,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
              style: "height: 50%; background-color: #efefef",
              region: "center"} 
              , query_donor_list_div);
+*/
 
    //var query_form = new dijit.form.Form(
    //{id: "query_form",
@@ -384,7 +385,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
 
     var query_name_cp = new dijit.layout.ContentPane(
             {id: "query_name_cp",
-                style: "background-color: #efefef",
+             style: "height: 90%; background-color: #efefef",
              region: "center", 
              layoutPriority: "1"}, query_name_p);
     
@@ -578,7 +579,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     var query_button = new dijit.form.Button(
             {id: "query_button", 
              label: "Run Query",
-             style: "align-text: right; margin-top: 30px;",
+             style: "align-text: left; margin-top: 30px;",
              onClick: runQuery
             }).placeAt( query_name_p) ;
 
@@ -923,7 +924,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     var query_dialog = new dijit.Dialog({
                     id : "query_dialog",
                     title: "New Query (under construction)",
-        //style: "width: 500px; height: 200px",
+                   // style: "width: 70%;",
                     content: query_dialog_div
                 });
 

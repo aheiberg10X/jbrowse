@@ -43,7 +43,7 @@ my @messages = ();
 
 #my $stream = 0;
 
-my $profiling = 0;
+my $profiling = 0; 
 if( $profiling ){
     my $path = "/home/andrew/school/dnavis/jbrowse/genomequery/biosql_compiler/biosql/dst/chr1"; #"/home/andrew/school/dnavis/jbrowse/profiling";
     my $option = "big";
@@ -52,7 +52,7 @@ if( $profiling ){
     my $linking = "linking";
     my $histogram_filename = "$path/out.evidence.hist";
 
-    ($trackkey, $message) = createTrack( "dev", "NA18506", "delconc", "1", "/home/andrew/jbrowse/data/tracks/project_dev/donor_NA18506/query_delconc/chrom_chr1/out+1.interval", "linking", "hg18", 0 );
+    ($trackkey, $message) = createTrack( "dev", "NA18506", "delconc", "1", "/home/andrew/jbrowse/data/tracks/project_dev/donor_NA18506/query_delconc/chrom_chr1/out_center+1/out_center+1.interval", "linking", "hg18", 0 );
     print $OUTPUT "message: ", $message, "\n";
     exit;
 }
@@ -223,38 +223,32 @@ sub createTrack {
     my $is_single_reads = $len < 6;
 
     my ($cur_left, $cur_right, $feature_count) = (0,0,0);
+    
+    my $callback = sub {
+        my $feature = shift;
+        updateInterestingAreas( $jsonGen,
+                         \$cur_left, 
+                         \$cur_right, 
+                         \$feature_count,
+                         $feature );
+        $sorter->addSorted( $feature ); 
+    };
 
     if( $is_single_reads ){
         print $OUTPUT "single reads, not linking\n";
-        my $single_callback = sub{
-            my $feature = shift;
-            updateInterestingAreas( $jsonGen,
-                             \$cur_left, 
-                             \$cur_right, 
-                             \$feature_count,
-                             $feature );
-            $sorter->addSorted( $feature );
-        };
         do{
+            $line =~ s/\s*$//g; 
             my $feat = makeSingleFeature( $line );
-            $single_callback->( $feat );
+            $callback->( $feat );
         }
         while( $line = <FINT> );
     }
     else {
         print $OUTPUT "linkingi\n";
-        my $paired_callback = sub {
-            my $feature = shift;
-            updateInterestingAreas( $jsonGen,
-                             \$cur_left, 
-                             \$cur_right, 
-                             \$feature_count,
-                             $feature );
-            $sorter->addSorted( $feature ); 
-        };
         do {
+            $line =~ s/\s*$//g; 
             my $feat = makePairedFeature( $line );
-            $paired_callback->( $feat );
+            $callback->( $feat );
         }
         while( $line = <FINT> ); 
     }

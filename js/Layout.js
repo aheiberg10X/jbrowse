@@ -195,13 +195,20 @@ function Layout(leftBound, rightBound) {
     this.totalHeight = 0;
 }
 
-Layout.prototype.addRect = function(id, left, right, height) {
+//maxRenderHeight is an added parameter
+Layout.prototype.addRect = function(id, left, right, height, maxRenderHeight) {
     if (this.seen[id] !== undefined) return this.seen[id];
     // for each contour, we test the fit on the near side of the given rect,
     var leftFit = this.tryLeftFit(left, right, height, 0);
     var rightFit = this.tryRightFit(left, right, height, 0);
 
     var top;
+
+    /*ADDITION*/
+    if( leftFit.top > maxRenderHeight || rightFit.top > maxRenderHeight ){
+       return null;
+    }
+    /* /ADDITION */ 
 
     // and insert the far side from the side we tested
     // (we want to make sure the near side fits, but we want to extend

@@ -139,11 +139,11 @@ def makeItem( path ) :
             print "folder is %s" % folder
             #TODO
             #more specific than just looking for a .txt file?
-            for thing in os.listdir( folder ) :
+            for thing in sorted( os.listdir( folder ) ) :
                 print "listdir:", thing
                 if os.path.isdir( folder+"/"+thing ) :
                     item["sub_results"].append( thing )
-                    for subthing in os.listdir( folder+"/"+thing ) :
+                    for subthing in sorted(os.listdir( folder+"/"+thing )) :
                         head,ext = subthing.rsplit(".",1)
                         if ext == "short" or ext == "interval" :
                             if ext == "short" :

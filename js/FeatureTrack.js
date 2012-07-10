@@ -445,9 +445,6 @@ FeatureTrack.prototype.renderFeature = function(feature, uniqueId, block, scale,
     //and arrowheads if applicable
     var featureEnd = feature[fields["end"]];
     var featureStart = feature[fields["start"]];
-    if( featureStart == 133000293 ){
-        a = 5;
-    }
     if (this.arrowheadClass) {
         switch (feature[fields["strand"]]) {
         case 1:
@@ -474,12 +471,14 @@ FeatureTrack.prototype.renderFeature = function(feature, uniqueId, block, scale,
             (fields["name"] && (scale > this.labelScale)) ? this.nameHeight : 0
         );
 
+    var maxRenderHeight = (this.glyphHeight + 2) * this.maxRender;
     var top = block.featureLayout.addRect(uniqueId,
                                           featureStart,
                                           featureEnd,
-                                          levelHeight);
-
-    if( top > (this.glyphHeight + 2) * this.maxRender && uniqueId != "dot,dot,dot" ){
+                                          levelHeight,
+                                          maxRenderHeight);
+    //if( top > (this.glyphHeight + 2) * this.maxRender && uniqueId != "dot,dot,dot" ){
+    if( top == null ){
         return null;
     }
     else{
