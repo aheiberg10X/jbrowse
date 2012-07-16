@@ -9,6 +9,7 @@ sys.path.append("../lib")
 import GlobalConfig
 import utils
 import time
+import re
 from subprocess import Popen, PIPE
 
 err_filename = "%s/upload_error.txt" % (GlobalConfig.DEBUG_DIR)
@@ -21,40 +22,51 @@ fields = cgi.FieldStorage()
 utils.printToServer( 'Content-type: text/html\n\n' )
 
 #TODO: ownership and permission for inteval files
-def validate( some_stuff, project_name ) :
-    #how to check permissions to 
-    return (True,"good to go")
+rename = re.compile(r'#table\s+(\w+)\s+(.*);', re.I)
+def validateSchema( first_line, filename ) :
 
+    #name check
+    m = rename.match( first_line )
+    linename = m.group(1)
+    name_check = linename.lower() == filename.lower()
+
+    #TODO:
+    #column type checking?
+
+    if name_check :
+        return (True,"good to go")
+    else :
+        return (False, "%s != %s" % (linename, filename))
 
 fileitem = fields["interval_table"]
 project_name = fields.getvalue("project_name")
 if fileitem.filename :
     handle = fileitem.file
-    stuff = handle.read()
-    (ok,message) = validate(stuff, project_name)
+    first_line = handle.readline().strip()
+    rest_lines = handle.read()
+    filename = os.path.basename(fileitem.filename)
+    (name,ext) = os.path.splitext(filename)
+    (ok,message) = validateSchema(first_line, name)
     if not ok :
         json_data = "{'status':'ERROR', 'message':'%s'}" % message
     else :
-        fn = os.path.basename(fileitem.filename)
-        (name,ext) = os.path.splitext(fn)
-        path = "%s/data/tracks/%s%s/interval_tables" % \
-                    (GlobalConfig.ROOT_DIR, \
-                     GlobalConfig.PROJECT_PREFIX, \
-                     project_name )
-        if not os.path.exists( path ) :
-            os.mkdir( path )
+        #path = "%s/data/tracks/%s%s/interval_tables" % \
+                    #(GlobalConfig.ROOT_DIR, \
+                     #GlobalConfig.PROJECT_PREFIX, \
+                     #project_name )
+        #if not os.path.exists( path ) :
+            #os.mkdir( path )
+        newfilename = "%s/src_tables/%s.txt" % (os.environ["BIOSQL_HOME"],name)
 
-        newfilename = "%s/%s_%s.txt" % (path,project_name,name)
         if not os.path.exists( newfilename ) :
-            open(newfilename, 'w').write( stuff )
+            open(newfilename, 'w').write( rest_lines )
             #update tables.txt, rebuild parsed tables
 
-            path = "%s/genomequery/biosql_compiler/biosql" % GlobalConfig.ROOT_DIR
-            ftables = "%s/tables.txt" % path
+            ftables = "%s/tables.txt" % os.environ["BIOSQL_HOME"]
             ftables = open( ftables, 'a' )
-            fullname = "%s_%s" % (project_name,name)
-            schema = "table %s (string annot_id, string chr, char ornt, integer begin, integer end);\n" % fullname
-            ftables.write( schema )
+            #fullname = "%s_%s" % (project_name,name)
+            #schema = "table %s (string annot_id, string chr, char ornt, integer begin, integer end);\n" % fullname
+            ftables.write( first_line[1:] )
             ftables.close()
 
             pop = Popen(['bash','rebuild_parsed_tables.sh'], \

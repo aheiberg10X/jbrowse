@@ -25,8 +25,9 @@ def moveIfExists( source, dest ) :
         print "\n%s doesn't exist!\n" % source
         return False
 
-#TODO: take the use _____ statements and
-#fill in with the path to that file (is this what the compiler will need?)
+#DEPRECATED
+#in the query text, change:
+# import table.tbl => import /projectpath/interval_tables/<projectname>_table.tbl
 def expandImports( query, project_name ) :
     
     path = "%s/data/tracks/%s%s/interval_tables" % \
@@ -82,9 +83,13 @@ sys.stderr = open( err_filename,'w')
 out_filename = "%s/query_output.txt" % (DEBUG_DIR)
 sys.stdout = open( out_filename,'w')
 
-#(status, query) = expandImports( query, project )
+
+
+#(status, modified_query) = expandImports( query, project )
+#print "\n query", query, "\n"
+#print "\n modified_query", modified_query, "\n"
+
 status = True
-print "\n query", query, "\n"
 if not status :
     utils.printToServer( "{'status':'ERROR', 'message': '%s'}" % query )
 else :
@@ -94,7 +99,6 @@ else :
 
     query_loc = "%s/user_query.txt" % UPLOAD_DIR
     print "writing query to %s" % query_loc
-    print "this is what writing:", query
 
     fuq = open( query_loc, 'wb')
     fuq.write( query)
@@ -106,8 +110,9 @@ else :
     print "popping run_biosql.sh"
     t1 = time.time()
     #chrom is 1..22 X Y
-    src_table_dir = "%s/data/tracks/%s%s/interval_tables" \
-                    % (root, PROJECT_PREFIX, project)
+    #src_table_dir = "%s/data/tracks/%s%s/interval_tables" \
+                    #% (root, PROJECT_PREFIX, project)
+    src_table_dir = "%s/src_tables" % os.environ["BIOSQL_HOME"]
 
     #leavin space for donor and chrom
     trackpath = TRACK_TEMPLATE % (project, "%s", query_name, "%s")
@@ -165,8 +170,6 @@ else :
 
     #TODO
     #change query, strip project name from import
-
-    assert 1 == 9
 
     track_datas = []
     trackkeys = {}

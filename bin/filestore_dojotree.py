@@ -140,8 +140,8 @@ def makeItem( path ) :
             #TODO
             #more specific than just looking for a .txt file?
             for thing in sorted( os.listdir( folder ) ) :
-                print "listdir:", thing
-                if os.path.isdir( folder+"/"+thing ) :
+                if os.path.isdir( folder+"/"+thing ) and thing != ".svn" :
+                    print "listdir:", thing
                     item["sub_results"].append( thing )
                     for subthing in sorted(os.listdir( folder+"/"+thing )) :
                         head,ext = subthing.rsplit(".",1)
