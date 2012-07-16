@@ -37,6 +37,8 @@ do
 	bam_prefx="$DONOR_DIR/$donor/chr"
 	indx_prefx="$DONOR_DIR/$donor/chr"
 
+    echo bam_prefx $bam_prefx
+
 	for c in 1 #2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y
 	do
 		chr="chr"$c
@@ -60,6 +62,7 @@ do
 		fi
 	
         query_dir=${chrom_dir%/*}    
+        echo query_dir $query_dir
 		if test ! -d $query_dir
 		then
 			mkdir $query_dir

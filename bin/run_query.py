@@ -142,6 +142,7 @@ else :
     t2 = time.time()
     print "done with run_biosql, took: %f s" % (t2-t1)
 
+
     #check bytecode for syntax error
     #get genome list from bytecode
 
@@ -162,13 +163,13 @@ else :
 
     fbyte.close()
 
-
     #TODO
     #change query, strip project name from import
 
     track_datas = []
     trackkeys = {}
     messages = []
+    print "donors: ", donors
     for donor in donors :
         for chromnum in [str(x) for x in range(1,23) + ['X','Y']] :
             chrom = "chr%s" % str(chromnum)

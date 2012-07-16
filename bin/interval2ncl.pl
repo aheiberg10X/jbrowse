@@ -52,7 +52,7 @@ if( $profiling ){
     my $linking = "linking";
     my $histogram_filename = "$path/out.evidence.hist";
 
-    ($trackkey, $message) = createTrack( "dev", "NA18506", "delconc", "1", "/home/andrew/jbrowse/data/tracks/project_dev/donor_NA18506/query_delconc/chrom_chr1/out_center+1/out_center+1.interval", "linking", "hg18", 0 );
+    ($trackkey, $message) = createTrack( "dev", "NA18506", "q4_new", "1", "/home/andrew/jbrowse/data/tracks/project_dev/donor_NA18506/query_q4_new/chrom_chr1/out_right+2/out_right+2.bam.short", "linking", "hg18", 0 );
     print $OUTPUT "message: ", $message, "\n";
     exit;
 }
@@ -77,6 +77,7 @@ sub createTrack {
 
     #my $targetdir = sprintf( "$DATA_DIR/$template", $project, $donor, $query_name, $host_chrom );
     my @splt = split( "/", $interval_file );
+    my $interval_file_justname = $splt[-1];
     print $OUTPUT @splt[0..$#splt-1];
     my $targetdir = join( "/", @splt[0..$#splt-1] );
     print $OUTPUT "targetdir: $targetdir\n";
@@ -253,7 +254,10 @@ sub createTrack {
         while( $line = <FINT> ); 
     }
     close FINT;
-    
+
+    #finish up IA, commit the last area
+    $jsonGen->addInterestingArea( $cur_left, $cur_right );
+
 
     if( $feature_count <= 0 ){
         return ($key, "There are 0 features");
@@ -281,10 +285,10 @@ sub createTrack {
     };
 #
     if( $bad_bam ){
-        $message = "$host_chrom - $interval_file: Error with track generation";
+        $message = "$host_chrom - $interval_file_justname: Error with track generation";
     }
     else{
-        $message = "$host_chrom - $interval_file: Track generated successfully"
+        $message = "$host_chrom - $interval_file_justname: Track generated successfully"
     }
     
     return ($key, $message);
