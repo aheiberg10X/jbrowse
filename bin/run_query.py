@@ -165,6 +165,8 @@ else :
     #TODO
     #change query, strip project name from import
 
+    assert 1 == 9
+
     track_datas = []
     messages = []
     for donor in donors :

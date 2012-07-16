@@ -84,13 +84,16 @@ sub createTrack {
 
     #TODO
     #do all of them?  do the last (currently)?
+    #yeah do all of them
+    #also do the .bam.short files.  Christos must standardize the format first
     my @splt = split( ",", $query_indices );
     my $query_index = @splt[-1];
     my $interval_file = "$targetdir/out+$query_index.interval";
     #my $interval_file = "$targetdir/$query_name\_$chromnum.intervals";
+    #
     if( ! -e $interval_file ){ 
         print $OUTPUT "interval file does not exist\n";
-        return ($key, "Nothing to visualize"); 
+        return ($key, "$host_chrom: Nothing to visualize, interval file does not exist"); 
     }
 
     my $bam_histogram_filename = "$targetdir/$query_name\_$chromnum.hist";
@@ -199,7 +202,7 @@ sub createTrack {
 
     open( FINT, '<', $interval_file );
     my $line = <FINT>;
-    @splt = split('\t', $line);i
+    @splt = split('\t', $line);
     my $len = scalar(@splt);
     print $OUTPUT "splt is @splt and length is $len";
     my $is_single_reads = $len < 6;

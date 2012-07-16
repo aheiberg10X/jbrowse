@@ -141,7 +141,7 @@ def makeItem( path ) :
             #Associate these three keys with each query menuitem
             #It will tell the browser how many of each filetype we
             #have in the chrom folders.  
-            #(Remember: Using the counts for chr1)
+            #(Remember: Using the counts from chr1)
             dkey_ext = {"bam_ixs" :      ".bam", \
                         "interval_ixs" : ".interval", \
                         "txt_ixs" :      ".txt" }
