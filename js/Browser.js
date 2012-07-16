@@ -172,7 +172,7 @@ var Browser = function(params) {
             //hook up GenomeView
             var gv = new GenomeView(viewElem, 250, brwsr.refSeq, 1/200);
             brwsr.view = gv;
-            brwsr.view.allowVisualization = false;
+            brwsr.view.allowVisualization = true;
             brwsr.viewElem = viewElem;
             //gv.setY(0);
             viewElem.view = gv;
@@ -301,16 +301,16 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     //query_div.appendChild( query_dialog_div );
 
     // to make nested border container
-    var query_right_div = document.createElement("div");
-    query_dialog_div.appendChild( query_right_div );
+    //var query_right_div = document.createElement("div");
+    //query_dialog_div.appendChild( query_right_div );
 
     //holds the uploaded tables stuff, goes on the bottom right
     var query_interval_table_p = document.createElement("div");
-    query_right_div.appendChild( query_interval_table_p );
+    //query_right_div.appendChild( query_interval_table_p );
 
     //holds the list of donor genomes
     var query_donor_list_div = document.createElement("div");
-    query_right_div.appendChild( query_donor_list_div );
+    //query_right_div.appendChild( query_donor_list_div );
 
     //query name, goes on the top
     var query_name_div = document.createElement("div");
@@ -318,11 +318,14 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     
     var query_name_p = document.createElement("p");
     //query_name_div.appendChild( query_name_p );
+    query_dialog_div.appendChild( query_name_p );
+
+    var query_button_p = document.createElement("p");
+    query_dialog_div.appendChild( query_button_p );
 
     query_name_p.innerHTML = "Name <br />";
     //query_name_div.appendChild( query_name_p );
 
-    query_dialog_div.appendChild( query_name_p );
 
     var query_name = new dijit.form.ValidationTextBox(
             {id: "query_name",
@@ -336,7 +339,6 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     //var query_box_p = document.createElement("p");
     //query_box_p.id = "query_box_p";
     query_name_p.innerHTML += "<br /><br />Query<br />";
-    query_dialog_div.appendChild( query_name_p );
 
     var query_box = new dijit.form.Textarea(
                         {id : "query_box",
@@ -353,18 +355,18 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
             {id:"query_bc",
              title: "Query",
              design: 'headline',
-             style: "width: 500px; height: 500px; background-color: #FFFFFF;"
+             style: "width: 900px; height: 600px; background-color: #FFFFFF;"
             }, query_dialog_div) ;
    
-   var query_right_bc = new dijit.layout.BorderContainer(
+  /* var query_right_bc = new dijit.layout.BorderContainer(
             {id:"query_right_bc",
              title: "Query",
              design: 'headline',
-             region: "right",
+             region: "bottom",  //right
              style: "width: 200px; height: 500px; background-color: #ffffff;"
-            }, query_right_div) ;
+            }, query_right_div) ;*/
  
-    
+  /*  
    var query_interval_table_cp = new dijit.layout.ContentPane(
             {id: "query_interval_table_cp",
              style: "height: 50%; background-color: #efefef",
@@ -376,6 +378,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
              style: "height: 50%; background-color: #efefef",
              region: "center"} 
              , query_donor_list_div);
+*/
 
    //var query_form = new dijit.form.Form(
    //{id: "query_form",
@@ -384,10 +387,16 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
 
     var query_name_cp = new dijit.layout.ContentPane(
             {id: "query_name_cp",
-                style: "background-color: #efefef",
+             style: "height: 90%; background-color: #efefef",
              region: "center", 
              layoutPriority: "1"}, query_name_p);
     
+    var query_button_cp = new dijit.layout.ContentPane(
+            {id: "query_button_cp",
+style: "height: 10%; background-color: #ffffff; border: none;",
+             region: "bottom", 
+             layoutPriority: "1"}, query_button_p);
+
     
     //var query_box_cp = new dijit.layout.ContentPane(
     //{id: "query_box_cp",
@@ -578,9 +587,9 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     var query_button = new dijit.form.Button(
             {id: "query_button", 
              label: "Run Query",
-             style: "align-text: right; margin-top: 30px;",
+             style: "align-text: left; margin-top: 30px;",
              onClick: runQuery
-            }).placeAt( query_name_p) ;
+            }).placeAt( query_button_p) ;
 
     //var query_button_cp = new dijit.layout.ContentPane(
     //{id: "query_button_cp",
@@ -746,9 +755,18 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
             hidden: false,
             onClick: function(e) {
                 var item = tree.clickedItem;
-                var trackkey = item.key;
-                var assembly = item.assembly;
-                visualize(trackkey, assembly);
+                if( item.sub_results.length > 0 ){
+                    for( var i=0; i < item.sub_results.length; i++ ){
+                        var trackkey = item.key + "/"+ item.sub_results[i];
+                        var assembly = item.assembly;
+                        visualize(trackkey, assembly);
+                    }
+                }
+                else {
+                    var trackkey = item.key;
+                    var assembly = item.assembly;
+                    visualize(trackkey, assembly);
+                }
             }
         });
     pMenu.addChild( visualize_menuitem );
@@ -759,7 +777,15 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
             hidden: true,
             onClick: function(e) {
                 var item = tree.clickedItem;
-                recall( item.key );
+                if( item.sub_results.length > 0 ){
+                    for( var i=0; i <= item.sub_results.length; i++ ){
+                        var trackkey = item.key + "/"+ item.sub_results[i];
+                        recall(trackkey);
+                    }
+                }
+                else {
+                    recall( item.key );
+                }
             }
         });
     pMenu.addChild( recall_menuitem) ;
@@ -773,20 +799,24 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
             var host_chrom = brwsr.refSeq.name;
             var chromnum = host_chrom.substring(3);
             
-            var ixs = [];
+            var filenames = [];
             if( ext == "bam" ){
-                ixs = selected.bam_ixs.split(",");
+                filenames = selected.bams; //.split(",");
             }
             else if( ext == "interval" ){
-                ixs = selected.interval_ixs.split(",");
+                for( var i=0; i < selected.sub_results.length; i++ ){
+                    filenames.push( selected.sub_results[i] + "/" +
+                            selected.sub_results[i] + "." +
+                            selected.sub_exts[i] );
+                }
             }
             else if( ext == "txt" ){
-                ixs = selected.txt_ixs.split(",");
+                filenames = selected.txts;
             }
             //TODO
-            //interpolate i into each file to be donwloaded
-            for( var j=0; j < ixs.length; j++ ){
-                var i = ixs[j];
+            //interpolate i into each file to be donwloaded*/
+            for( var j=0; j < filenames.length; j++ ){
+                var filename = filenames[j];
                 var url = "data/" + 
                            sprintf( sprintf( globals.TRACK_TEMPLATE, 
                                              globals.PROJECT_PREFIX,
@@ -799,10 +829,11 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                                     brwsr.refSeq.name ) + 
                            //"/" + query_name + "_" + chromnum + 
                                  //"_" + i + "." + ext;
-                           "/out_" + host_chrom + "+" + i + "." + ext;
+                           "/" + filename;
                 window.open(url);
                 //setTimeout(function() {},1250);
                 //window.location = url;
+                //
             }
         }
     };
@@ -879,7 +910,8 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
             hidden: false,
             onClick: function(e) {
                 var item = tree.clickedItem;
-                deleteQuery( item.project, item.donor, item.name ); 
+                var sr = item.sub_results;
+                deleteQuery( item.project, item.donor, item.name, item.sub_results ); 
         }}));
 
     
@@ -900,7 +932,7 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     var query_dialog = new dijit.Dialog({
                     id : "query_dialog",
                     title: "New Query (under construction)",
-        //style: "width: 500px; height: 200px",
+                   // style: "width: 70%;",
                     content: query_dialog_div
                 });
 
@@ -1123,9 +1155,9 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
                         pleasewait_menuitem.hidden = true;
                     }
 
-                    download_bam_menuitem.hidden = selected.bam_ixs.length == 0;
-                    download_interval_menuitem.hidden = selected.interval_ixs.length == 0;
-                    download_txt_menuitem.hidden = selected.txt_ixs.length == 0;
+                    //download_bam_menuitem.hidden = selected.bam_ixs.length == 0;
+                    //download_interval_menuitem.hidden = selected.interval_ixs.length == 0;
+                    //download_txt_menuitem.hidden = selected.txt_ixs.length == 0;
                     
                     //hack to make left click work on tree
                     //openOnLeftClick: true | is insufficient for whatever reason
@@ -1178,10 +1210,10 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
         tree =  makeTree();
     };
 
-    var deleteQuery = function( project, donor, query_name ){
+    var deleteQuery = function( project, donor, query_name, sub_results ){
         var args = {project: project, donor: donor, query_name: query_name};
         var url = "bin/remove_track.py?" + dojo.objectToQuery(args);
-        var trackkey = project +'/'+ query_name;
+        //var trackkey = project +'/'+ query_name;
 
         var xhrArgs = {
             url: url,
@@ -1190,11 +1222,14 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
             load: function(data,ioargs) {
                 if( data["status"] == "ok" ){
                     refreshTree();
-                    recall( trackkey );
-                    var ix = brwsr.tracks.indexOf(trackkey);
-                    if( ix != -1 ){
-                        brwsr.tracks.splice(ix,1);
-                        brwsr.trackData.splice(ix,1);
+                    for( var i=0; i < sub_results.length; i++ ){
+                        var trackkey = project+"/"+query_name+"/"+sub_results[i];
+                        recall( trackkey ); 
+                        var ix = brwsr.tracks.indexOf(trackkey);
+                        if( ix != -1 ){
+                            brwsr.tracks.splice(ix,1);
+                            brwsr.trackData.splice(ix,1);
+                        }
                     }
                 }
                 else{       
@@ -1457,7 +1492,7 @@ Browser.prototype.onFineMove = function(startbp, endbp) {
 Browser.prototype.onVisibleTracksChanged = function() {
     this.view.updateTrackList();
     var trackLabels = dojo.map(this.view.tracks,
-                               function(track) { return track.name; });
+                               function(track) { return track.key; });
     dojo.cookie(this.container.id + "-tracks",
                 trackLabels.join(","),
                 {expires: 60});
@@ -1612,22 +1647,22 @@ Browser.prototype.navigateTo = function(loc) {
  * each of which should correspond to the "label" element of the track
  * information dictionaries
  */
-Browser.prototype.showTracks = function(trackNameList) {
+Browser.prototype.showTracks = function(trackKeyList) {
     if (!this.isInitialized) {
         var brwsr = this;
         this.deferredFunctions.push(
-            function() { brwsr.showTracks(trackNameList); }
+            function() { brwsr.showTracks(trackKeyList); }
         );
     	return;
     }
 
-    var trackNames = trackNameList.split(",");
+    var trackKeys = trackKeyList.split(",");
     var removeFromList = [];
     var brwsr = this;
-    for (var n = 0; n < trackNames.length; n++) {
+    for (var n = 0; n < trackKeys.length; n++) {
         //this.trackListWidget.forInItems(function(obj, id, map) {
         var anon = function(entry,i) {
-            if (trackNames[n] == entry.label) {
+            if (trackKeys[n] == entry.key) {
                 brwsr.viewDndWidget.insertNodes(false, [entry]);
                 removeFromList.push(i);
             }

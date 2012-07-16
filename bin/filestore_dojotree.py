@@ -61,22 +61,6 @@ def getPrefix( path, name ) :
     else :
         return PRIVATE_PREFIX
 
-#def getPrefix( path, name ) :
-    #if name.startswith( PRIVATE_PREFIX ) :
-        #return PRIVATE_PREFIX
-    #else :
-        #if os.path.isdir( path ) :
-            #if name.startswith( QUERY_PREFIX ) :
-                #return QUERY_PREFIX
-            #elif name.startswith( CHROM_PREFIX ) :
-                #return CHROM_PREFIX
-            #elif name.startswith( DONOR_PREFIX ) :
-                #return DONOR_PREFIX
-            #else :
-                #return PRIVATE_PREFIX
-        #else :
-            #return "file"
-
 def hasPermission( user, path, name ) :
     if user == 'su' : return True
     else :
@@ -129,7 +113,6 @@ def makeItem( path ) :
             item['key'] = "%s/%s" % (gparent_name,name)
             tt = TRACK_TEMPLATE % \
                     (gparent_name, parent_name, name, UNBOUND_CHROM)
-            item['url'] = "%s/trackData.json" % tt
             item['label'] = name
             item['type'] = 'FeatureTrack'
 
@@ -141,34 +124,60 @@ def makeItem( path ) :
             #Associate these three keys with each query menuitem
             #It will tell the browser how many of each filetype we
             #have in the chrom folders.  
-            #(Remember: Using the counts from chr1)
-            dkey_ext = {"bam_ixs" :      ".bam", \
-                        "interval_ixs" : ".interval", \
-                        "txt_ixs" :      ".txt" }
+            #(Remember: Using the counts for chr1)
+            #dkey_ext = {"bam_ixs" :      ".bam", \
+                        #"interval_ixs" : ".interval", \
+                        #"txt_ixs" :      ".txt" }
 
-            for key in dkey_ext :
-                item[key] = [] 
-   
+            #for key in dkey_ext :
+                #item[key] = [] 
+            item["bams"] = []
+            item["txts"] = []
+            item["sub_results"] = []
+            item["sub_exts"] = []
             folder = "%s/data/%s" % (ROOT_DIR, tt.replace( UNBOUND_CHROM, 'chr1' ) )
+            print "folder is %s" % folder
             #TODO
             #more specific than just looking for a .txt file?
-            for thing in os.listdir( folder ) :
-                for key in dkey_ext :
-                    if thing.lower().endswith( dkey_ext[key] ) :
-                        (head, ext) = thing.rsplit(".",1)
-                
-                        #the new run_query will 
-                        splt = head.rsplit("+",1)
-                        if len(splt) == 2 :
-                            (head, i) = splt
-                        else :
-                            i = "0" 
-                        item[key].append( i )
-                        break
-                    
-            for key in dkey_ext :
-                item[key] = ",".join( item[key] ) 
+            for thing in sorted( os.listdir( folder ) ) :
+                print "listdir:", thing
+                if os.path.isdir( folder+"/"+thing ) :
+                    item["sub_results"].append( thing )
+                    for subthing in sorted(os.listdir( folder+"/"+thing )) :
+                        head,ext = subthing.rsplit(".",1)
+                        if ext == "short" or ext == "interval" :
+                            if ext == "short" :
+                                item["sub_exts"].append( "bam.short" )
+                            else :
+                                item["sub_exts"].append( ext )
+                else :
+                    head,ext = thing.rsplit(".",1)
+                    if ext == "bam" :
+                        item["bams"].append( thing )
+                    if ext == "txt" :
+                        item["txts"].append( thing )
 
+
+
+                #for key in dkey_ext :
+                    #if thing.lower().endswith( dkey_ext[key] ) :
+                        #(head, ext) = thing.rsplit(".",1)
+               # 
+                        ##the new run_query will 
+                        #splt = head.rsplit("+",1)
+                        #if len(splt) == 2 :
+                            #(head, i) = splt
+                        #else :
+                            #i = "0" 
+                        #item[key].append( i )
+                        #break
+                   # 
+            #for key in dkey_ext :
+                #item[key] = ",".join( item[key] ) 
+            if len(item['sub_results']) > 0 :
+                item['url'] = "%s/%%s/trackData.json" % tt
+            else :
+                item['url'] = "%s/trackData.json" % tt
         if is_dir :
             item["children"] = getChildren( path )
 
