@@ -19,13 +19,11 @@ use Cwd;
 use GlobalConfig;
 use Data::Dumper;
 
-my $project = $ARGV[0];
-my $donor = $ARGV[1];
-my $query_name = $ARGV[2];
-my $chromnum = $ARGV[3];
-my $interval_file = $ARGV[4];
-my $linking = $ARGV[5];
-my $assembly = $ARGV[6];
+my $trackkey = $ARGV[0];
+my $query_name = $ARGV[1];
+my $chromnum = $ARGV[2];
+my $interval_file = $ARGV[3];
+my $assembly = $ARGV[4];
 
 if( not defined $chromnum ){ 
     $chromnum = "profile";
@@ -38,7 +36,7 @@ STDERR->fdopen( \*ERROR,  'w' ) or die $!;
 #### DEBUGGING OUTPUT ###
 
 #for building our response to server
-my ($trackkey, $message);
+my $message;
 my @messages = ();
 
 #my $stream = 0;
@@ -49,58 +47,42 @@ if( $profiling ){
     my $option = "big";
     my $bam_file = "$path/out.evidence.bam.short"; #"$path/"$path/profile_$option.bam";
     my $host_chrom = "chr1";
-    my $linking = "linking";
     my $histogram_filename = "$path/out.evidence.hist";
 
-    ($trackkey, $message) = createTrack( "dev", "NA18506", "q4_new", "1", "/home/andrew/jbrowse/data/tracks/project_dev/donor_NA18506/query_q4_new/chrom_chr1/out_right+2/out_right+2.bam.short", "linking", "hg18", 0 );
+    $message = createTrack( "dev", "NA18506", "q4_new", "1", "/home/andrew/jbrowse/data/tracks/project_dev/donor_NA18506/query_q4_new/chrom_chr1/out_right+2/out_right+2.bam.short", "hg18", 0 );
     print $OUTPUT "message: ", $message, "\n";
     exit;
 }
 
 my $compress = 0;
 
-($trackkey, $message) = createTrack( $project, $donor, $query_name, $chromnum, $interval_file, $linking, $assembly, $compress );
+$message = createTrack( $trackkey, $query_name, $chromnum, $interval_file, $assembly, $compress );
 
 print $OUTPUT "return message: $message\n";
 print $message;
 close $OUTPUT;
 close ERROR;
 
-#TODO
-#incorporate $query_indices into visualization, right now it is ignored
 sub createTrack {
     
-    my ($project, $donor, $query_name, $chromnum, $interval_file, $bam_linking, $assembly, $compress ) = @_;
+    my ($trackkey, $query_name, $chromnum, $interval_file, $assembly, $compress ) = @_;
 
     my $host_chrom = "chr$chromnum";    
-    my $template = $TRACK_TEMPLATE; 
 
-    #my $targetdir = sprintf( "$DATA_DIR/$template", $project, $donor, $query_name, $host_chrom );
     my @splt = split( "/", $interval_file );
     my $interval_file_justname = $splt[-1];
     print $OUTPUT @splt[0..$#splt-1];
     my $targetdir = join( "/", @splt[0..$#splt-1] );
     print $OUTPUT "targetdir: $targetdir\n";
-    
-    $bam_linking = $bam_linking eq "linking";
-    print $OUTPUT "bam_linking: $bam_linking\n";
     print $OUTPUT "assembly: $assembly\n";
     print $OUTPUT "interval file $interval_file\n";
 
-    my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk, $key);
-    $key = "$project/$query_name";
+    my ($tracks, $cssClass, $arrowheadClass, $subfeatureClasses, $clientConfig, $trackLabel, $nclChunk);
     $trackLabel = $query_name;
 
-    #TODO
-    #do all of them?  do the last (currently)?
-    #my @splt = split( ",", $query_indices );
-    #my $query_index = @splt[-1];
-    #my $interval_file = "$targetdir/out+$query_index.interval";
-    #my $interval_file = "$targetdir/$query_name\_$chromnum.intervals";
-    #
     if( ! -e $interval_file ){ 
         print $OUTPUT "interval file $interval_file does not exist\n";
-        return ($key, "Nothing to visualize"); 
+        return "Nothing to visualize"; 
     }
 
     #my $bam_histogram_filename = "$targetdir/$query_name\_$chromnum.hist";
@@ -165,7 +147,7 @@ sub createTrack {
 
     my %style = ("class" => $cssClass,
                  "subfeature_classes" => $subfeatureClasses,
-                 "key" => $key);
+                 "key" => $trackkey);
 
     $style{clientConfig} = JSON::from_json($clientConfig)
         if (defined($clientConfig));
@@ -261,19 +243,7 @@ sub createTrack {
 
 
     if( $feature_count <= 0 ){
-        return ($key, "There are 0 features");
-    }
-    #it could be that there are no gaps in reads,
-    #meaning updateInterestingAreas never adds anything to IAs
-    #if thats the case, add the one giant interval herei
-    my $perlIsGay = $jsonGen->{interestingAreas};
-    my $countIA =  scalar @{ $perlIsGay };
-    if( $countIA == 0 ){
-        print $OUTPUT "no IAs, adding $cur_left, $cur_right\n";
-        $jsonGen->addInterestingArea( $cur_left,$cur_right );
-    }
-    else {
-        print $OUTPUT "what\n";
+        return "There are 0 features";
     }
 
     $sorter->flush();
@@ -292,7 +262,7 @@ sub createTrack {
         $message = "$host_chrom - $interval_file_justname: Track generated successfully"
     }
     
-    return ($key, $message);
+    return $message;
 }
 
 sub convertStrand {
