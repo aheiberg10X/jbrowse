@@ -12,6 +12,10 @@ cgitb.enable()
 from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR, DEBUG_DIR, TRACK_TEMPLATE, UNBOUND_CHROM, PROJECT_PREFIX
 
 perms = {"earthworm jim" : {"NA18507" : False}}
+
+#TODO
+#add project script needs to line to file
+#then need code here to construct perms dictionary
 dassembly = {"main":"hg18", \
              "hg19":"hg19", \
              "sangwoo":"hg18", \
