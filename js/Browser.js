@@ -196,11 +196,15 @@ var Browser = function(params) {
 
             //set up track list
             //var trackListDiv = brwsr.createTrackList(brwsr.container, params);
-            brwsr.createProjectExplorer( brwsr, containerWidget, params );
+            brwsr.createProjectExplorer( containerWidget, params );
+            brwsr.createQueryDialog();
+            brwsr.createUploadTableDialog();
+            brwsr.createNewProjectDialog();
 
             containerWidget.startup();
 
             brwsr.isInitialized = true;
+            brwsr.running_query = false;
 
             //set initial location
             var oldLocMap = dojo.fromJson(dojo.cookie(brwsr.container.id + "-location")) || {};
@@ -263,6 +267,29 @@ Browser.prototype.setRefseq = function(assembly){
     brwsr.assembly = assembly;
 };
 
+
+//0 : OK
+//1 : malformed name
+//2 : duplicate name
+//3 : cannot find histogram file
+Browser.prototype.hasNameConflict = function(trackkey) {
+    if( trackkey == '' ){ 
+        alert("Filename is empty");
+        return 1; 
+    }
+    else{
+        for( tk in this.tracks ){
+            if( trackkey == this.tracks[tk] ){
+                alert("There is already a track with that name");
+                return 2;
+             }
+        }
+    }
+    return 0;
+    //compared to ?? (other tracks)
+};
+
+
 Browser.prototype.closeSetRefseq = function(containerID){
     var brwsr = this;
     return function(assembly){
@@ -289,11 +316,111 @@ Browser.prototype.closeSetRefseq = function(containerID){
     }
 };
 
-Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
-    
-////////////////////////////////////////////////////////////////////////
-   //                     Query Stuff
-////////////////////////////////////////////////////////////////////////
+Browser.prototype.runQuery = function(){
+    var tree = this.tree;
+
+    if( tree.clickedItem.prefix != brwsr.globals["PROJECT_PREFIX"] ){
+        alert("Cannot run query from anything other than a project.");
+        return;
+    }
+    var project = tree.clickedItem.name;
+    var query_name =  dojo.byId("query_name").value;
+
+
+    var trackkey = project + "/" + query_name;
+    if( dojo.byId("query_box").value == "" ){
+        alert("You must enter a query");
+    }
+    else if( query_name == "" ){
+        alert("You must enter a name for ths query");
+    }
+    else if( brwsr.hasNameConflict( trackkey ) ){
+        alert( "There is already a query with that name" );
+    }
+    else {
+        this.query_dialog.hide();
+        chroms = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,'X','Y']; 
+        var messages = [];
+        if( brwsr.running_query ){
+            alert("Already a query running. Should not have been possible to get a query dialog");
+            return;
+        }
+        setRunningQuery( true );
+        alert("Your query is running. The progress bar indicates the completed chromosomes (which can be visualized).  Do not refresh.");
+
+        dojo.attr(progress_bar.domNode, 'hidden', false);
+        dojo.style(dijit.byId('stop_button').domNode, {
+              visibility: 'visible',
+              display: 'block'
+        });
+        progress_bar.update({'indeterminate': true, 
+                             'label': 'Working...'});
+        
+        var query_name = dojo.byId("query_name").value;
+        var query_box = dojo.byId("query_box").value;
+        var args = {"query_box" : query_box,
+                    "query_name" : query_name,
+                    "query_project" : project,
+                    "assembly" : tree.selectedItem.assembly};
+        var url = "bin/run_query.py?" + dojo.objectToQuery(args);
+        //TODO: security security SECURITY!! could manually pass in supposedly inaccessible donor name
+        var xhrArgs = {
+            url: url,
+            //TODO: take out this attribute?, there is no elem with id "query_form"
+            form: dojo.byId("query_form"),
+            handleAs: "json",
+            load: function(data,ioargs){
+                //query has finished
+                if( data["status"] == "OK" ){
+                    var progress = progress_bar.get("progress");
+                    progress_bar.update({'indeterminate': true, 'label': "All done"});
+                    for( i in data["trackData"] ){
+                        //if( dojo.indexOf( brwsr.tracks, trackkey ) == -1 ){
+                        brwsr.trackData.push( data["trackData"][i] );
+                        brwsr.tracks.push( data["trackData"][i].key );
+                    }
+
+                    alert( data["message"] );
+                    dojo.attr(progress_bar.domNode, 'hidden', true);
+                    dojo.style(dijit.byId('stop_button').domNode, {
+                          visibility: 'hidden',
+                          display: 'none'
+                    });
+                    setRunningQuery( false );
+                    refreshTree();
+                }
+                else {
+                    alert(data["message"]);
+                    dojo.attr(progress_bar.domNode, 'hidden', true);
+                    dojo.style(dijit.byId('stop_button').domNode, {
+                          visibility: 'hidden',
+                          display: 'none'
+                    });
+                    //dojo.attr(stop_button.domNode, 'hidden', true);
+                    setRunningQuery( false );
+                    //progress_bar.update({'progress': 0});
+                }
+            },
+            error: function(error) {
+                alert(error);
+                dojo.attr(progress_bar.domNode, 'hidden', true);
+                    dojo.style(dijit.byId('stop_button').domNode, {
+                          visibility: 'hidden',
+                          display: 'none'
+                    });
+                dojo.attr(stop_button.domNode, 'hidden', true);
+                setRunningQuery( false );
+                //progress_bar.update({'progress': 0});
+            }
+        };
+        //Call the asynchronous xhrPost
+        var deferred = dojo.xhrPost(xhrArgs);
+
+        //queryChromosomes( project, donor, chroms, trackkey, 1, messages );
+    }
+};
+
+Browser.prototype.createQueryDialog = function(){
     
     //the div to make bordercontainer out of
     var query_dialog_div = document.createElement("div");
@@ -305,27 +432,19 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     //query_dialog_div.appendChild( query_right_div );
 
     //holds the uploaded tables stuff, goes on the bottom right
-    var query_interval_table_p = document.createElement("div");
+    //var query_interval_table_p = document.createElement("div");
     //query_right_div.appendChild( query_interval_table_p );
 
     //holds the list of donor genomes
-    var query_donor_list_div = document.createElement("div");
+    //var query_donor_list_div = document.createElement("div");
     //query_right_div.appendChild( query_donor_list_div );
 
-    //query name, goes on the top
-    var query_name_div = document.createElement("div");
-    query_name_div.id = "query_name_div";
-    
     var query_name_p = document.createElement("p");
-    //query_name_div.appendChild( query_name_p );
+    query_name_p.innerHTML = "Name <br />";
     query_dialog_div.appendChild( query_name_p );
 
     var query_button_p = document.createElement("p");
     query_dialog_div.appendChild( query_button_p );
-
-    query_name_p.innerHTML = "Name <br />";
-    //query_name_div.appendChild( query_name_p );
-
 
     var query_name = new dijit.form.ValidationTextBox(
             {id: "query_name",
@@ -393,223 +512,44 @@ Browser.prototype.createProjectExplorer = function(brwsr, parent, params) {
     
     var query_button_cp = new dijit.layout.ContentPane(
             {id: "query_button_cp",
-style: "height: 10%; background-color: #ffffff; border: none;",
+             style: "height: 10%; background-color: #ffffff; border: none;",
              region: "bottom", 
              layoutPriority: "1"}, query_button_p);
-
-    
-    //var query_box_cp = new dijit.layout.ContentPane(
-    //{id: "query_box_cp",
-    //style: "background-color: #efefef",
-    //region: "center", 
-    //layoutPriority: "1"}, query_box_p);
-
-    
-   
-
-    brwsr.running_query = false;
-    //deprecated
-    /*var queryChromosomes = function( project, donor, chroms, trackkey, progress_chrom, messages ){*/
-    /*var query_name = dojo.byId("query_name").value;*/
-    /*var query_box = dojo.byId("query_box").value;*/
-    /*var args = {"query_donor" : donor, */
-    /*"query_chrom" : chroms[0],*/
-    /*"query_box" : query_box,*/
-    /*"query_name" : query_name,*/
-    /*"query_project" : project,*/
-    /*"assembly" : brwsr.assembly};*/
-    /*var url = "bin/run_query.py?" + dojo.objectToQuery(args);*/
-    /*//TODO: security security SECURITY!! could manually pass in supposedly inaccessible donor name*/
-    /*var xhrArgs = {*/
-    /*url: url,*/
-    /*form: dojo.byId("query_form"),*/
-    /*handleAs: "json",*/
-    /*load: function(data,ioargs){*/
-    /*if( data["status"] == "OK" ){*/
-    /*var progress = progress_bar.get("progress");*/
-    /*progress_bar.update({'indeterminate': true, 'label': "Chroms [1.."+progress_chrom+"] complete"});*/
-    /*messages.push(data["message"]);*/
-    /*var entry = data["trackData"];*/
-    /*if( entry['key'] != trackkey ){*/
-    /*alert( 'internal: trackkeys do not line up' );*/
-    /*}*/
-
-    /*if( dojo.indexOf( brwsr.tracks, trackkey ) == -1 ){*/
-    /*brwsr.trackData.push( entry );*/
-    /*brwsr.tracks.push( trackkey );*/
-    /*refreshTree();*/
-    /*}*/
-
-    /*if( chroms.length > 1 && brwsr.running_query ){*/
-    /*var n = chroms.slice(1);*/
-    /*queryChromosomes( project, donor, n, trackkey, progress_chrom+1, messages);*/
-    /*}*/
-    /*else{*/
-    /*alert( messages.join('\n') );*/
-    /*dojo.attr(progress_bar.domNode, 'hidden', true);*/
-    /*dojo.style(dijit.byId('stop_button').domNode, {*/
-    /*visibility: 'hidden',*/
-    /*display: 'none'*/
-    /*});*/
-    /*setRunningQuery( false );*/
-    /*}*/
-    /*}*/
-    /*else {*/
-    /*alert(data["message"]);*/
-    /*dojo.attr(progress_bar.domNode, 'hidden', true);*/
-    /*dojo.style(dijit.byId('stop_button').domNode, {*/
-    /*visibility: 'hidden',*/
-    /*display: 'none'*/
-    /*});*/
-    /*//dojo.attr(stop_button.domNode, 'hidden', true);*/
-    /*setRunningQuery( false );*/
-    /*//progress_bar.update({'progress': 0});*/
-    /*}*/
-    /*},*/
-    /*error: function(error) {*/
-    /*alert(error);*/
-    /*dojo.attr(progress_bar.domNode, 'hidden', true);*/
-    /*dojo.style(dijit.byId('stop_button').domNode, {*/
-    /*visibility: 'hidden',*/
-    /*display: 'none'*/
-    /*});*/
-    /*dojo.attr(stop_button.domNode, 'hidden', true);*/
-    /*setRunningQuery( false );*/
-    /*//progress_bar.update({'progress': 0});*/
-    /*}*/
-    /*};*/
-    /*//Call the asynchronous xhrPost*/
-    /*var deferred = dojo.xhrPost(xhrArgs);*/
-    /*}*/
-
-    var runQuery = function(){
-        if( tree.clickedItem.prefix != brwsr.globals["PROJECT_PREFIX"] ){
-            alert("Cannot run query from anything other than a project.");
-            return;
-        }
-        var project = tree.clickedItem.name;
-        var query_name =  dojo.byId("query_name").value;
-
-
-        var trackkey = project + "/" + query_name;
-        if( dojo.byId("query_box").value == "" ){
-            alert("You must enter a query");
-        }
-        else if( query_name == "" ){
-            alert("You must enter a name for ths query");
-        }
-        else if( hasNameConflict( trackkey ) ){
-            alert( "There is already a query with that name" );
-        }
-        else {
-            query_dialog.hide();
-            chroms = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,'X','Y']; 
-            var messages = [];
-            if( brwsr.running_query ){
-                alert("Already a query running. Should not have been possible to get a query dialog");
-                return;
-            }
-            setRunningQuery( true );
-            alert("Your query is running. The progress bar indicates the completed chromosomes (which can be visualized).  Do not refresh.");
-
-            dojo.attr(progress_bar.domNode, 'hidden', false);
-            dojo.style(dijit.byId('stop_button').domNode, {
-                  visibility: 'visible',
-                  display: 'block'
-            });
-            progress_bar.update({'indeterminate': true, 
-                                 'label': 'Working...'});
-            
-            var query_name = dojo.byId("query_name").value;
-            var query_box = dojo.byId("query_box").value;
-            var args = {"query_box" : query_box,
-                        "query_name" : query_name,
-                        "query_project" : project,
-                        "assembly" : tree.selectedItem.assembly};
-            var url = "bin/run_query.py?" + dojo.objectToQuery(args);
-            //TODO: security security SECURITY!! could manually pass in supposedly inaccessible donor name
-            var xhrArgs = {
-                url: url,
-                form: dojo.byId("query_form"),
-                handleAs: "json",
-                load: function(data,ioargs){
-                    //query has finished
-                    if( data["status"] == "OK" ){
-                        var progress = progress_bar.get("progress");
-                        progress_bar.update({'indeterminate': true, 'label': "All done"});
-                        for( i in data["trackData"] ){
-                            //if( dojo.indexOf( brwsr.tracks, trackkey ) == -1 ){
-                            brwsr.trackData.push( data["trackData"][i] );
-                            brwsr.tracks.push( data["trackData"][i].key );
-                        }
-
-                        alert( data["message"] );
-                        dojo.attr(progress_bar.domNode, 'hidden', true);
-                        dojo.style(dijit.byId('stop_button').domNode, {
-                              visibility: 'hidden',
-                              display: 'none'
-                        });
-                        setRunningQuery( false );
-                        refreshTree();
-                    }
-                    else {
-                        alert(data["message"]);
-                        dojo.attr(progress_bar.domNode, 'hidden', true);
-                        dojo.style(dijit.byId('stop_button').domNode, {
-                              visibility: 'hidden',
-                              display: 'none'
-                        });
-                        //dojo.attr(stop_button.domNode, 'hidden', true);
-                        setRunningQuery( false );
-                        //progress_bar.update({'progress': 0});
-                    }
-                },
-                error: function(error) {
-                    alert(error);
-                    dojo.attr(progress_bar.domNode, 'hidden', true);
-                        dojo.style(dijit.byId('stop_button').domNode, {
-                              visibility: 'hidden',
-                              display: 'none'
-                        });
-                    dojo.attr(stop_button.domNode, 'hidden', true);
-                    setRunningQuery( false );
-                    //progress_bar.update({'progress': 0});
-                }
-            };
-            //Call the asynchronous xhrPost
-            var deferred = dojo.xhrPost(xhrArgs);
-
-            //queryChromosomes( project, donor, chroms, trackkey, 1, messages );
-        }
-    };
-
 
     var query_button = new dijit.form.Button(
             {id: "query_button", 
              label: "Run Query",
              style: "align-text: left; margin-top: 30px;",
-             onClick: runQuery
+             onClick: this.runQuery
             }).placeAt( query_button_p) ;
 
-    //var query_button_cp = new dijit.layout.ContentPane(
-    //{id: "query_button_cp",
-    //style: "background-color: #efefef",
-    //region: "bottom", 
-    //layoutPriority: "1"}, query_button_div);
-
- /////////////// upload table stuff //////////////////////////////////
+    this.query_dialog = new dijit.Dialog({
+                    id : "query_dialog",
+                    title: "New Query",
+                   // style: "width: 70%;",
+                    content: query_dialog_div
+                });
     
+};
+
+Browser.prototype.createUploadTableDialog = function(){
+
+    var brwsr = this;
+
+    //this is the div for the Dojo DialogBox
     var table_dialog_div = document.createElement("div");
     table_dialog_div.id = "table_dialog_div";
 
-    var upload_div = document.createElement("div");
-    upload_div.id = "upload_div";
-    table_dialog_div.appendChild( upload_div );
+    //this one is for the Form to wrap 
+    //cannot be one in the same for some reason
+    var table_upload_div = document.createElement("div");
+    table_upload_div.id = "table_upload_div";
+    table_dialog_div.appendChild( table_upload_div );
 
     var interval_table_p = document.createElement("p");
     interval_table_p.id = "interval_table_p";
     interval_table_p.style.cssText = "border-top: solid 3px #cdcdcd; padding-top: 10px";
-    upload_div.appendChild( interval_table_p );
+    table_upload_div.appendChild( interval_table_p );
     
 
     var interval_table = document.createElement("input");
@@ -617,16 +557,16 @@ style: "height: 10%; background-color: #ffffff; border: none;",
     interval_table.id = "interval_table";
     interval_table.name = "interval_table";
     interval_table.style.cssText = "border-top: 10px;";
-    upload_div.appendChild( interval_table );
+    table_upload_div.appendChild( interval_table );
 
     var upload_button = new dijit.form.Button(
             {id: "upload_button", 
              label: "Upload",
              style: "align-text: right;",
              onClick: function(){ 
-                 args = {"project_name" : tree.selectedItem.name};
-                 url = "bin/upload_interval_table.py?" 
-                       + dojo.objectToQuery(args);
+                 var args = {"project_name" : brwsr.tree.selectedItem.name};
+                 var url = "bin/upload_interval_table.py?" 
+                           + dojo.objectToQuery(args);
                  dojo.io.iframe.send({
                      url: url,
                      method: "post",
@@ -637,7 +577,7 @@ style: "height: 10%; background-color: #ffffff; border: none;",
                              alert("Table: '" 
                                    + data['message'] 
                                    + "' uploaded" );
-                             table_dialog.hide();
+                             brwsr.table_dialog.hide();
                          }
                          else{
                              alert( data['message'] );
@@ -648,16 +588,24 @@ style: "height: 10%; background-color: #ffffff; border: none;",
                      }        
                 })
              }
-         }).placeAt( upload_div );
+         }).placeAt( table_upload_div );
 
     var upload_form = new dijit.form.Form(
             {id: "upload_form",
              method: "post",
              encType : "multipart/form-data"},
-        upload_div );
-   
-    /////////////////// New project form /////////////////////////////
-    //
+        table_upload_div );
+ 
+    this.table_dialog = new dijit.Dialog({
+                    id: "table_dialog",
+                    title: "Upload Interval Table",
+                    style: "width: 500px;",
+                    content: table_dialog_div
+    });
+};
+
+Browser.prototype.createNewProjectDialog = function() {
+
     var new_project_dialog_div = document.createElement("div");
     new_project_dialog_div.id = "new_project_dialog_div";
     
@@ -675,6 +623,7 @@ style: "height: 10%; background-color: #ffffff; border: none;",
                      ).placeAt( project_name_p );
 
     //TODO: prompt user to specific which assembly it references
+    //TODO: is the py script doing all it needs to?
     var new_project_button = new dijit.form.Button(
             {id: "new_project_button", 
              label: "Create Project",
@@ -684,7 +633,7 @@ style: "height: 10%; background-color: #ffffff; border: none;",
                 var url = "bin/make_new_project.py?" + dojo.objectToQuery(args);
                 var xhrArgs = {
                     url: url,
-        //form: dojo.byId("new_project_form"),
+                    //form: dojo.byId("new_project_form"),
                     handleAs: "json",
                     load: function(data,ioargs) {
                         if( data["status"] == "ok" ){
@@ -705,16 +654,24 @@ style: "height: 10%; background-color: #ffffff; border: none;",
 
        }).placeAt( new_project_dialog_div );
 
+    this.project_dialog = new dijit.Dialog({
+                    id: "project_dialog",
+                    title: "Create New Project",
+                    //style: "width: 500px;",
+                    content: new_project_dialog_div
+                });
+};
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    //                        Explorer Stuff
-    ///////////////////////////////////////////////////////////////////////////////////////////////
 
+Browser.prototype.createProjectExplorer = function( parent, params) {
+    
+    var brwsr = this;
+  
     var explorer_bc = new dijit.layout.BorderContainer(
            {id:"explorer_bc",
             title: "Explorer",
             style: "width: 20%; background-color: #efefef; border-style: none solid none none; border-color: #929292",
-    //splitter: "true",
+            //splitter: "true",
             region: "left"
 
            }).placeAt(parent);
@@ -864,10 +821,6 @@ style: "height: 10%; background-color: #ffffff; border: none;",
 
 
     pMenu.addChild(
-            //TODO: don't want the project prefix in front of the imported
-            //a la 'main_genes'.  Maybe change this in run_query, instead 
-            //of printing the file we give the compiler, print the query 
-            //we got from the user
         new dijit.MenuItem({
             label: "View Text",
             prefix: "query_",
@@ -915,27 +868,9 @@ style: "height: 10%; background-color: #ffffff; border: none;",
         }}));
 
     
-    var table_dialog = new dijit.Dialog({
-                    id: "table_dialog",
-                    title: "Upload Interval Table",
-                    style: "width: 500px;",
-                    content: table_dialog_div
-                });
-     
-    var project_dialog = new dijit.Dialog({
-                    id: "project_dialog",
-                    title: "Create New Project",
-        //style: "width: 500px;",
-                    content: new_project_dialog_div
-                });
+         
  
-    var query_dialog = new dijit.Dialog({
-                    id : "query_dialog",
-                    title: "New Query (under construction)",
-                   // style: "width: 70%;",
-                    content: query_dialog_div
-                });
-
+    
     var pleasewait_menuitem = new dijit.MenuItem({
         label: "(Please wait for the current query to finish)",
         hidden: true,
@@ -948,9 +883,9 @@ style: "height: 10%; background-color: #ffffff; border: none;",
             prefix: "project_",
             hidden: false,
             onClick: function(e) {
-                fillWithIntervalTables( query_interval_table_p );
-                fillWithDonors( query_donor_list_div );
-                query_dialog.show();   
+                //fillWithIntervalTables( query_interval_table_p );
+                //fillWithDonors( query_donor_list_div );
+                brwsr.query_dialog.show();   
         }});
     pMenu.addChild( query_menuitem );
 
@@ -1092,7 +1027,7 @@ style: "height: 10%; background-color: #ffffff; border: none;",
         hidden: false,
         onClick: function(e) {
             //fillWithIntervalTables( interval_table_p );    
-            table_dialog.show();   
+            brwsr.table_dialog.show();   
         }
     });
     pMenu.addChild( table_menuitem );
@@ -1112,8 +1047,8 @@ style: "height: 10%; background-color: #ffffff; border: none;",
         prefix: "root_",
         hidden: false,
         onClick: function(e) {
-            project_dialog.show();
-                    }
+            brwsr.project_dialog.show();
+        }
     });
     pMenu.addChild( new_project_menuitem );
 
@@ -1173,7 +1108,7 @@ style: "height: 10%; background-color: #ffffff; border: none;",
         return tree;
     };
 
-    var tree = makeTree();
+    brwsr.tree = makeTree();
  
     //selective presentation of menu children depending on the tree.clickedItem 
     dojo.connect(pMenu, "_openMyself", this, function(e){
@@ -1352,38 +1287,21 @@ style: "height: 10%; background-color: #ffffff; border: none;",
         };
     };
 
-    var trackkeyFromFilename = function( path ){
-        //handily it will always appear as C:\fakepath\<filename>
-        var splt = path.split('\\');
-        var filename = splt[splt.length-1].split('.');
-        var name = filename.slice(0, filename.length-1).join('.');
-        return name;
-    }
+    //deprecated
+    //var trackkeyFromFilename = function( path ){
+    ////handily it will always appear as C:\fakepath\<filename>
+    //var splt = path.split('\\');
+    //var filename = splt[splt.length-1].split('.');
+    //var name = filename.slice(0, filename.length-1).join('.');
+    //return name;
+    //}
 
-    //0 : OK
-    //1 : malformed name
-    //2 : duplicate name
-    //3 : cannot find histogram file
-    var hasNameConflict = function(trackkey) {
-        if( trackkey == '' ){ 
-            alert("Filename is empty");
-            return 1; 
-        }
-        else{
-            for( tk in brwsr.tracks ){
-                if( trackkey == brwsr.tracks[tk] ){
-                    alert("There is already a track with that name");
-                    return 2;
-                 }
-            }
-        }
-        return 0;
-        //compared to ?? (other tracks)
-    }
-
+    
     /////////////////////////////////////////////////////////////////////////////////////////////////////
     //            GenomeView creator setup
     /////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //TODO: this should probably go somewhere else
    
     var initCallback = function( trackKey, tracksInterestingAreas ) {
         brwsr.interestingAreas.addTrack( trackKey, tracksInterestingAreas );
