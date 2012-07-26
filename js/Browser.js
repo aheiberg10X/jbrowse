@@ -28,6 +28,7 @@ var Browser = function(params) {
 
     //my stuff
     dojo.require("dojo.cache");
+    dojo.require("dojo.store.Memory");
     dojo.require("dijit.form.Form");
     dojo.require("dijit.form.Button");
     dojo.require("dijit.form.ToggleButton");
@@ -35,8 +36,11 @@ var Browser = function(params) {
     dojo.require("dijit.form.Textarea");
     dojo.require("dojox.form.FileInput");
     dojo.require("dijit.form.CheckBox");
-    dojo.require("dijit.form.ValidationTextBox");
     dojo.require("dijit.form.MultiSelect");
+    dojo.require("dijit.form.Select");
+    //dojo.require("dijit.form.DropDownMenu");
+    //dojo.require("dijit.form.DropDownButton");
+    dojo.require("dijit.form.ValidationTextBox");
     dojo.require("dojo.io.iframe");
     dojo.require("dojox.layout.ExpandoPane");
     dojo.require("dijit.layout.AccordionContainer");
@@ -45,6 +49,7 @@ var Browser = function(params) {
     dojo.require("dijit.tree.dndSource");
     dojo.require("dijit.tree.TreeStoreModel");
     dojo.require("dojox.data.FileStore");
+    dojo.require("dojox.data.KeyValueStore");
     dojo.require("dijit.Menu");
     dojo.require("dijit.Dialog");
     dojo.require("dijit.ProgressBar");
@@ -614,6 +619,11 @@ Browser.prototype.createNewProjectDialog = function() {
     project_name_p.innerHTML = "Project Name: <br />";
     new_project_dialog_div.appendChild( project_name_p );
 
+    var project_assembly_p = document.createElement("p");
+    project_assembly_p.id = "project_assembly_p";
+    project_assembly_p.innerHTML = "Assembly: <br />";
+    new_project_dialog_div.appendChild( project_assembly_p );
+
     var project_name = new dijit.form.ValidationTextBox(
                         {id: "project_name",
                          label: "Project Name",
@@ -621,6 +631,34 @@ Browser.prototype.createNewProjectDialog = function() {
                          regExp: '\\w+',
                          invalidMessage: 'Only alphanumeric characters' }
                      ).placeAt( project_name_p );
+    var data = [];
+    for (var assembly in this.refSeqs) {
+        var item = {};
+        item[assembly] = assembly;
+        data.push(item);
+    }
+
+    var data2 = [{"hg18":"hg18"}, {"hg19":"hg19"}];
+    var store = new dojox.data.KeyValueStore({
+        dataVar : data
+    });
+    
+    var assembly_menu = new dijit.form.Select({
+        name: "assembly_menu",
+        id: "assembly_menu",
+        store: store
+    });
+
+    project_assembly_p.appendChild(assembly_menu.domNode);
+    assembly_menu.startup();
+    
+    
+/*    var button = new DropDownButton({
+        label: "Assembly...",
+        name: "programmatic2",
+        dropDown: menu,
+        id: "progButton"
+    });*/
 
     //TODO: prompt user to specific which assembly it references
     //TODO: is the py script doing all it needs to?
