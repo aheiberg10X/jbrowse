@@ -56,7 +56,10 @@ if fileitem.filename :
                      #project_name )
         #if not os.path.exists( path ) :
             #os.mkdir( path )
-        newfilename = "%s/src_tables/%s.txt" % (os.environ["BIOSQL_HOME"],name)
+        src_table_dir = "%s/src_tables/%s" % (os.environ["BIOSQL_HOME"], project_name)
+        if not os.path.exists( src_table_dir ) :
+            os.mkdir( src_table_dir )
+        newfilename = "%s/%s.txt" % (src_table_dir, name)
 
         if not os.path.exists( newfilename ) :
             open(newfilename, 'w').write( rest_lines )

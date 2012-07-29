@@ -38,6 +38,7 @@ var Browser = function(params) {
     dojo.require("dijit.form.CheckBox");
     dojo.require("dijit.form.MultiSelect");
     dojo.require("dijit.form.Select");
+    dojo.require("dojox.form.CheckedMultiSelect");
     //dojo.require("dijit.form.DropDownMenu");
     //dojo.require("dijit.form.DropDownButton");
     dojo.require("dijit.form.ValidationTextBox");
@@ -320,9 +321,14 @@ Browser.prototype.closeSetRefseq = function(containerID){
         brwsr.assembly = assembly;
     }
 };
+Browser.prototype.setRunningQuery = function( tf ){
+    this.running_query = tf;
+    var stop_button = dijit.byId("stop_button");
+    stop_button.set( "disabled", !tf )
+};
 
-Browser.prototype.runQuery = function(){
-    var tree = this.tree;
+Browser.prototype.runQuery = function(brwsr){
+    var tree = brwsr.tree;
 
     if( tree.clickedItem.prefix != brwsr.globals["PROJECT_PREFIX"] ){
         alert("Cannot run query from anything other than a project.");
@@ -350,9 +356,10 @@ Browser.prototype.runQuery = function(){
             alert("Already a query running. Should not have been possible to get a query dialog");
             return;
         }
-        setRunningQuery( true );
+        brwsr.setRunningQuery( true );
         alert("Your query is running. The progress bar indicates the completed chromosomes (which can be visualized).  Do not refresh.");
 
+        var progress_bar = dijit.byId("progress_bar");
         dojo.attr(progress_bar.domNode, 'hidden', false);
         dojo.style(dijit.byId('stop_button').domNode, {
               visibility: 'visible',
@@ -391,8 +398,9 @@ Browser.prototype.runQuery = function(){
                           visibility: 'hidden',
                           display: 'none'
                     });
-                    setRunningQuery( false );
-                    refreshTree();
+                    brwsr.setRunningQuery( false );
+                    brwsr.tree.refresh();
+                    //refreshTree();
                 }
                 else {
                     alert(data["message"]);
@@ -402,7 +410,7 @@ Browser.prototype.runQuery = function(){
                           display: 'none'
                     });
                     //dojo.attr(stop_button.domNode, 'hidden', true);
-                    setRunningQuery( false );
+                    brwsr.setRunningQuery( false );
                     //progress_bar.update({'progress': 0});
                 }
             },
@@ -414,7 +422,7 @@ Browser.prototype.runQuery = function(){
                           display: 'none'
                     });
                 dojo.attr(stop_button.domNode, 'hidden', true);
-                setRunningQuery( false );
+                brwsr.setRunningQuery( false );
                 //progress_bar.update({'progress': 0});
             }
         };
@@ -426,7 +434,8 @@ Browser.prototype.runQuery = function(){
 };
 
 Browser.prototype.createQueryDialog = function(){
-    
+    var brwsr = this; 
+
     //the div to make bordercontainer out of
     var query_dialog_div = document.createElement("div");
     query_dialog_div.id = "query_dialog_div";
@@ -525,7 +534,7 @@ Browser.prototype.createQueryDialog = function(){
             {id: "query_button", 
              label: "Run Query",
              style: "align-text: left; margin-top: 30px;",
-             onClick: this.runQuery
+             onClick: function(){ brwsr.runQuery( brwsr );}
             }).placeAt( query_button_p) ;
 
     this.query_dialog = new dijit.Dialog({
@@ -544,17 +553,121 @@ Browser.prototype.createUploadTableDialog = function(){
     //this is the div for the Dojo DialogBox
     var table_dialog_div = document.createElement("div");
     table_dialog_div.id = "table_dialog_div";
+    //table_dialog_div.style.cssText = "width: 900px;";
 
-    //this one is for the Form to wrap 
-    //cannot be one in the same for some reason
-    var table_upload_div = document.createElement("div");
-    table_upload_div.id = "table_upload_div";
-    table_dialog_div.appendChild( table_upload_div );
+    //div to house the BorderContainer, which will hold l/r ContentPane
+    var table_dialog_bc_div = document.createElement("div");
+    table_dialog_bc_div.id = "table_dialog_bc_div";
+    table_dialog_div.appendChild( table_dialog_bc_div);
+    //table_dialog_bc_div.style.cssText = "background-color: #abcdef;";
+
+    var table_dialog_bc = new dijit.layout.BorderContainer(
+           {id:"table_dialog_bc",
+            title: "ABCDEFG",
+            style: "height: 600px; width: 600px; border-style: none; border-color: #929292",
+            splitter: "true",
+            region: "center"
+           }, table_dialog_bc_div );
+
+    var table_dialog_existing_cp = dijit.layout.ContentPane(
+                {id : "table_dialog_existing_cp",
+                 region : "center",
+                 style : "width: 50%; height: 95%; background-color: #efefef; border-style: solid; border-color: #929292;"} //overflow: hidden; background-color: #efefef; height: 70%;"}
+            ).placeAt( table_dialog_bc_div );
+
+    var table_dialog_existing_title = document.createElement("p");
+    table_dialog_existing_title.innerHTML = "<b>Existing Tables</b>";
+    table_dialog_existing_cp.domNode.appendChild( table_dialog_existing_title );
+
+    var table_dialog_existing_list_div = document.createElement("p");
+    this.really = table_dialog_existing_list_div;
+    table_dialog_existing_list_div.id = "table_dialog_existing_list_div";
+    table_dialog_existing_cp.domNode.appendChild( table_dialog_existing_list_div); 
+    
+    var table_dialog_existing_list = dijit.form.MultiSelect( 
+    {id: "table_dialog_existing_list"}, table_dialog_existing_list_div ); 
+
+
+    var table_dialog_inspect_schema_button = new dijit.form.Button(
+            {id: "table_dialog_inspect_schema_button", 
+             label: "View Schema",
+             style: "align-text: right;",
+             onClick: function(){ 
+                 alert("Not functioning yet.");
+             }
+         }).placeAt( table_dialog_existing_cp.domNode );
+
+    var table_dialog_rename_button = new dijit.form.Button(
+            {id: "table_dialog_rename_button", 
+             label: "Rename",
+             style: "align-text: right;",
+             onClick: function(){ 
+                 alert("Not functioning yet.");
+             }
+         }).placeAt( table_dialog_existing_cp.domNode );
+
+    var table_dialog_delete_existing_button = new dijit.form.Button(
+            {id: "table_dialog_delete_existing_button", 
+             label: "Delete",
+             style: "align-text: right;",
+             onClick: function(){ 
+                 var selecteds = table_dialog_existing_list.getSelected();
+                 var selected_names = [];
+                 selecteds.forEach(
+                    function( sel, idx, arr ){
+                        selected_names.push(sel.innerHTML);
+                    }
+                 );
+                 selected_names = selected_names.join();
+                 var args = {"table_names"  : selected_names,
+                             "project_name" : brwsr.tree.selectedItem.name};
+                 var url = "bin/delete_interval_table.py?" 
+                           + dojo.objectToQuery(args);
+              
+                 dojo.xhrGet({
+                        url: url,
+                        handleAs: "json",
+                        load: function(data,args){
+                            if( data["status"] == "OK" ){
+                            }
+                            else{
+                                alert( data["message"] );
+                            }
+                            brwsr.refreshIntervalTables();
+                        },
+                        error: function(data ,args){
+                            alert( data );
+                            alert( args );
+                        }
+                 });
+             }
+
+         }).placeAt( table_dialog_existing_cp.domNode );
+
+
+
+    /////////////////////////////////////////////////////////
+    //Uploading New Table 
+    /////////////////////////////////////////////////////////
+    var table_dialog_upload_cp = dijit.layout.ContentPane(
+                {id : "table_dialog_upload_cp",
+                 region : "right",
+                 style : "width: 50%; background-color: #efefef; border-style: solid; border-color: #929292;"} //overflow: hidden; background-color: #efefef; height: 70%;"}
+            ).placeAt( table_dialog_bc_div );
+
+    table_dialog_upload_title = document.createElement("p");
+    table_dialog_upload_title.innerHTML = "<b>Upload New Interval Table</b>";
+    table_dialog_upload_cp.domNode.appendChild( table_dialog_upload_title );
+
+    var table_dialog_upload_form_div = document.createElement("div");
+    table_dialog_upload_form_div.id = "table_dialog_upload_form_div";
+    //table_dialog_upload_div.appendChild( table_dialog_upload_form_div );
+    table_dialog_upload_cp.domNode.appendChild( table_dialog_upload_form_div );
 
     var interval_table_p = document.createElement("p");
     interval_table_p.id = "interval_table_p";
-    interval_table_p.style.cssText = "border-top: solid 3px #cdcdcd; padding-top: 10px";
-    table_upload_div.appendChild( interval_table_p );
+    //interval_table_p.style.cssText = "border-top: solid 3px #cdcdcd; padding-top: 10px";
+    table_dialog_upload_form_div.appendChild( interval_table_p );
     
 
     var interval_table = document.createElement("input");
@@ -562,7 +675,7 @@ Browser.prototype.createUploadTableDialog = function(){
     interval_table.id = "interval_table";
     interval_table.name = "interval_table";
     interval_table.style.cssText = "border-top: 10px;";
-    table_upload_div.appendChild( interval_table );
+    table_dialog_upload_form_div.appendChild( interval_table );
 
     var upload_button = new dijit.form.Button(
             {id: "upload_button", 
@@ -593,19 +706,75 @@ Browser.prototype.createUploadTableDialog = function(){
                      }        
                 })
              }
-         }).placeAt( table_upload_div );
+         }).placeAt( table_dialog_upload_form_div );
 
     var upload_form = new dijit.form.Form(
             {id: "upload_form",
              method: "post",
              encType : "multipart/form-data"},
-        table_upload_div );
+    table_dialog_upload_form_div );
+
+    /////////////////////////////////////////////////////////////////
+    //View/Delete Existing Tables
+    /////////////////////////////////////////////////////////////////
+    
+    var view_tables_div = document.createElement("div");
+    view_tables_div.id = "view_tables_div";
+    table_dialog_div.appendChild( view_tables_div );
  
+
+    //////////////////////////////////////////////////////////////////
+    // Make the Dialog Box
+    // ////////////////////////////////////////////////////////////////
     this.table_dialog = new dijit.Dialog({
                     id: "table_dialog",
-                    title: "Upload Interval Table",
-                    style: "width: 500px;",
+                    title: "Manage Interval Tables",
+        //style: "width: 800px;",
                     content: table_dialog_div
+    });
+};
+
+//a function that fills the target html_element with a list of 
+//user tables associate with the project
+Browser.prototype.refreshIntervalTables = function(){
+    args = {"project_name" : this.tree.selectedItem.name};
+    url = "bin/list_interval_tables.py?"+dojo.objectToQuery(args);
+    dojo.xhrGet({
+        url: url,
+        handleAs: "json",
+        load: function(data,args){
+            var widget = dijit.byId("table_dialog_existing_list");
+            //clear the existing stuff
+            var a = dojo.query('option', widget.domNode);
+            a.forEach( 
+                function(opt,idx,arr){
+                    dojo.destroy(opt);
+                });
+
+            //repopulate
+            widget.domNode.innerHTML = "Current Tables: <br />";
+            if( data['status'] == "empty" ){
+            }
+            else if( data["status"] == 'ok' ){
+                data["message"].forEach( 
+                    function( message, idx, arr ){
+                        dojo.create('option', 
+                                    {innerHTML: message, 
+                                         value: message} , 
+                                     widget.domNode)
+                    });
+                
+                //dojo.connect( opt, "onrightclick", 
+                //function(){alert("Display schema here");});
+            }
+            else{
+                alert( data["message"] );
+            }
+        },
+        error: function(data,args){
+           alert(data);
+           alert("trouble fetching the uploaded tables");
+        }
     });
 };
 
@@ -676,7 +845,7 @@ Browser.prototype.createNewProjectDialog = function() {
                     load: function(data,ioargs) {
                         if( data["status"] == "ok" ){
                             project_dialog.hide();
-                            refreshTree();
+                            brwsr.tree.refresh();
                         }
                         else{       
                             alert(data["message"]);
@@ -723,7 +892,6 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
         ).placeAt(explorer_bc.domNode );
 
 
-
     //interacts with filestore_dojotree to building working tree.  
     //This depends entirely on specific directory structure and naming
     var store = new dojox.data.FileStore( 
@@ -749,7 +917,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
             prefix: "query_",
             hidden: false,
             onClick: function(e) {
-                var item = tree.clickedItem;
+                var item = brwsr.tree.clickedItem;
                 if( item.sub_results.length > 0 ){
                     for( var i=0; i < item.sub_results.length; i++ ){
                         var trackkey = item.key + "/"+ item.sub_results[i];
@@ -771,7 +939,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
             prefix: "query_",
             hidden: true,
             onClick: function(e) {
-                var item = tree.clickedItem;
+                var item = brwsr.tree.clickedItem;
                 if( item.sub_results.length > 0 ){
                     for( var i=0; i <= item.sub_results.length; i++ ){
                         var trackkey = item.key + "/"+ item.sub_results[i];
@@ -787,7 +955,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
 
     var downloadFile = function( ext ){
         return function(e) {
-            var selected = tree.clickedItem;
+            var selected = brwsr.tree.clickedItem;
             var query_name = selected.name; 
             var project_name = selected.project;
             var donor_name = selected.donor;
@@ -864,7 +1032,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
             prefix: "query_",
             hidden: false,
             onClick: function(e) {
-                var item = tree.clickedItem;
+                var item = brwsr.tree.clickedItem;
                 var host_chrom = brwsr.refSeq.name;
                 var chromnum = host_chrom.substring(3);
                 var query_name = item.name;
@@ -900,7 +1068,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
             iconClass: "dijitEditorIcon dijitEditorIconCut",
             hidden: false,
             onClick: function(e) {
-                var item = tree.clickedItem;
+                var item = brwsr.tree.clickedItem;
                 var sr = item.sub_results;
                 deleteQuery( item.project, item.donor, item.name, item.sub_results ); 
         }}));
@@ -947,74 +1115,9 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
     };
 
 
-    var fillWithIntervalTables = function( html_elem ){
-        args = {"project_name" : tree.selectedItem.name};
-        url = "bin/list_interval_tables.py?"+dojo.objectToQuery(args);
-        dojo.xhrGet({
-            url: url,
-            handleAs: "json",
-            load: function(data,args){
-                var widgets = dijit.findWidgets(html_elem);
-                dojo.forEach(widgets, function(w) {
-                        w.destroyRecursive(true);
-                });
-                html_elem.innerHTML = "Use Tables: <br />";
-                if( data['status'] == "empty" ){
-                }
-                else if( data["status"] == 'ok' ){
-                    var button, scheme_link;
-                    for ( i in data["message"] ){
-                        button = dijit.form.ToggleButton(
-                            {id : "table_button_" + i,
-                             label : data["message"][i],
-                             onClick : function(){
-                                 if( this.checked ){
-                                     fillQueryBoxHelper( "adding", "import", data["message"][i] );
-                                     //alert("take some action to insert 'use' statement into query box");
-                                 }
-                                 else {
-                                     fillQueryBoxHelper( "removing", "import", data["message"][i] );
-                                     //alert("remove any 'use ...' from query box");
-                                 }
-                             },
-                             iconClass : "dijitCheckBoxIcon"
-                        }).placeAt(html_elem);
-
-                        schema_link = document.createElement("a");
-                        schema_link.id = "schema_link_" + i;
-                        schema_link.appendChild(document.createTextNode("?"));
-                        schema_link.style.cssText = "color: blue; text-decoration: underline; cursor: hand";
-
-                        //dojo.connect(schema_link,
-                        //"onmouseover",
-                        //function(){
-                        //this.getNode().style.cursor = "hand";
-                        //}
-                        //);
-                        dojo.connect(schema_link,
-                                     "onclick", 
-                                      function(){ 
-                                          alert("display schema"); 
-                                      }
-                                     );
-                        html_elem.appendChild( schema_link );
-
-                        html_elem.appendChild( document.createElement('br'));
-                    }
-                }
-                else{
-                    alert( data["message"] );
-                }
-            },
-            error: function(data,args){
-               alert(data);
-               alert("trouble fetching the uploaded tables");
-            }
-        });
-    };
-
+    
     var fillWithDonors = function( html_elem ){
-        args = {"project_name" : tree.selectedItem.name};
+        args = {"project_name" : brwsr.tree.selectedItem.name};
         url = "bin/list_donors.py?"+dojo.objectToQuery(args);
         dojo.xhrGet({
             url: url,
@@ -1060,11 +1163,14 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
     };
 
     var table_menuitem = new dijit.MenuItem({
-        label: "Upload Interval Table",
+        label: "Manage Interval Tables",
         prefix: "project_",
         hidden: false,
         onClick: function(e) {
-            //fillWithIntervalTables( interval_table_p );    
+            //table_dialog_existing_list_div 
+            //var elem = document.getElementById( "table_dialog_existing_cp" );
+            var elem = brwsr.really; //dojo.byId( "table_dialog_existing_list_div" );
+            brwsr.refreshIntervalTables();
             brwsr.table_dialog.show();   
         }
     });
@@ -1100,6 +1206,15 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
             {id : "tree",
              model : model,
              style: "height: 500px; background-color: #efefef;",
+             refresh: function(){
+                        dijit.byId("tree").model.store.clearOnClose = true;
+                        dijit.byId("tree").model.store.close();
+   
+                        dijit.byId("tree").model.constructor(dijit.byId("tree").model)
+
+                        dijit.byId("tree").destroyRecursive();
+                        brwsr.tree = makeTree();
+                    },
              onClick :
                 function(selected,e){ 
                     this.clickedItem = selected;
@@ -1128,9 +1243,9 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
                         pleasewait_menuitem.hidden = true;
                     }
 
-                    //download_bam_menuitem.hidden = selected.bam_ixs.length == 0;
-                    //download_interval_menuitem.hidden = selected.interval_ixs.length == 0;
-                    //download_txt_menuitem.hidden = selected.txt_ixs.length == 0;
+                    download_bam_menuitem.hidden = selected.bams.length == 0;
+                    download_interval_menuitem.hidden = selected.sub_results.length == 0;
+                    download_txt_menuitem.hidden = selected.txts.length == 0;
                     
                     //hack to make left click work on tree
                     //openOnLeftClick: true | is insufficient for whatever reason
@@ -1171,18 +1286,6 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
         } 
     });
 
-    //code stolen from Google
-    //don't know if it is over/under kill
-    var refreshTree = function(){
-        dijit.byId("tree").model.store.clearOnClose = true;
-        dijit.byId("tree").model.store.close();
-   
-        dijit.byId("tree").model.constructor(dijit.byId("tree").model)
-
-        dijit.byId("tree").destroyRecursive();
-        tree =  makeTree();
-    };
-
     var deleteQuery = function( project, donor, query_name, sub_results ){
         var args = {project: project, donor: donor, query_name: query_name};
         var url = "bin/remove_track.py?" + dojo.objectToQuery(args);
@@ -1194,7 +1297,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
             handleAs: "json",
             load: function(data,ioargs) {
                 if( data["status"] == "ok" ){
-                    refreshTree();
+                    brwsr.tree.refresh();
                     for( var i=0; i < sub_results.length; i++ ){
                         var trackkey = project+"/"+query_name+"/"+sub_results[i];
                         recall( trackkey ); 
@@ -1291,7 +1394,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
              style: "",
              onClick: 
                 function(){
-                    setRunningQuery( false );
+                    brwsr.setRunningQuery( false );
                     dojo.attr(progress_bar.domNode, 'hidden', true);
                     dojo.style(dijit.byId('stop_button').domNode, {
                           visibility: 'hidden',
@@ -1308,10 +1411,6 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
           display: 'none'
     });
 
-    var setRunningQuery = function( tf ){
-        brwsr.running_query = tf;
-        stop_button.set( "disabled", !tf )
-    };
 
 
 

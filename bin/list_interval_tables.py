@@ -19,21 +19,22 @@ sys.stdout = open( out_filename,'w')
 
 fields = cgi.FieldStorage()
 project_name = fields.getvalue("project_name")
-print project_name
+print "project_name", project_name
 utils.printToServer( 'Content-type: text/json\n\n' )
-path = "%s/data/tracks/%s%s/interval_tables" % \
-            (GlobalConfig.ROOT_DIR, \
-             GlobalConfig.PROJECT_PREFIX, \
-             project_name)
-print path
+#path = "%s/data/tracks/%s%s/interval_tables" % \
+            #(GlobalConfig.ROOT_DIR, \
+             #GlobalConfig.PROJECT_PREFIX, \
+             #project_name)
+
+src_table_dir = "%s/src_tables/%s" % (os.environ["BIOSQL_HOME"], project_name)
 interval_tables = []
-if os.path.exists( path ) :
-    for listing in os.listdir( path ) :
+if os.path.exists( src_table_dir ) :
+    for listing in os.listdir( src_table_dir ) :
         print listing
         if listing.find( project_name ) == 0 :
             viewable = listing[len(project_name)+1:].rsplit('.',1)[0]
         else :
-            viewable = "## %s ##" % listing
+            viewable = listing.rsplit('.',1)[0]
         #viewable = listing.split('_',1)[1].rsplit('.',1)[0]
         #viewable =  listing.strip("%s_" % project_name).strip('.it')
         print viewable

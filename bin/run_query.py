@@ -77,7 +77,9 @@ t1 = time.time()
 biosql_home = os.environ['BIOSQL_HOME']
 
 #where to look for user uploaded interval tables
-src_table_dir = "%s/src_tables" % biosql_home 
+src_table_dir = "%s/src_tables/%s" % (biosql_home, project)
+if not os.path.exists( src_table_dir ) :
+    os.mkdir( src_table_dir )
 
 #where should the output go?
 trackpath = TRACK_TEMPLATE % (project, "%s", query_name, "%s")
