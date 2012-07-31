@@ -13,14 +13,8 @@ from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFI
 
 perms = {"earthworm jim" : {"NA18507" : False}}
 
-#TODO
-#add project script needs to line to file
-#then need code here to construct perms dictionary
-dassembly = {"main":"hg18", \
-             "hg19":"hg19", \
-             "sangwoo":"hg18", \
-             "dev":"hg18", \
-             "anand":"hg19"}
+dassembly = utils.fileToJson( "../lib/project_assembly_mapping.json" )
+
 
 def getChildren( path ) :
     r = []

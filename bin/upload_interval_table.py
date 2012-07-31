@@ -70,6 +70,7 @@ if fileitem.filename :
             #fullname = "%s_%s" % (project_name,name)
             #schema = "table %s (string annot_id, string chr, char ornt, integer begin, integer end);\n" % fullname
             ftables.write( first_line[1:] )
+            ftables.write("\n");
             ftables.close()
 
             pop = Popen(['bash','rebuild_parsed_tables.sh'], \

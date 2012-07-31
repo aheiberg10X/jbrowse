@@ -10,9 +10,9 @@ import GlobalConfig
 import utils
 import time
 
-err_filename = "%s/make_new_project_error.txt" % (GlobalConfig.DEBUG_DIR)
+err_filename = "%s/delete_project_error.txt" % (GlobalConfig.DEBUG_DIR)
 sys.stderr = open( err_filename,'w')
-out_filename = "%s/make_new_project_output.txt" % (GlobalConfig.DEBUG_DIR)
+out_filename = "%s/delete_project_output.txt" % (GlobalConfig.DEBUG_DIR)
 sys.stdout = open( out_filename,'w')
 
 fields = cgi.FieldStorage()
@@ -25,16 +25,26 @@ try :
                     GlobalConfig.PROJECT_PREFIX, 
                     project_name) 
 
-    os.mkdir( project_dir )
-    os.mkdir( project_dir + "/interval_tables" )
-    #status = "ok"
-    #message = "good to go"
-    status = "not ok"
-    message = "Need to alter make_new_project.py to update the project:assembly dictionary in filestore_dojotree.py"
-    print "made the directory"
+    #setup directory for the explorer tree to find
+    shutil.rmtree( project_dir )
+    
+    #setup directory for uploaded tables
+    shutil.rmtree( "%s/%s" % (GlobalConfig.SRC_TABLE_DIR, project_name) )
+
+    #TODO:
+    # remove the new project:assembly mapping to file
+    #fmap = open("../lib/project_assembly_mapping.json")
+    #lines = fmap.readlines()
+    #lines[-1] = "%s : %s" % (project_name,assembly)
+    #lines.append('}')
+    #fmap.close()
+
+    status = "ok"
+    message = "good to go"
+
 except OSError as e :
     status = "error"
-    message = "erk"
+    message = str(e)
     print str(e)
 
 

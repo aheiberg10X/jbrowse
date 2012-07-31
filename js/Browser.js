@@ -584,8 +584,10 @@ Browser.prototype.createUploadTableDialog = function(){
     table_dialog_existing_list_div.id = "table_dialog_existing_list_div";
     table_dialog_existing_cp.domNode.appendChild( table_dialog_existing_list_div); 
     
-    var table_dialog_existing_list = dijit.form.MultiSelect( 
-    {id: "table_dialog_existing_list"}, table_dialog_existing_list_div ); 
+    var table_dialog_existing_list = 
+        dijit.form.MultiSelect( 
+            {id: "table_dialog_existing_list"}, 
+            table_dialog_existing_list_div ); 
 
 
     var table_dialog_inspect_schema_button = new dijit.form.Button(
@@ -593,7 +595,26 @@ Browser.prototype.createUploadTableDialog = function(){
              label: "View Schema",
              style: "align-text: right;",
              onClick: function(){ 
-                 alert("Not functioning yet.");
+                
+                var selecteds = table_dialog_existing_list.getSelected();
+                if( selecteds.length == 0 ){ return; }
+
+                var args = {"project_name": brwsr.tree.selectedItem.name,
+                            "table_name": selecteds[0].innerHTML};
+                var url = "bin/view_schema.py?" 
+                           + dojo.objectToQuery(args);
+                
+                dojo.xhrGet({
+                    url: url,
+                    handleAs: "json",
+                    load: function(data,args){
+                        alert( data["message"] );
+                    },
+                    error: function(data,args){
+                        alert( data );
+                        alert( args );
+                    }
+                });
              }
          }).placeAt( table_dialog_existing_cp.domNode );
 
@@ -612,6 +633,8 @@ Browser.prototype.createUploadTableDialog = function(){
              style: "align-text: right;",
              onClick: function(){ 
                  var selecteds = table_dialog_existing_list.getSelected();
+                 if( selecteds.length == 0 ){ return; }
+                 
                  var selected_names = [];
                  selecteds.forEach(
                     function( sel, idx, arr ){
@@ -637,7 +660,6 @@ Browser.prototype.createUploadTableDialog = function(){
                         },
                         error: function(data ,args){
                             alert( data );
-                            alert( args );
                         }
                  });
              }
@@ -780,6 +802,8 @@ Browser.prototype.refreshIntervalTables = function(){
 
 Browser.prototype.createNewProjectDialog = function() {
 
+    var brwsr = this;
+
     var new_project_dialog_div = document.createElement("div");
     new_project_dialog_div.id = "new_project_dialog_div";
     
@@ -821,30 +845,22 @@ Browser.prototype.createNewProjectDialog = function() {
     project_assembly_p.appendChild(assembly_menu.domNode);
     assembly_menu.startup();
     
-    
-/*    var button = new DropDownButton({
-        label: "Assembly...",
-        name: "programmatic2",
-        dropDown: menu,
-        id: "progButton"
-    });*/
-
-    //TODO: prompt user to specific which assembly it references
-    //TODO: is the py script doing all it needs to?
     var new_project_button = new dijit.form.Button(
             {id: "new_project_button", 
              label: "Create Project",
              style: "align-text: right;",
              onClick: function(){ 
-                var args = {"project_name" : dijit.byId("project_name").value};
-                var url = "bin/make_new_project.py?" + dojo.objectToQuery(args);
+                var args = {"project_name" : dijit.byId("project_name").value,
+                            "assembly": assembly_menu.value};
+                
+                var url = "bin/create_new_project.py?" + dojo.objectToQuery(args);
                 var xhrArgs = {
                     url: url,
                     //form: dojo.byId("new_project_form"),
                     handleAs: "json",
                     load: function(data,ioargs) {
                         if( data["status"] == "ok" ){
-                            project_dialog.hide();
+                            brwsr.project_dialog.hide();
                             brwsr.tree.refresh();
                         }
                         else{       
@@ -861,6 +877,7 @@ Browser.prototype.createNewProjectDialog = function() {
 
        }).placeAt( new_project_dialog_div );
 
+    
     this.project_dialog = new dijit.Dialog({
                     id: "project_dialog",
                     title: "Create New Project",
@@ -1196,6 +1213,39 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
     });
     pMenu.addChild( new_project_menuitem );
 
+
+    //TODO: prompt to confirm data deletion
+    var delete_project_menuitem = new dijit.MenuItem(
+            {id: "delete_project_button", 
+             label: "Delete Project",
+             prefix: "project_",
+             hidden: false,
+             onClick: function(){ 
+                var args = {"project_name" : brwsr.tree.selectedItem.name};
+                var url = "bin/delete_project.py?" + dojo.objectToQuery(args);
+                var xhrArgs = {
+                    url: url,
+                    handleAs: "json",
+                    load: function(data,ioargs) {
+                        if( data["status"] == "ok" ){
+                            brwsr.project_dialog.hide();
+                            brwsr.tree.refresh();
+                        }
+                        else{       
+                            alert(data["message"]);
+                        }
+                    },
+                    error: function(error) {
+                       alert(error); 
+                    }
+                }
+                //Call the asynchronous xhrPost
+                var deferred = dojo.xhrPost(xhrArgs);
+             }
+
+       });
+    pMenu.addChild( delete_project_menuitem );
+    
     pMenu.startup();
 
     //call this whenever somehting is added or deleted, will rebuild directory
