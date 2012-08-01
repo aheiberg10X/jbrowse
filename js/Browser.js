@@ -206,6 +206,7 @@ var Browser = function(params) {
             brwsr.createQueryDialog();
             brwsr.createUploadTableDialog();
             brwsr.createNewProjectDialog();
+            brwsr.createUploadDonorDialog()
 
             containerWidget.startup();
 
@@ -756,6 +757,68 @@ Browser.prototype.createUploadTableDialog = function(){
     });
 };
 
+Browser.prototype.createUploadDonorDialog = function(){
+    var brwsr = this;
+
+    var upload_donor_dialog_div = document.createElement("div");
+    upload_donor_dialog_div.id = "upload_donor_dialog_div";
+    upload_donor_dialog_div.innerHTML = "Once upload is complete, enter the folder name here";
+
+    var donor_name_p = document.createElement("p");
+    donor_name_p.id = "donor_name_p";
+    upload_donor_dialog_div.appendChild( donor_name_p );
+        
+    var donor_name = new dijit.form.ValidationTextBox(
+                {id: "donor_name",
+                 label: "Donor Name",
+                 name: "donor_name",
+        //regExp: '\\w+',
+        //invalidMessage: 'Only alphanumeric characters' 
+                }
+            ).placeAt( donor_name_p );
+   
+    var projects_list_div = document.createElement("div");
+    projects_list_div.id = "projects_list_div";
+    upload_donor_dialog_div.appendChild( projects_list_div );
+
+    //TODO: should be possible to query the tree store and find all items with
+    //prefix of "project_"
+
+    var projects_list = 
+        dijit.form.MultiSelect( 
+            {id: "projects_list"}, 
+            projects_list_div ); 
+
+    var index_donor_button = new dijit.form.Button(
+            {id: "index_donor_button", 
+             label: "Index Donor",
+             style: "align-text: right;",
+             onClick: function(){ 
+                 var args = {"donor_name": donor_name.value,
+                             "project_names":""};
+                 var url = "bin/add_donor.py?" + dojo.objectToQuery( args );
+                 dojo.xhrPost({
+                     url: url,
+                     handleAs: "json",
+                     load: function(data,args){
+                         alert(data["message"]);
+                     },
+                     error: function(data,args){
+                        alert(data);
+                     }
+                 });
+                 alert("Not functioning yet.");
+             }
+         }).placeAt( upload_donor_dialog_div );
+
+    this.upload_donor_dialog = new dijit.Dialog({
+                    id: "upload_donor_dialog",
+                    title: "Upload Donor",
+                    content: upload_donor_dialog_div
+    });
+
+};
+
 //a function that fills the target html_element with a list of 
 //user tables associate with the project
 Browser.prototype.refreshIntervalTables = function(){
@@ -1193,15 +1256,16 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
     });
     pMenu.addChild( table_menuitem );
 
-    var donor_upload_menuitem = new dijit.MenuItem({
+    var upload_donor_menuitem = new dijit.MenuItem({
         label: "Upload Donor Genome",
         prefix: "project_",
         hidden: false,
         onClick: function(e) {
-            alert("Email aheiberg@ucsd.edu");
+            brwsr.upload_donor_dialog.show();
+            //alert("Email aheiberg@ucsd.edu");
         }
     });
-    pMenu.addChild( donor_upload_menuitem );
+    pMenu.addChild( upload_donor_menuitem );
     
     var new_project_menuitem = new dijit.MenuItem({
         label: "New Project",

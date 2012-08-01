@@ -17,10 +17,12 @@ globes = json.loads(fin.read())
 
 
 ROOT_DIR = globes["ROOT_DIR"]
+DONOR_DIR = ROOT_DIR + globes["DONOR_DIR"]
 DATA_DIR = ROOT_DIR + globes["DATA_DIR"]
 DEBUG_DIR = ROOT_DIR + globes["DEBUG_DIR"]
 UPLOAD_DIR = ROOT_DIR + globes["UPLOAD_DIR"]
-SRC_TABLE_DIR = "%s/src_tables" % os.environ["BIOSQL_HOME"]
+BIOSQL_HOME = os.environ["BIOSQL_HOME"]
+SRC_TABLE_DIR = "%s/src_tables" % BIOSQL_HOME
 
 PROJECT_PREFIX = globes["PROJECT_PREFIX"]
 DONOR_PREFIX = globes["DONOR_PREFIX"]
