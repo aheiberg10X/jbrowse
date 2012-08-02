@@ -11,6 +11,8 @@ cgitb.enable()
 
 from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR, DEBUG_DIR, TRACK_TEMPLATE, UNBOUND_CHROM, PROJECT_PREFIX
 
+#TODO
+#store this info in lib/permissions.json
 perms = {"earthworm jim" : {"NA18507" : False}}
 
 dassembly = utils.fileToJson( "../lib/project_assembly_mapping.json" )

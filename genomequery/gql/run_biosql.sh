@@ -17,11 +17,17 @@ back_end_dir="back_end" #the directory where the src files of the back end are.
 low_level_calls="low_level.sh"
 chr_info="chromo_length_info$4.txt"
 log="dummy_log.txt"
+table_defs="tables.txt"
 #bam_prefx="$DONOR_DIR/$donor/chr"
 #indx_prefx="$DONOR_DIR/$donor/chr"
 
 cd $BIOSQL_HOME
-rm -rf $src_table_dir/chr*
+#rm -rf $src_table_dir/chr*
+echo "table READS (string id, string read_str, integer length, string
+qvals,string chr, integer location, char strand, string
+match_descr, string mate_chromo, integer mate_loc, char mate_strand);" > $table_defs
+for f in $src_table_dir/*; do head -1 $f | cut -d# -f2; done >> $table_defs
+
 
 $front_end_dir/biosql < $input_sql > $interm_code
 

@@ -22,7 +22,7 @@ fields = cgi.FieldStorage()
 utils.printToServer( 'Content-type: text/html\n\n' )
 
 #TODO: ownership and permission for inteval files
-rename = re.compile(r'#table\s+(\w+)\s+(.*);', re.I)
+rename = re.compile(r'#?table\s+(\w+)\s+(.*);', re.I)
 def validateSchema( first_line, filename ) :
 
     #name check
@@ -50,34 +50,29 @@ if fileitem.filename :
     if not ok :
         json_data = "{'status':'ERROR', 'message':'%s'}" % message
     else :
-        #path = "%s/data/tracks/%s%s/interval_tables" % \
-                    #(GlobalConfig.ROOT_DIR, \
-                     #GlobalConfig.PROJECT_PREFIX, \
-                     #project_name )
-        #if not os.path.exists( path ) :
-            #os.mkdir( path )
-        src_table_dir = "%s/src_tables/%s" % (os.environ["BIOSQL_HOME"], project_name)
+        src_table_dir = "%s/src_tables/%s" % (GlobalConfig.BIOSQL_HOME, project_name)
         if not os.path.exists( src_table_dir ) :
             os.mkdir( src_table_dir )
         newfilename = "%s/%s.txt" % (src_table_dir, name)
 
         if not os.path.exists( newfilename ) :
-            open(newfilename, 'w').write( rest_lines )
+            fnew = open(newfilename, 'w')
+            fnew.write( first_line )
+            fnew.write( rest_lines )
+            fnew.close()
             #update tables.txt, rebuild parsed tables
 
-            ftables = "%s/tables.txt" % os.environ["BIOSQL_HOME"]
-            ftables = open( ftables, 'a' )
-            #fullname = "%s_%s" % (project_name,name)
-            #schema = "table %s (string annot_id, string chr, char ornt, integer begin, integer end);\n" % fullname
-            ftables.write( first_line[1:] )
-            ftables.write("\n");
-            ftables.close()
+            #ftables = "%s/tables.txt" % os.environ["BIOSQL_HOME"]
+            #ftables = open( ftables, 'a' )
+            #ftables.write( first_line[1:] )
+            #ftables.write("\n");
+            #ftables.close()
 
-            pop = Popen(['bash','rebuild_parsed_tables.sh'], \
-                        stdin=PIPE, stdout=PIPE, stderr=PIPE)
-            (out, err) = pop.communicate()
-            sys.stderr.write(err)
-            sys.stdout.write(out)
+            #pop = Popen(['bash','rebuild_parsed_tables.sh'], \
+                        #stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            #(out, err) = pop.communicate()
+            #sys.stderr.write(err)
+            #sys.stdout.write(out)
 
             #check err here?
 

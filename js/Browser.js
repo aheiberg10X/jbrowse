@@ -207,6 +207,7 @@ var Browser = function(params) {
             brwsr.createUploadTableDialog();
             brwsr.createNewProjectDialog();
             brwsr.createUploadDonorDialog()
+            brwsr.user_name = "earthworm_jim";
 
             containerWidget.startup();
 
@@ -762,7 +763,14 @@ Browser.prototype.createUploadDonorDialog = function(){
 
     var upload_donor_dialog_div = document.createElement("div");
     upload_donor_dialog_div.id = "upload_donor_dialog_div";
-    upload_donor_dialog_div.innerHTML = "Once upload is complete, enter the folder name here";
+    upload_donor_dialog_div.innerHTML = "" +
+        "<ul>" +
+           "<li>Email aheiberg@cs.ucsd.edu for the password.</li>" +
+           "<li>Then do <b>scp -r [donor_folder] uploader@genomequery.ucsd.edu:/home/uploader/[your_user_name]/[donor_name]</b></li>" +
+           "<li>The <b>[donor_folder]</b> folder contains chr1.bam, chr2.bam, ..., chrY.bam</li>" +
+           "<li>When the upload completes, revisit this script.  Enter the <b>[donor_name]</b> below to index the .bam files</li>" +
+           "<li>Once this completes, you will be able to attach the new donor to any of your projects</li>" +
+         "</ul>";
 
     var donor_name_p = document.createElement("p");
     donor_name_p.id = "donor_name_p";
@@ -777,17 +785,15 @@ Browser.prototype.createUploadDonorDialog = function(){
                 }
             ).placeAt( donor_name_p );
    
-    var projects_list_div = document.createElement("div");
-    projects_list_div.id = "projects_list_div";
-    upload_donor_dialog_div.appendChild( projects_list_div );
+    //var donor_list_div = document.createElement("div");
+    //donor_list_div.id = "donor_list_div";
+    //upload_donor_dialog_div.appendChild( donor_list_div );
 
-    //TODO: should be possible to query the tree store and find all items with
-    //prefix of "project_"
 
-    var projects_list = 
-        dijit.form.MultiSelect( 
-            {id: "projects_list"}, 
-            projects_list_div ); 
+    //var donor_list = 
+    //dijit.form.MultiSelect( 
+    //{id: "donor_list"}, 
+    //donor_list_div ); 
 
     var index_donor_button = new dijit.form.Button(
             {id: "index_donor_button", 
@@ -795,8 +801,8 @@ Browser.prototype.createUploadDonorDialog = function(){
              style: "align-text: right;",
              onClick: function(){ 
                  var args = {"donor_name": donor_name.value,
-                             "project_names":""};
-                 var url = "bin/add_donor.py?" + dojo.objectToQuery( args );
+                             "user_name": brwsr.user_name};
+                 var url = "bin/index_donor.py?" + dojo.objectToQuery( args );
                  dojo.xhrPost({
                      url: url,
                      handleAs: "json",
@@ -804,10 +810,9 @@ Browser.prototype.createUploadDonorDialog = function(){
                          alert(data["message"]);
                      },
                      error: function(data,args){
-                        alert(data);
+                         alert(data);
                      }
                  });
-                 alert("Not functioning yet.");
              }
          }).placeAt( upload_donor_dialog_div );
 
@@ -1196,9 +1201,11 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
 
 
     
+    //TODO: should be possible to query the tree store and find all items with
+    //prefix of "project_"
     var fillWithDonors = function( html_elem ){
         args = {"project_name" : brwsr.tree.selectedItem.name};
-        url = "bin/list_donors.py?"+dojo.objectToQuery(args);
+        url = "bin/list_project_donors.py?"+dojo.objectToQuery(args);
         dojo.xhrGet({
             url: url,
             handleAs: "json",
@@ -1258,7 +1265,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
 
     var upload_donor_menuitem = new dijit.MenuItem({
         label: "Upload Donor Genome",
-        prefix: "project_",
+        prefix: "root_",
         hidden: false,
         onClick: function(e) {
             brwsr.upload_donor_dialog.show();
