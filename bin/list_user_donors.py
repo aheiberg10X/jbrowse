@@ -23,22 +23,25 @@ user_name = fields.getvalue("user_name")
 utils.printToServer( 'Content-type: text/json\n\n' )
 
 user_donor_dir = "%s/%s" % (GlobalConfig.DONOR_DIR, user_name)
+print "user_donor_dir:", user_donor_dir
 donors = []
 status, message = "bad","generic"
 
 if os.path.exists( user_donor_dir ) :
     for donor in os.listdir( user_donor_dir ) :
-        donors.append( donor )
+        print "lsting: ", donor
+        if os.path.isdir( "%s/%s" % (user_donor_dir, donor) ) :
+            donors.append( donor )
 
     if len(donors) == 0 :
         status = "empty"
         message = "No donors"
     else :
         status = "ok"
-        message = json.dumps( donors )
+        message = ",".join( donors )
 
 else :
-    status = "User donor dir '%s' does not exist" % user_donor_dir
+    message = "User donor dir '%s' does not exist" % user_donor_dir
 
 print donors
 r = '{"status":"%s","message":"%s"}' % (status,message)

@@ -90,6 +90,8 @@ print dest_template, type(dest_template)
 print src_table_dir, type(src_table_dir)
 print assembly, type(assembly)
 
+#TODO:
+#look for donor bams in DONOR_DIR/user/donor/chr*
 pop = Popen(['bash', \
              biosql_home + "/run_biosql.sh", \
              query_loc, \

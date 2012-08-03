@@ -785,6 +785,8 @@ Browser.prototype.createUploadDonorDialog = function(){
                 }
             ).placeAt( donor_name_p );
    
+    //TODO: add assembly name
+
     //var donor_list_div = document.createElement("div");
     //donor_list_div.id = "donor_list_div";
     //upload_donor_dialog_div.appendChild( donor_list_div );
@@ -808,6 +810,7 @@ Browser.prototype.createUploadDonorDialog = function(){
                      handleAs: "json",
                      load: function(data,args){
                          alert(data["message"]);
+                         this.upload_donor_dialog.hide();
                      },
                      error: function(data,args){
                          alert(data);
@@ -1169,6 +1172,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
     });
     pMenu.addChild( pleasewait_menuitem );
 
+    //TODO: don't hard code the prefixes, use GlobalConfig's
     var query_menuitem = new dijit.MenuItem({
             label: "New Query",
             prefix: "project_",
@@ -1177,8 +1181,41 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
                 //fillWithIntervalTables( query_interval_table_p );
                 //fillWithDonors( query_donor_list_div );
                 brwsr.query_dialog.show();   
-        }});
+            }
+        });
     pMenu.addChild( query_menuitem );
+
+    var attach_menuitem = new dijit.MenuItem({
+            label: "Attach Donor",
+            prefix: "project_",
+            hidden: false,
+            onClick: function(e) {
+                //TODO make real
+                var args = {"user_name" : "earthworm_jim"};
+                var url = "bin/list_user_donors.py?" + 
+                           dojo.objectToQuery(args);
+                dojo.xhrGet({
+                    url: url,
+                    handleAs: "json",
+                    load: function(data,args){
+                        alert(data["message"]);
+                    },
+                    error: function(data,args){
+                        alert(data);
+                    }
+                })
+            }
+        });
+    pMenu.addChild( attach_menuitem );
+
+    var share_menuitem = new dijit.MenuItem({
+            label: "Share Project",
+            prefix: "project_",
+            hidden: false,
+            onClick: function(e) {
+            }
+        });
+    pMenu.addChild( attach_menuitem );
 
 
     var fillQueryBoxHelper = function( areAdding, type, name ){
