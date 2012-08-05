@@ -37,7 +37,7 @@ then
 fi
 
 genomes=`grep genome bytecode.txt | cut -d " " -f2` #get the individual genomes
-for donor in $genomes
+for gen in $DONOR_DIR/$genomes
 do 
     echo donoooor $donor
     bam_prefx="$DONOR_DIR/$donor/chr"
