@@ -1,5 +1,5 @@
 if [ $# -ne 4 ] ; then
-    echo 'usage: ./run_biosql.sh <biosql_code> <dst_dir> <src_table_dir> <assembly>'
+    echo 'usage: ./run_biosql.sh <biosql_code> <dst_dir> <src_table_dir> <assembly> <src_bam_dir>'
     exit 
 fi
 
