@@ -19,28 +19,27 @@ fields = cgi.FieldStorage()
 project_name = fields.getvalue("project_name")
 
 utils.printToServer( 'Content-type: text/json\n\n' )
+
+status = "ok"
+message = "good to go"
+
 try :
     project_dir = "%s/data/tracks/%s%s" % \
                    (GlobalConfig.ROOT_DIR, 
                     GlobalConfig.PROJECT_PREFIX, 
                     project_name) 
 
-    #setup directory for the explorer tree to find
-    shutil.rmtree( project_dir )
+    #rm directory for the explorer tree
+    try :
+        shutil.rmtree( project_dir )
+    except Exception as e :
+        message = "Project directory already removed"
     
-    #setup directory for uploaded tables
-    shutil.rmtree( "%s/%s" % (GlobalConfig.SRC_TABLE_DIR, project_name) )
-
-    #TODO:
-    # remove the new project:assembly mapping to file
-    #fmap = open("../lib/project_assembly_mapping.json")
-    #lines = fmap.readlines()
-    #lines[-1] = "%s : %s" % (project_name,assembly)
-    #lines.append('}')
-    #fmap.close()
-
-    status = "ok"
-    message = "good to go"
+    #rm directory for uploaded tables
+    try :
+        shutil.rmtree( "%s/%s" % (GlobalConfig.SRC_TABLE_DIR, project_name) )
+    except Exception as e :
+        pass
 
 except OSError as e :
     status = "error"

@@ -12,7 +12,7 @@ cgitb.enable()
 from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR, DEBUG_DIR, TRACK_TEMPLATE, UNBOUND_CHROM, PROJECT_PREFIX
 
 #'static' track data, such as SequenceTracks, + query track data inferred from directory structure
-def getTrackData( root ) :
+def getTrackData( user_name, root ) :
     #start from root and recursively makeItems
     #if they have a key, ie are queries/FeatureTracks turn only the relevant bits into a json string suitable for trackInfo.  
     #Make a big list of all these and print to the server
@@ -33,6 +33,8 @@ def getTrackData( root ) :
      "key" : "DNA"}
     trackData.append( seqtrack )
 
+    #TODO:
+    #there has to be a way to make this less gross
     #generate all the query trackdata
     for project in os.listdir(root) :
         project_path = "%s/%s" % (root,project)
@@ -47,7 +49,7 @@ def getTrackData( root ) :
                         if query.startswith( QUERY_PREFIX ) and \
                            os.path.isdir(query_path) :
 
-                            item = filestore_dojotree.makeItem( query_path )
+                            item = filestore_dojotree.makeItem( user_name, query_path )
                             properties = ["url","label","key","type"]
                             if len(item["sub_results"]) > 0 :
                                 for sr in item["sub_results"] :
@@ -77,5 +79,5 @@ if __name__ == '__main__' :
     dparams = cgi.parse()
     print dparams
 
-    getTrackData( project_root )
+    getTrackData( dparams["user_name"], project_root )
 

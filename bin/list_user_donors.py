@@ -35,14 +35,14 @@ if os.path.exists( user_donor_dir ) :
 
     if len(donors) == 0 :
         status = "empty"
-        message = "No donors"
+        message = "No donors have been uploaded"
     else :
         status = "ok"
-        message = ",".join( donors )
+        message = json.dumps(donors) #",".join( donors )
 
 else :
     message = "User donor dir '%s' does not exist" % user_donor_dir
 
 print donors
-r = '{"status":"%s","message":"%s"}' % (status,message)
+r = '{"status":"%s","message":%s}' % (status,message)
 utils.printToServer( r )

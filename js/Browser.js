@@ -206,8 +206,9 @@ var Browser = function(params) {
             brwsr.createQueryDialog();
             brwsr.createUploadTableDialog();
             brwsr.createNewProjectDialog();
-            brwsr.createUploadDonorDialog()
-            brwsr.user_name = "earthworm_jim";
+            brwsr.createUploadDonorDialog();
+            brwsr.createAttachDonorDialog();
+            
 
             containerWidget.startup();
 
@@ -375,7 +376,8 @@ Browser.prototype.runQuery = function(brwsr){
         var args = {"query_box" : query_box,
                     "query_name" : query_name,
                     "query_project" : project,
-                    "assembly" : tree.selectedItem.assembly};
+                    "assembly" : tree.selectedItem.assembly,
+                    "user_name" : brwsr.user_name};
         var url = "bin/run_query.py?" + dojo.objectToQuery(args);
         //TODO: security security SECURITY!! could manually pass in supposedly inaccessible donor name
         var xhrArgs = {
@@ -766,9 +768,9 @@ Browser.prototype.createUploadDonorDialog = function(){
     upload_donor_dialog_div.innerHTML = "" +
         "<ul>" +
            "<li>Email aheiberg@cs.ucsd.edu for the password.</li>" +
-           "<li>Then do <b>scp -r [donor_folder] uploader@genomequery.ucsd.edu:/home/uploader/[your_user_name]/[donor_name]</b></li>" +
+           "<li>Do <b>scp -r [donor_folder] uploader@genomequery.ucsd.edu:/home/uploader/[your_user_name]/[donor_name]</b></li>" +
            "<li>The <b>[donor_folder]</b> folder contains chr1.bam, chr2.bam, ..., chrY.bam</li>" +
-           "<li>When the upload completes, revisit this script.  Enter the <b>[donor_name]</b> below to index the .bam files</li>" +
+           "<li>When the upload completes, revisit this script.  Enter <b>[donor_name]</b> below to index the .bam files</li>" +
            "<li>Once this completes, you will be able to attach the new donor to any of your projects</li>" +
          "</ul>";
 
@@ -802,6 +804,12 @@ Browser.prototype.createUploadDonorDialog = function(){
              label: "Index Donor",
              style: "align-text: right;",
              onClick: function(){ 
+                 //TODO:
+                 //hide the dialog, give a working bar, just say you will be alerted when it completes
+                 //Allow refreshes, they shouldn't cause issue
+                 alert( "Indexing has started. Do not refresh this page.");
+                 upload_donor_dialog.hide()
+                  
                  var args = {"donor_name": donor_name.value,
                              "user_name": brwsr.user_name};
                  var url = "bin/index_donor.py?" + dojo.objectToQuery( args );
@@ -827,7 +835,147 @@ Browser.prototype.createUploadDonorDialog = function(){
 
 };
 
-//a function that fills the target html_element with a list of 
+
+Browser.prototype.createAttachDonorDialog = function(){
+    var brwsr = this;
+    
+    var attach_donor_dialog_div = document.createElement("div");
+    attach_donor_dialog_div.id = "attach_donor_dialog_div";
+    
+    //TODO
+    //ask Tree what the currently attached donors are
+
+    var available_donor_list_div = document.createElement("div");
+    available_donor_list_div.id = "available_donor_list_div";
+    attach_donor_dialog_div.appendChild( available_donor_list_div );
+
+    var available_donor_list = 
+        dijit.form.MultiSelect( 
+            {id: "available_donor_list"}, 
+            available_donor_list_div ); 
+
+    var attach_donor_button = new dijit.form.Button(
+            {id: "attach_donor_button", 
+             label: "Attach",
+             style: "align-text: right;",
+             onClick: function(){
+                 var selecteds = available_donor_list.getSelected(); 
+                 var donor_names = [];
+                 selecteds.forEach(
+                    function( sel, idx, arr ){
+                        donor_names.push(sel.innerHTML);
+                    }
+                 );
+                 donor_names = donor_names.join();
+                
+                 var project_name = brwsr.tree.selectedItem.name;
+
+                 var args = {"donor_names" : donor_names,
+                             "project_name" : project_name};
+                 var url = "bin/attach_donor.py?" + dojo.objectToQuery(args);
+                 dojo.xhrPost({
+                     url: url,
+                     handleAs: "json",
+                     load: function(data,args){
+                         brwsr.tree.refresh();
+                         //alert(data["message"].join("\n")); 
+                         //alert(data["message"]);
+                     },
+                     error: function(data,args){
+                         alert(data);
+                     }
+                 });
+                 brwsr.attach_donor_dialog.hide();
+             }
+     }).placeAt( attach_donor_dialog_div );
+
+    this.attach_donor_dialog = new dijit.Dialog({
+                        id: "attach_donor_dialog",
+                        title: "Attach Donors",
+                        style: "width: 200px;",
+                        content: attach_donor_dialog_div
+        });
+};
+
+//TODO:
+//lots of similar code between this and refreshInterval
+Browser.prototype.refreshAttachableDonors = function(){
+    var brwsr = this;
+    args = {"user_name" : "earthworm_jim"};
+    url = "bin/list_user_donors.py?"+dojo.objectToQuery(args);
+    dojo.xhrGet({
+        url: url,
+        handleAs: "json",
+        load: function(data,args){
+            if( data["message"] == "empty" ){
+                alert( data["message"] );
+                return;
+            }
+
+            var widget = dijit.byId("available_donor_list");
+            //clear the existing stuff
+            var a = dojo.query('option', widget.domNode);
+            a.forEach( 
+                function(opt,idx,arr){
+                    dojo.destroy(opt);
+                });
+
+            var all_donors = data["message"];
+            var unattached_donors = [];
+
+            //TODO:
+            //use the filestore_dojotree to do this!!!
+            //why is .model just an object, not a dojo.Model?
+            //var depr = brwsr.tree.model.query({name: "sangwoo"});
+            args = {"project_name" : brwsr.tree.selectedItem.name};
+            url = "bin/list_project_donors.py?" + dojo.objectToQuery(args);
+            dojo.xhrGet({
+                url: url,
+                handleAs: "json",
+                load: function(data2,args2){
+                    if( data2["status"] == 'ok' ){
+                        var attached_donors = data2["message"];
+                        all_donors.forEach(
+                            function( donor, idx, arr ){
+                                if( dojo.indexOf( attached_donors, donor ) < 0 ){
+                                    unattached_donors.push( donor );
+                                }
+                            }
+                        );//repopulate
+
+                        widget.domNode.innerHTML = "Unattached Donors: <br />";
+                        if( unattached_donors.length == 0 ){
+                            unattached_donors.push( "--No unattached donors--");
+                            var a = dojo.byId("attach_donor_button");
+                        }
+                        unattached_donors.forEach( 
+                            function( message, idx, arr ){
+                                dojo.create('option', 
+                                            {innerHTML: message, 
+                                                 value: message} , 
+                                             widget.domNode)
+                            });
+                        
+                    }
+                    else{
+                        alert( data["message"] );
+                    }
+
+                },
+                error: function(data2,args2){
+                    alert(data2);
+                }
+            });
+        },
+        error: function(data,args){
+           alert("trouble getting the donor list");
+           alert(data);
+        }
+    });
+
+};
+
+//a function that fills a target div with a list of 
 //user tables associate with the project
 Browser.prototype.refreshIntervalTables = function(){
     args = {"project_name" : this.tree.selectedItem.name};
@@ -856,9 +1004,6 @@ Browser.prototype.refreshIntervalTables = function(){
                                          value: message} , 
                                      widget.domNode)
                     });
-                
-                //dojo.connect( opt, "onrightclick", 
-                //function(){alert("Display schema here");});
             }
             else{
                 alert( data["message"] );
@@ -982,10 +1127,13 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
 
     //interacts with filestore_dojotree to building working tree.  
     //This depends entirely on specific directory structure and naming
+    var args = {"user_name" : brwsr.user_name};
     var store = new dojox.data.FileStore( 
                 {id : "store",
-                 url : "bin/filestore_dojotree.py",
-                 pathAsQueryParam : "true"}     
+                 options : brwsr.user_name,
+                 pathAsQueryParam : true,  
+                 url : "bin/filestore_dojotree.py?" + dojo.objectToQuery(args)
+                }     
              );
     
     var model = new dijit.tree.ForestStoreModel(
@@ -995,6 +1143,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
                       rootLabel : "Projects" }
                     );       
 
+    //brwsr.tree_store = model;
     ///////////////////////////////////
     //  Menu Stuff
     var pMenu = new dijit.Menu( {leftClickToOpen: true} );
@@ -1185,28 +1334,35 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
         });
     pMenu.addChild( query_menuitem );
 
-    var attach_menuitem = new dijit.MenuItem({
-            label: "Attach Donor",
+    var detach_donor_menuitem = new dijit.MenuItem({
+    });
+    pMenu.addChild( detach_donor_menuitem );
+
+    var attach_donor_menuitem = new dijit.MenuItem({
+            label: "Attach Donors",
             prefix: "project_",
             hidden: false,
             onClick: function(e) {
-                //TODO make real
-                var args = {"user_name" : "earthworm_jim"};
-                var url = "bin/list_user_donors.py?" + 
-                           dojo.objectToQuery(args);
-                dojo.xhrGet({
-                    url: url,
-                    handleAs: "json",
-                    load: function(data,args){
-                        alert(data["message"]);
-                    },
-                    error: function(data,args){
-                        alert(data);
-                    }
-                })
+                brwsr.refreshAttachableDonors();
+                brwsr.attach_donor_dialog.show();
+                //TODO:
+                //have this display right next to the cursor 
+                brwsr.attach_donor_dialog._setStyleAttr('left:' + 200 + 'px !important;');
+                brwsr.attach_donor_dialog._setStyleAttr('top:' + 200 + 'px !important;');
             }
         });
-    pMenu.addChild( attach_menuitem );
+    pMenu.addChild( attach_donor_menuitem );
+
+    var detach_donor_menuitem = new dijit.MenuItem({
+            label: "Detach",
+            prefix: "donor_",
+            hidden: false,
+            onClick: function(e) {
+                //TODO
+                alert( "not implemented yet" );
+            }
+        });
+    pMenu.addChild( detach_donor_menuitem );
 
     var share_menuitem = new dijit.MenuItem({
             label: "Share Project",
@@ -1215,7 +1371,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
             onClick: function(e) {
             }
         });
-    pMenu.addChild( attach_menuitem );
+    pMenu.addChild( share_menuitem );
 
 
     var fillQueryBoxHelper = function( areAdding, type, name ){
@@ -1800,6 +1956,7 @@ Browser.prototype.navigateTo = function(loc) {
                 this.refSeq = this.allRefs[refName];
                 this.interestingAreas = new InterestingAreas( this.refSeq.start, this.refSeq.end );
                 //go to given refseq, start, end
+                ///
                 this.view.setLocation(this.refSeq,
                           parseInt(matches[4].replace(/[,.]/g, "")),
                           parseInt(matches[6].replace(/[,.]/g, "")));

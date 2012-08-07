@@ -1,5 +1,5 @@
-if [ $# -ne 4 ] ; then
-    echo 'usage: ./run_biosql.sh <biosql_code> <dst_dir> <src_table_dir> <assembly> <src_bam_dir>'
+if [ $# -ne 5 ] ; then
+    echo 'usage: ./run_biosql.sh <biosql_code> <dst_dir> <src_table_dir> <assembly> <user_donor_dir>'
     exit 
 fi
 
@@ -40,8 +40,8 @@ genomes=`grep genome bytecode.txt | cut -d " " -f2` #get the individual genomes
 for gen in $DONOR_DIR/$genomes
 do 
     echo donoooor $donor
-    bam_prefx="$DONOR_DIR/$donor/chr"
-    indx_prefx="$DONOR_DIR/$donor/chr"
+    bam_prefx="$user_donor_dir/$donor/chr"
+    indx_prefx="$user_donor_dir/$donor/chr"
 
     for c in 1 #2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y
     do

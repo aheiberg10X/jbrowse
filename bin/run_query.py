@@ -55,6 +55,7 @@ else :
     #chromnum = fields.getvalue("query_chrom")
     project = fields.getvalue("query_project");
     assembly = fields.getvalue("assembly");
+    user_name = fields.getvalue("user_name");
 
 
 #Open debugging files
@@ -97,7 +98,8 @@ pop = Popen(['bash', \
              query_loc, \
              dest_template, \
              src_table_dir,
-             assembly], \
+             assembly, \
+             "%s/%s" % (DONOR_DIR, user_name)], \
             stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
 (out, err) = pop.communicate()
