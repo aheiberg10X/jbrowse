@@ -17,11 +17,17 @@ back_end_dir="back_end" #the directory where the src files of the back end are.
 low_level_calls="low_level.sh"
 chr_info="chromo_length_info$4.txt"
 log="dummy_log.txt"
+table_defs="tables.txt"
 #bam_prefx="$DONOR_DIR/$donor/chr"
 #indx_prefx="$DONOR_DIR/$donor/chr"
 
 cd $BIOSQL_HOME
-rm -rf $src_table_dir/chr*
+#rm -rf $src_table_dir/chr*
+echo "table READS (string id, string read_str, integer length, string
+qvals,string chr, integer location, char strand, string
+match_descr, string mate_chromo, integer mate_loc, char mate_strand);" > $table_defs
+for f in $src_table_dir/*; do head -1 $f | cut -d# -f2; done >> $table_defs
+
 
 $front_end_dir/biosql < $input_sql > $interm_code
 
@@ -31,11 +37,21 @@ then
 fi
 
 genomes=`grep genome bytecode.txt | cut -d " " -f2` #get the individual genomes
-for donor in $genomes
+for gen in $DONOR_DIR/$genomes
 do 
+<<<<<<< .mine
     echo donoooor $donor
     bam_prefx="$DONOR_DIR/$donor/chr"
     indx_prefx="$DONOR_DIR/$donor/chr"
+=======
+	echo gen $gen
+	donor=$(echo $gen | awk -F "/" '{print $NF}')
+	echo donoooor $donor
+#	bam_prefx="$DONOR_DIR/$donor/chr"
+#	indx_prefx="$DONOR_DIR/$donor/chr"
+	bam_prefx="$DONOR_DIR/$donor/"
+	indx_prefx="$DONOR_DIR/$donor/"
+>>>>>>> .r8079
 
     for c in 1 #2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y
     do
@@ -48,6 +64,7 @@ do
         #products_dir=$products_dir_prefx/$donor/$chr
         chrom_dir=`printf "$dest_template" $donor $chr`
 
+<<<<<<< .mine
         if test ! -f $bam_file
         then
             echo no bamfile $bam_file
@@ -69,13 +86,56 @@ do
         then
                 mkdir $chrom_dir
         fi
+=======
 
+	all_chr=`grep -v "^#" $chr_info | cut -f1`
+	#for c in 1 #2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y
+	for chr in $all_chr
+	do
+		#chr="chr"$c
+		echo "#chr $chr" > $low_level_calls
+		echo "#chr $chr" 
+		chr_len=$(grep "^$chr\>" $chr_info | cut -f2)
+		#bam_file=$bam_prefx$c".bam"
+		bam_file=$bam_prefx$chr".bam"
+		#indx_file=$bam_prefx$c".mates.indx"
+		indx_file=$bam_prefx$chr".mates.indx"
+		#products_dir=$products_dir_prefx/$chr
+		products_dir=$products_dir_prefx/$donor/$chr
+>>>>>>> .r8079
+
+<<<<<<< .mine
         echo hellleleleleleooooo
         
         python code_generator.py $interm_code $chrom_dir $front_end_dir $back_end_dir $src_table_dir $bam_file $indx_file $chr $chr_len >> $low_level_calls
         echo done with code_generator
         chmod +x $low_level_calls
         /usr/bin/time -f "real %e user %U sys %S avg_mem(KB) %K max_resident(KB) %M avg_resident(KB) %t" ./$low_level_calls 2>> $log
+=======
+		if test ! -f $bam_file
+		then
+			echo no $bam_file
+			continue
+		fi
+		if test ! -f $indx_file
+		then
+			echo no $indx_file
+			continue
+		fi
+		
+		if test ! -d $products_dir_prefx/$donor
+		then
+			mkdir $products_dir_prefx/$donor
+		fi
+		if test ! -d $products_dir
+		then
+				mkdir $products_dir
+		fi
+		
+		python code_generator.py $interm_code $products_dir $front_end_dir $back_end_dir $src_table_dir $bam_file $indx_file $chr $chr_len >> $low_level_calls
+		chmod +x $low_level_calls
+		/usr/bin/time -f "real %e user %U sys %S avg_mem(KB) %K max_resident(KB) %M avg_resident(KB) %t" ./$low_level_calls 
+>>>>>>> .r8079
 
     done
 done
