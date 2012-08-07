@@ -11,7 +11,8 @@ var Login = function(containerID){
         //http://jorgealbaladejo.com/2011/04/10/workaround-to-dynamically-load-css-resources/
  
         //check if login info stored in cookie
-        var user_info = dojo.fromJson( dojo.cookie("login_info") );
+        var derp = dojo.cookie("user_info");
+        var user_info = dojo.fromJson( derp );
         
         //build the login form dialog
         var container = dojo.byId(containerID);
@@ -46,6 +47,12 @@ var Login = function(containerID){
                 var valid = login.validate( login.user_name, login.passwd );
                 if( valid ){
                     login_dialog.hide();
+                    var user_info = dojo.toJson(
+                                       {"user_name" : login.user_name,
+                                        "passwd" : login.passwd} );
+                    dojo.cookie("user_info",
+                                user_info,
+                                {expires: 3});
                     login.showBrowser(); //alert("show browser");
                 }
                 else{
@@ -95,11 +102,6 @@ Login.prototype.showBrowser = function(){
 //TODO:
 //user login interface
 
-    var user_info = {"user_name" : login.user_name,
-                     "passwd" : login.passwd};
-    dojo.cookie("user_info",
-                user_info,
-                {expires: 3});
 
     var args = {task: "getTrackData",
                 user_name: login.user_name};
