@@ -195,7 +195,7 @@ if __name__ == '__main__' :
 
     user_name = "generic"
     for kvpair in os.environ["HTTP_COOKIE"].split(";") :
-        [k,v] = kvpair.split("=")
+        [k,v] = kvpair.split("=",1)
         if k.endswith("user_name") :
             user_name = v
 
