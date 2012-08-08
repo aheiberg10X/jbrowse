@@ -198,6 +198,9 @@ if __name__ == '__main__' :
         [k,v] = kvpair.split("=",1)
         if k.endswith("user_name") :
             user_name = v
+        elif k.endswith("passwd") :
+            passwd = v
+
 
 
     print "user_name", user_name
