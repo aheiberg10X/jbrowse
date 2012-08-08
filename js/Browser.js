@@ -209,6 +209,8 @@ var Browser = function(params) {
             brwsr.createUploadDonorDialog();
             brwsr.createAttachDonorDialog();
             
+    
+            brwsr.user_name = dojo.cookie("user_name");
 
             containerWidget.startup();
 
@@ -901,7 +903,7 @@ Browser.prototype.createAttachDonorDialog = function(){
 //lots of similar code between this and refreshInterval
 Browser.prototype.refreshAttachableDonors = function(){
     var brwsr = this;
-    args = {"user_name" : "earthworm_jim"};
+    args = {"user_name" : brwsr.user_name};
     url = "bin/list_user_donors.py?"+dojo.objectToQuery(args);
     dojo.xhrGet({
         url: url,
@@ -1066,7 +1068,8 @@ Browser.prototype.createNewProjectDialog = function() {
              label: "Create Project",
              style: "align-text: right;",
              onClick: function(){ 
-                var args = {"project_name" : dijit.byId("project_name").value,
+                var args = {"user_name" : brwsr.user_name,
+                            "project_name" : dijit.byId("project_name").value,
                             "assembly": assembly_menu.value};
                 
                 var url = "bin/create_new_project.py?" + dojo.objectToQuery(args);
@@ -1485,6 +1488,8 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
              prefix: "project_",
              hidden: false,
              onClick: function(){ 
+                alert("This has dangerous misclick potential.  Prompt for confirmation needed");
+                /*
                 var args = {"project_name" : brwsr.tree.selectedItem.name};
                 var url = "bin/delete_project.py?" + dojo.objectToQuery(args);
                 var xhrArgs = {
@@ -1504,7 +1509,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
                     }
                 }
                 //Call the asynchronous xhrPost
-                var deferred = dojo.xhrPost(xhrArgs);
+                var deferred = dojo.xhrPost(xhrArgs);*/
              }
 
        });

@@ -75,8 +75,8 @@ var Login = function(containerID){
             login_dialog.show();
         }
         else{
-           login.user_name = user_info["user_name"];
-           login.passwd = user_info["passwd"];
+           login.user_name = user_name_cookie;
+           login.passwd = passwd_cookie;
            var valid = login.validate( login.user_name, login.passwd );
            if( valid ){
                login.showBrowser();

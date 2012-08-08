@@ -41,6 +41,9 @@ try :
     except Exception as e :
         pass
 
+   #TODO:
+   #delete references in lib/permissions.json
+
 except OSError as e :
     status = "error"
     message = str(e)

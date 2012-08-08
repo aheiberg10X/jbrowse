@@ -16,17 +16,22 @@ out_filename = "%s/create_new_project_output.txt" % (GlobalConfig.DEBUG_DIR)
 sys.stdout = open( out_filename,'w')
 
 fields = cgi.FieldStorage()
+user_name = fields.getvalue("user_name")
 project_name = fields.getvalue("project_name")
 assembly = fields.getvalue("assembly")
 
 utils.printToServer( 'Content-type: text/json\n\n' )
-try :
-    project_dir = "%s/data/tracks/%s%s" % \
-                   (GlobalConfig.ROOT_DIR, 
-                    GlobalConfig.PROJECT_PREFIX, 
-                    project_name) 
+project_dir = "%s/data/tracks/%s%s" % \
+               (GlobalConfig.ROOT_DIR, 
+                GlobalConfig.PROJECT_PREFIX, 
+                project_name) 
 
-    #setup directory for the explorer tree to find
+#setup directory for the explorer tree to find
+if os.path.exists( project_dir ) :
+    #TODO:
+    #name comflicts between users?
+    status,message = "bad","The project name '%s' is already taken"
+else :
     os.mkdir( project_dir )
     #setup directory for uploaded tables
     os.mkdir( "%s/%s" % (GlobalConfig.SRC_TABLE_DIR, project_name) )
@@ -38,14 +43,16 @@ try :
     lines.append('}')
     fmap.close()
 
+    #add permissions
+    perm_file = "../lib/permissions.json"
+    jperms = utils.fileToJson( perm_file )
+    jperms[user_name][project_name] = True
+    utils.jsonToFile( jperms, perm_file )
+
     status = "ok"
     message = "good to go"
     print "made the directory"
 
-except OSError as e :
-    status = "error"
-    message = str(e)
-    print str(e)
 
 
 utils.printToServer( '{"status":"%s", "message":"%s"}' % (status,message) )
