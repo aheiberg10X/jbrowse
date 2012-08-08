@@ -1,0 +1,16 @@
+perms = {
+    "earthworm jim" : {
+        "sangwoo" : true 
+    }, 
+    "dev" : {
+        "hg19" : true,
+        "main" : true,
+        "dev" : true
+    },
+    "anand" : {
+        "anand" : true
+    },
+    "sangwoo" : {
+        "sangwoo" : true
+    }
+}

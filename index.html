@@ -42,46 +42,9 @@
     <script type="text/javascript" src="lib/GlobalConfig.js"></script>
     <!--<script type="text/javascript" src="data/interestingAreas.js"></script>-->
 
+    <script type="text/javascript" src ="js/Login.js"></script>
     <script type="text/javascript">
-    /* <![CDATA[ */
-           console.log(sprintf( "hello %s", "fagel" ));
-           var queryParams = dojo.queryToObject(window.location.search.slice(1));
-           var bookmarkCallback = function(brwsr) {
-               return window.location.protocol
-                      + "//" + window.location.host
-                      + window.location.pathname
-                      + "?loc=" + brwsr.visibleRegion()
-                      + "&tracks=" + brwsr.visibleTracks();
-           }
-
-
-            var args = {task: "getTrackData"};
-            var url = "bin/track_data.py?" + dojo.objectToQuery(args);
-            dojo.xhrGet({
-                url: url,
-                handleAs: "json",
-                load: function(data,args){
-                    trackInfo = data;
-                    var b = new Browser({
-                                   containerID: "GenomeBrowser",
-                                   refSeqs: refSeqs,
-                                   trackData: trackInfo,
-                                   globals: globals,
-                                   defaultTracks: "DNA,gene,mRNA,noncodingRNA",
-                                   location: queryParams.loc,
-                                   tracks: queryParams.tracks,
-                                   bookmark: bookmarkCallback,
-                                   dataRoot: "data/"
-                               });
-
-                },
-                error: function(data,args){
-                    alert(data);
-                }
-            });
-
-           
-    /* ]]> */
+        var l = new Login("GenomeBrowser");
     </script>
   </head>
   

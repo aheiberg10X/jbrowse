@@ -11,27 +11,22 @@ cgitb.enable()
 
 from GlobalConfig import QUERY_PREFIX, PRIVATE_PREFIX, CHROM_PREFIX, DONOR_PREFIX, ROOT_DIR, DEBUG_DIR, TRACK_TEMPLATE, UNBOUND_CHROM, PROJECT_PREFIX
 
-perms = {"earthworm jim" : {"NA18507" : False}}
 
-#TODO
-#add project script needs to line to file
-#then need code here to construct perms dictionary
-dassembly = {"main":"hg18", \
-             "hg19":"hg19", \
-             "sangwoo":"hg18", \
-             "dev":"hg18", \
-             "anand":"hg19"}
+perms = utils.fileToJson(  "../lib/permissions.json" )
+dassembly = utils.fileToJson( "../lib/project_assembly_mapping.json" )
 
-def getChildren( path ) :
+
+def getChildren( user_name, path ) :
     r = []
     for thing in os.listdir( path ) :
-        if show(path,thing) :
+        if show( user_name, path, thing) :
             r.append( thing )
     r.sort()
     return r
 
 #needed by spec, see[]
-def handleQuery( path ) :
+def handleQuery( user_name, path ) :
+    print "handleQuery,", path
     total = 0
     items = []
     things = os.listdir( path )
@@ -39,7 +34,7 @@ def handleQuery( path ) :
     for thing in things :
         total += 1
         fullpath = "%s/%s" % (path,thing)
-        item = makeItem( fullpath )
+        item = makeItem( user_name, fullpath )
         if item :
             items.append( item )
 
@@ -49,8 +44,9 @@ def handleQuery( path ) :
     utils.printToServer( response )
 
 #needed by spec, see[]
-def handlePath( path ) :
-    item = makeItem( path )
+def handlePath( user_name, path ) :
+    print "handlePath,", path
+    item = makeItem( user_name, path )
     utils.printToServer( json.dumps( item ) )
 
 def getPrefix( path, name ) :
@@ -68,7 +64,7 @@ def getPrefix( path, name ) :
 def hasPermission( user, path, name ) :
     if user == 'su' : return True
     else :
-        if name.startswith(DONOR_PREFIX) :
+        if name.startswith(PROJECT_PREFIX) :
             try :
                 return perms[user][utils.unprefix(name)]
             except KeyError :
@@ -76,12 +72,12 @@ def hasPermission( user, path, name ) :
         else :
             return True
 
-def show( path, name ) :
+def show( user_name, path, name ) :
     prefix = getPrefix( path,name )
     return not( prefix == 'file' or prefix == PRIVATE_PREFIX ) and \
-           hasPermission("su",path,name)
+           hasPermission( user_name, path, name)
 
-def makeItem( path ) :
+def makeItem( user_name, path ) :
     print "path: %s" % path
     (head,gparent_name,parent_name,name) = path.rsplit('/',3)
     gparent = "%s/%s" % (head, gparent_name)
@@ -90,7 +86,7 @@ def makeItem( path ) :
     prefix = getPrefix( path, name )
     is_dir = prefix == DONOR_PREFIX or prefix == PROJECT_PREFIX
     item = {}
-    if show( path, name) :
+    if show( user_name, path, name) :
         name = utils.unprefix(name)
         parent_prefix = getPrefix( parent, parent_name )
         gparent_prefix = getPrefix( gparent, gparent_name )
@@ -183,7 +179,7 @@ def makeItem( path ) :
             else :
                 item['url'] = "%s/trackData.json" % tt
         if is_dir :
-            item["children"] = getChildren( path )
+            item["children"] = getChildren( user_name, path )
 
     return item
 
@@ -197,14 +193,31 @@ if __name__ == '__main__' :
     sys.stderr = open("%s/filestore_err.txt" % DEBUG_DIR,'w')
     sys.stdout = open("%s/filestore_out.txt" % DEBUG_DIR,'w')
 
-    dparams = cgi.parse()
-    print dparams
+    user_name = "generic"
+    for kvpair in os.environ["HTTP_COOKIE"].split(";") :
+        [k,v] = kvpair.split("=")
+        if k.endswith("user_name") :
+            user_name = v
 
+
+    print "user_name", user_name
+    dparams = cgi.parse()
+    print "fields, ",cgi.FieldStorage()
+    print dparams
+    #if 'user_name' in dparams :
+        #user = dparams['user']
+    user_name = "dev"
     if 'path' in dparams :
-        print 'handel path:', dparams['path'][0]
-        handlePath( dparams['path'][0] )
+        handlePath( user_name, dparams['path'][0] )
     else :
-        handleQuery( projects_root )
+        fqr = open("%s/query_requested.txt" % DEBUG_DIR,'w')
+        fqr.write( str(cgi.FieldStorage()) )
+        fqr.close()
+        handleQuery( user_name, projects_root )
+    #else :
+        #print "no user in dparams!"
+
+
 
     sys.stderr.close()
     sys.stdout.close()

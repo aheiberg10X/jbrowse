@@ -55,6 +55,7 @@ else :
     #chromnum = fields.getvalue("query_chrom")
     project = fields.getvalue("query_project");
     assembly = fields.getvalue("assembly");
+    user_name = fields.getvalue("user_name");
 
 
 #Open debugging files
@@ -90,12 +91,15 @@ print dest_template, type(dest_template)
 print src_table_dir, type(src_table_dir)
 print assembly, type(assembly)
 
+#TODO:
+#look for donor bams in DONOR_DIR/user/donor/chr*
 pop = Popen(['bash', \
              biosql_home + "/run_biosql.sh", \
              query_loc, \
              dest_template, \
              src_table_dir,
-             assembly], \
+             assembly, \
+             "%s/%s" % (DONOR_DIR, user_name)], \
             stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
 (out, err) = pop.communicate()

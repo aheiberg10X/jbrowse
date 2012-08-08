@@ -10,31 +10,40 @@ import GlobalConfig
 import utils
 import time
 
-err_filename = "%s/make_new_project_error.txt" % (GlobalConfig.DEBUG_DIR)
+err_filename = "%s/delete_project_error.txt" % (GlobalConfig.DEBUG_DIR)
 sys.stderr = open( err_filename,'w')
-out_filename = "%s/make_new_project_output.txt" % (GlobalConfig.DEBUG_DIR)
+out_filename = "%s/delete_project_output.txt" % (GlobalConfig.DEBUG_DIR)
 sys.stdout = open( out_filename,'w')
 
 fields = cgi.FieldStorage()
 project_name = fields.getvalue("project_name")
 
 utils.printToServer( 'Content-type: text/json\n\n' )
+
+status = "ok"
+message = "good to go"
+
 try :
     project_dir = "%s/data/tracks/%s%s" % \
                    (GlobalConfig.ROOT_DIR, 
                     GlobalConfig.PROJECT_PREFIX, 
                     project_name) 
 
-    os.mkdir( project_dir )
-    os.mkdir( project_dir + "/interval_tables" )
-    #status = "ok"
-    #message = "good to go"
-    status = "not ok"
-    message = "Need to alter make_new_project.py to update the project:assembly dictionary in filestore_dojotree.py"
-    print "made the directory"
+    #rm directory for the explorer tree
+    try :
+        shutil.rmtree( project_dir )
+    except Exception as e :
+        message = "Project directory already removed"
+    
+    #rm directory for uploaded tables
+    try :
+        shutil.rmtree( "%s/%s" % (GlobalConfig.SRC_TABLE_DIR, project_name) )
+    except Exception as e :
+        pass
+
 except OSError as e :
     status = "error"
-    message = "erk"
+    message = str(e)
     print str(e)
 
 

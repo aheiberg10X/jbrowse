@@ -12,9 +12,9 @@ import utils
 import time
 from subprocess import Popen, PIPE
 
-err_filename = "%s/list_donor_error.txt" % (GlobalConfig.DEBUG_DIR)
+err_filename = "%s/list_project_donors_error.txt" % (GlobalConfig.DEBUG_DIR)
 sys.stderr = open( err_filename,'w')
-out_filename = "%s/list_donor_output.txt" % (GlobalConfig.DEBUG_DIR)
+out_filename = "%s/list_project_donors_output.txt" % (GlobalConfig.DEBUG_DIR)
 sys.stdout = open( out_filename,'w')
 
 fields = cgi.FieldStorage()
