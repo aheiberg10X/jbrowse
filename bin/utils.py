@@ -13,12 +13,19 @@ def fileToJson( filename ) :
     fin = open( filename )
     t = fin.read()
     m = novar.match( t )
-    if not m : raise Exception("json file doesn't have a variable assignment")
-    jtext = m.group(1)
+    if not m : 
+        #raise Exception("json file doesn't have a variable assignment")
+        jtext = t
+    else :
+        jtext = m.group(1)
     jconfig = json.loads( jtext )
     fin.close()
     return jconfig
 
+def jsonToFile( json_obj, filename ) :
+    fout = open( filename, 'w' )
+    fout.write( json.dumps( json_obj ) )
+    fout.close()
 
 #supply to sorted( key= ) to sort lists in correct chrom order
 #if doesn't start with 'chr' no changes to alphanumeric sort order are made
@@ -63,4 +70,8 @@ def extractName( prefix, path ) :
             return unprefix(s)
 
 if __name__ == '__main__' :
-    print extractName('andrew@rodion:~/school/dnavis/jbrowse/data/tracks/chrom_chr1/donor_NA18507')
+    #print extractName('andrew@rodion:~/school/dnavis/jbrowse/data/tracks/chrom_chr1/donor_NA18507')
+    perm_file = "../lib/permissions.json"
+    jo = fileToJson( perm_file )
+    jo["earthworm jim"]["fake"] = True
+    jsonToFile( jo, perm_file )
