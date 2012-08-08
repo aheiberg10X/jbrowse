@@ -208,7 +208,9 @@ var Browser = function(params) {
             brwsr.createNewProjectDialog();
             brwsr.createUploadDonorDialog();
             brwsr.createAttachDonorDialog();
+
             
+            brwsr.user_name = dojo.cookie("user_name");
 
             containerWidget.startup();
 
@@ -901,7 +903,7 @@ Browser.prototype.createAttachDonorDialog = function(){
 //lots of similar code between this and refreshInterval
 Browser.prototype.refreshAttachableDonors = function(){
     var brwsr = this;
-    args = {"user_name" : "earthworm_jim"};
+    args = {"user_name" : brwsr.user_name};
     url = "bin/list_user_donors.py?"+dojo.objectToQuery(args);
     dojo.xhrGet({
         url: url,
