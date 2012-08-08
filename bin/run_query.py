@@ -8,7 +8,7 @@ import re
 import shutil
 import sys
 sys.path.append("../lib")
-from GlobalConfig import ROOT_DIR, DATA_DIR, TRACK_TEMPLATE, PROJECT_PREFIX, DEBUG_DIR, UPLOAD_DIR, UNBOUND_CHROM
+from GlobalConfig import ROOT_DIR, DATA_DIR, TRACK_TEMPLATE, PROJECT_PREFIX, DEBUG_DIR, UPLOAD_DIR, UNBOUND_CHROM, DONOR_DIR
 import utils
 import time
 import os.path
