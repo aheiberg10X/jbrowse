@@ -137,11 +137,14 @@ messages = []
 #visualize christos' files one by one
 print "donors: ", donors
 for donor in donors :
+
     for chromnum in [str(x) for x in range(1,23) + ['X','Y']] :
 
         chrom = "chr%s" % str(chromnum)
         product_folder = dest_template % (donor, chrom)
         
+        #TODO:
+        #overkill to do this for every chrom, just needs to happen once
         #copy query
         #put the file with the user query in the query_dir as a .gq file
         moveIfExists( query_loc, \

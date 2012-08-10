@@ -25,16 +25,17 @@ project_dir = "%s/data/tracks/%s%s" % \
                (GlobalConfig.ROOT_DIR, 
                 GlobalConfig.PROJECT_PREFIX, 
                 project_name) 
-
+src_table_dir = "%s/%s" % (GlobalConfig.SRC_TABLE_DIR, project_name)
 #setup directory for the explorer tree to find
-if os.path.exists( project_dir ) :
+if os.path.exists( project_dir ) or os.path.exists( src_table_dir ) :
+    print "project_dir", project_dir
     #TODO:
     #name comflicts between users?
-    status,message = "bad","The project name '%s' is already taken"
+    status,message = "bad","The project name '%s' is already taken" % project_name
 else :
     os.mkdir( project_dir )
     #setup directory for uploaded tables
-    os.mkdir( "%s/%s" % (GlobalConfig.SRC_TABLE_DIR, project_name) )
+    os.mkdir( src_table_dir )
 
     #add the new project:assembly mapping to file
     fmap = open("../lib/project_assembly_mapping.json")
