@@ -135,45 +135,53 @@ def makeItem( user_name, path ) :
             item["txts"] = []
             item["sub_results"] = []
             item["sub_exts"] = []
-            folder = "%s/data/%s" % (ROOT_DIR, tt.replace( UNBOUND_CHROM, 'chr1' ) )
-            print "folder is %s" % folder
-            #TODO
-            #more specific than just looking for a .txt file?
-            for thing in sorted( os.listdir( folder ) ) :
-                if os.path.isdir( folder+"/"+thing ) and thing != ".svn" :
-                    print "listdir:", thing
-                    item["sub_results"].append( thing )
-                    for subthing in sorted(os.listdir( folder+"/"+thing )) :
-                        head,ext = subthing.rsplit(".",1)
-                        if ext == "short" or ext == "interval" :
-                            if ext == "short" :
-                                item["sub_exts"].append( "bam.short" )
-                            else :
-                                item["sub_exts"].append( ext )
-                else :
-                    head,ext = thing.rsplit(".",1)
-                    if ext == "bam" :
-                        item["bams"].append( thing )
-                    if ext == "txt" :
-                        item["txts"].append( thing )
+            folder = ""
+            for listing in os.listdir( path ) :
+                if os.path.isdir( listing ) : 
+                    folder = path + '/' + listing
+
+            if not folder :
+                pass
+            else :
+                #folder = "%s/data/%s" % (ROOT_DIR, tt.replace( UNBOUND_CHROM, 'chr1' ) )
+                print "folder is %s" % folder
+                #TODO
+                #more specific than just looking for a .txt file?
+                for thing in sorted( os.listdir( folder ) ) :
+                    if os.path.isdir( folder+"/"+thing ) and thing != ".svn" :
+                        print "listdir:", thing
+                        item["sub_results"].append( thing )
+                        for subthing in sorted(os.listdir( folder+"/"+thing )) :
+                            head,ext = subthing.rsplit(".",1)
+                            if ext == "short" or ext == "interval" :
+                                if ext == "short" :
+                                    item["sub_exts"].append( "bam.short" )
+                                else :
+                                    item["sub_exts"].append( ext )
+                    else :
+                        head,ext = thing.rsplit(".",1)
+                        if ext == "bam" :
+                            item["bams"].append( thing )
+                        if ext == "txt" :
+                            item["txts"].append( thing )
 
 
 
-                #for key in dkey_ext :
-                    #if thing.lower().endswith( dkey_ext[key] ) :
-                        #(head, ext) = thing.rsplit(".",1)
-               # 
-                        ##the new run_query will 
-                        #splt = head.rsplit("+",1)
-                        #if len(splt) == 2 :
-                            #(head, i) = splt
-                        #else :
-                            #i = "0" 
-                        #item[key].append( i )
-                        #break
+                    #for key in dkey_ext :
+                        #if thing.lower().endswith( dkey_ext[key] ) :
+                            #(head, ext) = thing.rsplit(".",1)
                    # 
-            #for key in dkey_ext :
-                #item[key] = ",".join( item[key] ) 
+                            ##the new run_query will 
+                            #splt = head.rsplit("+",1)
+                            #if len(splt) == 2 :
+                                #(head, i) = splt
+                            #else :
+                                #i = "0" 
+                            #item[key].append( i )
+                            #break
+                       # 
+                #for key in dkey_ext :
+                    #item[key] = ",".join( item[key] ) 
             if len(item['sub_results']) > 0 :
                 item['url'] = "%s/%%s/trackData.json" % tt
             else :
