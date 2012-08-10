@@ -57,6 +57,14 @@ do
         echo "dest template: $dest_template"
         chrom_dir=`printf "$dest_template" $donor $chr`
         echo "chrom_dir: $chrom_dir"
+    
+        query_dir=${chrom_dir%/*}    
+        echo query_dir $query_dir
+        if test ! -d $query_dir
+        then
+            echo "making query_dir $query_dir"
+            mkdir $query_dir
+        fi
 
 		if test ! -f $bam_file
 		then
@@ -69,13 +77,7 @@ do
 			continue
 		fi
 	
-        query_dir=${chrom_dir%/*}    
-        echo query_dir $query_dir
-        if test ! -d $query_dir
-        then
-            mkdir $query_dir
-        fi
-        if test ! -d $chrom_dir
+                if test ! -d $chrom_dir
         then
             echo "making chrom_dir $chrom_dir"
             mkdir $chrom_dir

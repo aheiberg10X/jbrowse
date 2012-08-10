@@ -137,19 +137,22 @@ messages = []
 #visualize christos' files one by one
 print "donors: ", donors
 for donor in donors :
+    
+    #TODO:
+    #overkill to do this for every chrom, just needs to happen once
+    #copy query
+    #put the file with the user query in the query_dir as a .gq file
+    query_folder = dest_template.rsplit('/',1)[0] % donor
+    print "query_folder,", query_folder
+    moveIfExists( query_loc, \
+                  "%s/%s.gq" % (query_folder, query_name) )
 
     for chromnum in [str(x) for x in range(1,23) + ['X','Y']] :
 
         chrom = "chr%s" % str(chromnum)
         product_folder = dest_template % (donor, chrom)
         
-        #TODO:
-        #overkill to do this for every chrom, just needs to happen once
-        #copy query
-        #put the file with the user query in the query_dir as a .gq file
-        moveIfExists( query_loc, \
-                      "%s/../%s.gq" % (product_folder, query_name) )
-
+        
         print "product_folder", product_folder
         if os.path.exists( product_folder ) and len( os.listdir( product_folder ) ) > 0 :
             print "exists!\n"
@@ -195,13 +198,14 @@ for donor in donors :
                                   'url' : "%s/trackData.json" % url, \
                                   'type' : "FeatureTrack"}
 
-                    #don't want to add duplicate track_data for every chromosome
                 else :
                     track_data = {'label': trackkey, \
                                   'key': trackkey, \
                                   'url': "nope", \
                                   'type': 'DataTrack'}
                     messages.append( "%s - Nothing to visualize. No interval or short files." % chrom )
+
+                #don't want to add duplicate track_data for every chromosome
                 if trackkey in trackkeys :
                     pass
                 else :
