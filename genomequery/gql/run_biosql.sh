@@ -4,12 +4,9 @@ if [ $# -ne 5 ] ; then
 fi
 
 input_sql=$1
-products_dir_prefx=$2 #"dst"
+dest_template=$2 #"dst"
 src_table_dir=$3 
-
-
-
-
+user_donor_dir=$5
 
 interm_code="bytecode.txt"
 front_end_dir="front_end"
@@ -57,7 +54,9 @@ do
 		indx_file=$bam_prefx$chr".mates.indx"
 		#products_dir=$products_dir_prefx/$chr
 		#products_dir=$products_dir_prefx/$donor/$chr
+        echo "dest template: $dest_template"
         chrom_dir=`printf "$dest_template" $donor $chr`
+        echo "chrom_dir: $chrom_dir"
 
 		if test ! -f $bam_file
 		then
@@ -78,7 +77,8 @@ do
         fi
         if test ! -d $chrom_dir
         then
-                mkdir $chrom_dir
+            echo "making chrom_dir $chrom_dir"
+            mkdir $chrom_dir
         fi
 
 		#if test ! -d $products_dir_prefx/$donor
@@ -90,7 +90,7 @@ do
 				#mkdir $products_dir
 		#fi
 		
-		python code_generator.py $interm_code $products_dir $front_end_dir $back_end_dir $src_table_dir $bam_file $indx_file $chr $chr_len >> $low_level_calls
+		python code_generator.py $interm_code $chrom_dir $front_end_dir $back_end_dir $src_table_dir $bam_file $indx_file $chr $chr_len >> $low_level_calls
 		chmod +x $low_level_calls
 		/usr/bin/time -f "real %e user %U sys %S avg_mem(KB) %K max_resident(KB) %M avg_resident(KB) %t" ./$low_level_calls 
 

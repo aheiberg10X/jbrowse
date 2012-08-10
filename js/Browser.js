@@ -208,8 +208,7 @@ var Browser = function(params) {
             brwsr.createNewProjectDialog();
             brwsr.createUploadDonorDialog();
             brwsr.createAttachDonorDialog();
-            
-    
+
             brwsr.user_name = dojo.cookie("user_name");
 
             containerWidget.startup();
@@ -423,11 +422,11 @@ Browser.prototype.runQuery = function(brwsr){
             error: function(error) {
                 alert(error);
                 dojo.attr(progress_bar.domNode, 'hidden', true);
-                    dojo.style(dijit.byId('stop_button').domNode, {
-                          visibility: 'hidden',
-                          display: 'none'
-                    });
-                dojo.attr(stop_button.domNode, 'hidden', true);
+                dojo.style(dijit.byId('stop_button').domNode, {
+                      visibility: 'hidden',
+                      display: 'none'
+                });
+                //dojo.attr(stop_button.domNode, 'hidden', true);
                 brwsr.setRunningQuery( false );
                 //progress_bar.update({'progress': 0});
             }
@@ -999,6 +998,12 @@ Browser.prototype.refreshIntervalTables = function(){
             if( data['status'] == "empty" ){
             }
             else if( data["status"] == 'ok' ){
+                if( data["message"].length == 0 ){
+                    dojo.create('option',
+                                {innerHTML: message,
+                                 value: message},
+                                 widget.domNode);
+                }
                 data["message"].forEach( 
                     function( message, idx, arr ){
                         dojo.create('option', 
@@ -1606,7 +1611,9 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
     });
 
     var deleteQuery = function( project, donor, query_name, sub_results ){
-        var args = {project: project, donor: donor, query_name: query_name};
+        var args = {project: project, 
+                    donor: donor, 
+                    query_name: query_name};
         var url = "bin/remove_track.py?" + dojo.objectToQuery(args);
         //var trackkey = project +'/'+ query_name;
 
@@ -1617,8 +1624,24 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
             load: function(data,ioargs) {
                 if( data["status"] == "ok" ){
                     brwsr.tree.refresh();
-                    for( var i=0; i < sub_results.length; i++ ){
-                        var trackkey = project+"/"+query_name+"/"+sub_results[i];
+                    var trackkeys_to_del = [];
+                    var is_blank_track = sub_results.length == 0;
+                    if( is_blank_track ){
+                        trackkeys_to_del.push( project+"/"+query_name );
+                    }
+                    else{
+                        dojo.forEach( 
+                            sub_results, 
+                            function(sr,idx,arr){
+                                trackkeys_to_del.push( project+"/"+
+                                                       query_name+"/"+
+                                                       sr );
+                            }
+                        );
+                    }
+
+                    for( var i=0; i < trackkeys_to_del.length; i++ ){
+                        var trackkey = trackkeys_to_del[i];
                         recall( trackkey ); 
                         var ix = brwsr.tracks.indexOf(trackkey);
                         if( ix != -1 ){
