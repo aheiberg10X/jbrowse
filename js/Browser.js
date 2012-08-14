@@ -99,6 +99,7 @@ var Browser = function(params) {
             //close in the containerID
             //brwsr.setRefseq = brwsr.closeSetRefseq(params.containerID);
             brwsr.setRefseq(init_assembly); 
+            brwsr.refreshUser();
 
             var viewElem = document.createElement("div");
             brwsr.container.appendChild(viewElem);
@@ -209,7 +210,6 @@ var Browser = function(params) {
             brwsr.createUploadDonorDialog();
             brwsr.createAttachDonorDialog();
 
-            brwsr.user_name = dojo.cookie("user_name");
 
             containerWidget.startup();
 
@@ -246,6 +246,12 @@ var Browser = function(params) {
         });
 };
 
+Browser.prototype.refreshUser = function(){
+    this.user_name = dojo.cookie("user_name");
+    if( this.tree ){
+        this.tree.refresh();
+    }
+};
 
 Browser.prototype.setRefseq2 = function(assembly){
     this.assembly = assembly;
@@ -683,7 +689,7 @@ Browser.prototype.createUploadTableDialog = function(){
             ).placeAt( table_dialog_bc_div );
 
     table_dialog_upload_title = document.createElement("p");
-    table_dialog_upload_title.innerHTML = "<b>Upload New Interval Table</b>";
+    table_dialog_upload_title.innerHTML = "<b>Upload New Table</b>";
     table_dialog_upload_cp.domNode.appendChild( table_dialog_upload_title );
 
     var table_dialog_upload_form_div = document.createElement("div");
@@ -755,7 +761,7 @@ Browser.prototype.createUploadTableDialog = function(){
     // ////////////////////////////////////////////////////////////////
     this.table_dialog = new dijit.Dialog({
                     id: "table_dialog",
-                    title: "Manage Interval Tables",
+                    title: "Manage Tables",
         //style: "width: 800px;",
                     content: table_dialog_div
     });
@@ -2138,6 +2144,20 @@ Browser.prototype.createNavBox = function(parent, locLength, params) {
     navbox.id = "navbox";
     parent.appendChild(navbox);
     navbox.style.cssText = "text-align: center; padding: 2px; z-index: 10;";
+    var logout_button = new dijit.form.Button(
+            {id: "logout_button", 
+             label: "Logout",
+             style: "align-text: right;",
+             onClick: function(){ 
+                //clear cookies
+                dojo.cookie("user_name", null, {expires:-1});
+                dojo.cookie("passwd",    null, {expires:-1});
+                //brwsr.destroyRecursive();
+                brwsr.container.style.display = 'none';
+                brwsr.login_dialog.show();
+                alert("TODO logout");
+             }
+         }).placeAt( navbox );
 
     if (params.bookmark) {
         this.link = document.createElement("a");

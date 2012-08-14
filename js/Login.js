@@ -1,6 +1,9 @@
 var Login = function(containerID){
     var login = this;
+    login.containerID = containerID;
+
     dojo.addOnLoad( function(){
+        dojo.addClass(document.body, "tundra");
         dojo.require("dojo.cookie");
         dojo.require("dijit.form.ValidationTextBox");
         dojo.require("dijit.form.Button");
@@ -45,26 +48,72 @@ var Login = function(containerID){
              onClick: function(){
                 login.user_name = user_name_textbox.value;
                 login.passwd = passwd_textbox.value;
-                var valid = login.validate( login.user_name, login.passwd );
-                if( valid ){
-                    login_dialog.hide();
-                    //dojo.toJson( {"":,"":}
-                    //var user_info =  "user_name:"+%s+";passwd:"%s"
-                    //(login.user_name, login.passwd );
-                    dojo.cookie("user_name",
-                                login.user_name,
-                                {expires: 3});
-                    dojo.cookie("passwd",login.passwd,{expires:3});
+                var def = login.validate( login.user_name, 
+                                            login.passwd,
+                                            false );
+                def.then(
+                    function(valid){
+                        if( valid ){
+                            login.login_dialog.hide();
+                            //dojo.toJson( {"":,"":}
+                            //var user_info =  "user_name:"+%s+";passwd:"%s"
+                            //(login.user_name, login.passwd );
+                            dojo.cookie("user_name",
+                                        login.user_name,
+                                        {expires: 3});
+                            dojo.cookie("passwd",login.passwd,{expires:3});
 
-                    login.showBrowser(); //alert("show browser");
-                }
-                else{
-                    alert("try again");
-                }
+                            login.showBrowser(); //alert("show browser");
+                        }
+                        else{
+                            alert("try again");
+                        }
+                    },
+                    function(err){
+                        var a = 5;
+                    }
+                );
              }
             }).placeAt( login_div ) ;
 
-        var login_dialog = new dijit.Dialog({
+        var register_button = new dijit.form.Button(
+            {id: "register_button", 
+             label: "Register",
+             style: "align-text: left; margin-top: 30px;",
+             onClick: function(){
+                login.user_name = user_name_textbox.value;
+                login.passwd = passwd_textbox.value;
+                var def = login.validate( login.user_name, 
+                                            login.passwd,
+                                            true );
+                def.then(
+                    function(valid){
+                        if( valid ){
+                            login.login_dialog.hide();
+                            //dojo.toJson( {"":,"":}
+                            //var user_info =  "user_name:"+%s+";passwd:"%s"
+                            //(login.user_name, login.passwd );
+                            dojo.cookie("user_name",
+                                        login.user_name,
+                                        {expires: 3});
+                            dojo.cookie("passwd",login.passwd,{expires:3});
+
+                            login.showBrowser(); //alert("show browser");
+                        }
+                        else{
+                            alert("try again");
+                        }
+                    },
+                    function(err){
+                        var a = 5;
+                    }
+                );
+
+             }
+            }).placeAt( login_div ) ;
+
+
+        login.login_dialog = new dijit.Dialog({
                         id : "login_dialog",
                         title: "Login",
                        // style: "width: 70%;",
@@ -72,76 +121,95 @@ var Login = function(containerID){
         });
 
         if( ! user_name_cookie || ! passwd_cookie ){
-            login_dialog.show();
+            login.login_dialog.show();
         }
         else{
            login.user_name = user_name_cookie;
            login.passwd = passwd_cookie;
-           var valid = login.validate( login.user_name, login.passwd );
-           if( valid ){
-               login.showBrowser();
-           }
-           else{
-               alert("bad cookie");
-               login_dialog.show();
-           }
+           var def = login.validate( login.user_name, login.passwd, false );
+           def.then(
+               function(valid){
+                   if( valid ){
+                       login.showBrowser();
+                   }
+                   else{
+                       alert("bad cookie");
+                       login.login_dialog.show();
+                   }
+               },
+               function(err){
+                   var a = 5;
+               }
+           );
         }
     });
 }
 
 
 Login.prototype.showBrowser = function(){
-    var login = this;
-   console.log(sprintf( "hello %s", "fagel" ));
-   var queryParams = dojo.queryToObject(window.location.search.slice(1));
-   var bookmarkCallback = function(brwsr) {
-       return window.location.protocol
-              + "//" + window.location.host
-              + window.location.pathname
-              + "?loc=" + brwsr.visibleRegion()
-              + "&tracks=" + brwsr.visibleTracks();
+   var login = this;
+
+   if( login.brwsr_created ) {
+       login.brwsr.container.style.display = "block";
+       login.brwsr.refreshUser();
    }
+   else {
+       console.log(sprintf( "hello %s", "fagel" ));
+       var queryParams = dojo.queryToObject(window.location.search.slice(1));
+       var bookmarkCallback = function(brwsr) {
+           return window.location.protocol
+                  + "//" + window.location.host
+                  + window.location.pathname
+                  + "?loc=" + brwsr.visibleRegion()
+                  + "&tracks=" + brwsr.visibleTracks();
+       }
 
-//TODO:
-//user login interface
+    //TODO:
+    //user login interface
 
 
-    var args = {task: "getTrackData",
-                user_name: login.user_name};
-    var url = "bin/track_data.py?" + dojo.objectToQuery(args);
-    dojo.xhrGet({
-        url: url,
-        handleAs: "json",
-        load: function(data,args){
-            trackInfo = data;
-            var b = new Browser({
-                           containerID: "GenomeBrowser",
-                           refSeqs: refSeqs,
-                           trackData: trackInfo,
-                           globals: globals,
-                           defaultTracks: "DNA,gene,mRNA,noncodingRNA",
-                           location: queryParams.loc,
-                           tracks: queryParams.tracks,
-                           bookmark: bookmarkCallback,
-                           dataRoot: "data/"
-                       });
+        var args = {task: "getTrackData",
+                    user_name: login.user_name};
+        var url = "bin/track_data.py?" + dojo.objectToQuery(args);
+        dojo.xhrGet({
+            url: url,
+            handleAs: "json",
+            load: function(data,args){
+                trackInfo = data;
+                var b = new Browser({
+                               containerID: login.containerID,
+                               refSeqs: refSeqs,
+                               trackData: trackInfo,
+                               globals: globals,
+                               defaultTracks: "DNA,gene,mRNA,noncodingRNA",
+                               location: queryParams.loc,
+                               tracks: queryParams.tracks,
+                               bookmark: bookmarkCallback,
+                               dataRoot: "data/"
+                           });
+                b.login_dialog = login.login_dialog;
+                login.brwsr_created = true;
+                login.brwsr = b;
 
-        },
-        error: function(data,args){
-            alert(data);
-        }
-    });
+            },
+            error: function(data,args){
+                alert(data);
+            }
+        });
+   }
 };
 
-
-Login.prototype.validate = function(){
+Login.prototype.validate = function( user_name, passwd, is_registering ){
     var login = this;
-    return login.user_name == "dev";
+    //TODO:
+    //remove this
+    //return login.user_name == "dev";
        
-    var args = {"user_name" : login.user_name,
-               "passwd" : login.passwd};
+    var args = {"user_name" : user_name,
+                "passwd" : passwd,
+                "is_registering" : is_registering };
     var url = "bin/login.py?" + dojo.objectToQuery( args );
-    dojo.xhrPost({
+    var def = dojo.xhrGet({
         url: url,
         handleAs: "json",
         load: function(data,args){
@@ -157,4 +225,12 @@ Login.prototype.validate = function(){
             return false
         }
     });
+    return def;
+    //def.then(
+    //function(res){
+    //var a = 4;
+    //},
+    //function(err){
+    //}
+    //);
 };

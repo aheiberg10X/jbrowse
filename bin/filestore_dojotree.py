@@ -106,6 +106,7 @@ def makeItem( user_name, path ) :
 
 
         if prefix == QUERY_PREFIX : 
+            print "QUERY_PREFIX"
             assert parent_prefix == DONOR_PREFIX
             item['project'] = gparent_name
             item['donor'] = parent_name
@@ -135,23 +136,29 @@ def makeItem( user_name, path ) :
             item["txts"] = []
             item["sub_results"] = []
             item["sub_exts"] = []
-            folder = ""
-            for listing in os.listdir( path ) :
-                if os.path.isdir( listing ) : 
-                    folder = path + '/' + listing
 
-            if not folder :
+            #pick the first available chrom folder and inspect its contents
+            #use them to build up the list of bams, txts, sub_results, ....
+            chrom_folder = ""
+            for listing in os.listdir( path ) :
+                folder = path + '/' + listing
+                if os.path.isdir( folder ) :
+                    chrom_folder = folder
+                    break
+
+            print "folder", chrom_folder
+            if not chrom_folder :
                 pass
             else :
                 #folder = "%s/data/%s" % (ROOT_DIR, tt.replace( UNBOUND_CHROM, 'chr1' ) )
-                print "folder is %s" % folder
+                print "canonical chrom folder is %s" % chrom_folder
                 #TODO
                 #more specific than just looking for a .txt file?
-                for thing in sorted( os.listdir( folder ) ) :
-                    if os.path.isdir( folder+"/"+thing ) and thing != ".svn" :
+                for thing in sorted( os.listdir( chrom_folder ) ) :
+                    if os.path.isdir( chrom_folder+"/"+thing ) and thing != ".svn" :
                         print "listdir:", thing
                         item["sub_results"].append( thing )
-                        for subthing in sorted(os.listdir( folder+"/"+thing )) :
+                        for subthing in sorted(os.listdir( chrom_folder+"/"+thing )) :
                             head,ext = subthing.rsplit(".",1)
                             if ext == "short" or ext == "interval" :
                                 if ext == "short" :
@@ -165,23 +172,6 @@ def makeItem( user_name, path ) :
                         if ext == "txt" :
                             item["txts"].append( thing )
 
-
-
-                    #for key in dkey_ext :
-                        #if thing.lower().endswith( dkey_ext[key] ) :
-                            #(head, ext) = thing.rsplit(".",1)
-                   # 
-                            ##the new run_query will 
-                            #splt = head.rsplit("+",1)
-                            #if len(splt) == 2 :
-                                #(head, i) = splt
-                            #else :
-                                #i = "0" 
-                            #item[key].append( i )
-                            #break
-                       # 
-                #for key in dkey_ext :
-                    #item[key] = ",".join( item[key] ) 
             if len(item['sub_results']) > 0 :
                 item['url'] = "%s/%%s/trackData.json" % tt
             else :
@@ -202,6 +192,7 @@ if __name__ == '__main__' :
     sys.stdout = open("%s/filestore_out.txt" % DEBUG_DIR,'w')
 
     user_name = "generic"
+    print os.environ["HTTP_COOKIE"]
     for kvpair in os.environ["HTTP_COOKIE"].split(";") :
         [k,v] = kvpair.split("=",1)
         if k.endswith("user_name") :
@@ -210,6 +201,7 @@ if __name__ == '__main__' :
             passwd = v
 
 
+    #print perms
 
     print "user_name", user_name
     dparams = cgi.parse()
@@ -217,7 +209,6 @@ if __name__ == '__main__' :
     print dparams
     #if 'user_name' in dparams :
         #user = dparams['user']
-    user_name = "dev"
     if 'path' in dparams :
         handlePath( user_name, dparams['path'][0] )
     else :
