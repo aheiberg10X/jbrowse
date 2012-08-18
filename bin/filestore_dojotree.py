@@ -106,6 +106,7 @@ def makeItem( user_name, path ) :
 
 
         if prefix == QUERY_PREFIX : 
+            print "QUERY_PREFIX"
             assert parent_prefix == DONOR_PREFIX
             item['project'] = gparent_name
             item['donor'] = parent_name
@@ -135,10 +136,12 @@ def makeItem( user_name, path ) :
             item["txts"] = []
             item["sub_results"] = []
             item["sub_exts"] = []
+
             folder = ""
-            for listing in os.listdir( path ) :
-                if os.path.isdir( listing ) : 
-                    folder = path + '/' + listing
+            for chrom_folder in os.listdir( path ) :
+                if os.path.isdir( chrom_folder ) : 
+                    folder = path + '/' + chrom_folder
+                    break
 
             if not folder :
                 pass
