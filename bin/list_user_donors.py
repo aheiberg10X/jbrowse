@@ -19,10 +19,11 @@ sys.stdout = open( out_filename,'w')
 
 fields = cgi.FieldStorage()
 user_name = fields.getvalue("user_name")
+assembly = fields.getvalue("assembly")
 
 utils.printToServer( 'Content-type: text/json\n\n' )
 
-user_donor_dir = "%s/%s" % (GlobalConfig.DONOR_DIR, user_name)
+user_donor_dir = "%s/%s/%s" % (GlobalConfig.DONOR_DIR, user_name, assembly)
 print "user_donor_dir:", user_donor_dir
 donors = []
 status, message = "bad","generic"

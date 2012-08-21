@@ -100,6 +100,7 @@ var Browser = function(params) {
             //brwsr.setRefseq = brwsr.closeSetRefseq(params.containerID);
             brwsr.setRefseq(init_assembly); 
             brwsr.refreshUser();
+            //brwsr.refreshProjectAssemblyMapping();
 
             var viewElem = document.createElement("div");
             brwsr.container.appendChild(viewElem);
@@ -280,6 +281,8 @@ Browser.prototype.setRefseq = function(assembly){
         //}
     }
     brwsr.chromList.selectedIndex = 0;
+    //TODO:
+    //rename assembly to refinfo
     brwsr.assembly = assembly;
 };
 
@@ -737,7 +740,7 @@ Browser.prototype.createUploadTableDialog = function(){
                      error: function(response, ioArgs){
                          alert(response);
                      }        
-                })
+                });
              }
          }).placeAt( table_dialog_upload_form_div );
 
@@ -783,6 +786,7 @@ Browser.prototype.createUploadDonorDialog = function(){
 
     var donor_name_p = document.createElement("p");
     donor_name_p.id = "donor_name_p";
+    donor_name_p.innerHTML = "Donor Name: <br />";
     upload_donor_dialog_div.appendChild( donor_name_p );
         
     var donor_name = new dijit.form.ValidationTextBox(
@@ -794,17 +798,28 @@ Browser.prototype.createUploadDonorDialog = function(){
                 }
             ).placeAt( donor_name_p );
    
-    //TODO: add assembly name
+    var assembly_list_p = document.createElement("p");
+    assembly_list_p.id = "assembly_list_p";
+    assembly_list_p.innerHTML = "Reference: <br />";
+    upload_donor_dialog_div.appendChild( assembly_list_p );
 
-    //var donor_list_div = document.createElement("div");
-    //donor_list_div.id = "donor_list_div";
-    //upload_donor_dialog_div.appendChild( donor_list_div );
+    var user_assembly_list2 = new dijit.form.MultiSelect({
+        name: "user_assembly_list2",
+        id: "user_assembly_list2"
+    });
+    assembly_list_p.appendChild(user_assembly_list2.domNode);
+    user_assembly_list2.startup();
 
-
-    //var donor_list = 
-    //dijit.form.MultiSelect( 
-    //{id: "donor_list"}, 
-    //donor_list_div ); 
+    var upload_refinfo_div = document.createElement("div");
+    upload_refinfo_div.id = "upload_refinfo_div";
+    upload_refinfo_div.innerHTML = "Or Upload Custom Reference <br />";
+    upload_donor_dialog_div.appendChild( upload_refinfo_div );
+    
+    var refinfo_file = document.createElement("input");
+    refinfo_file.type = "file";
+    refinfo_file.id = "refinfo_file";
+    refinfo_file.name = "refinfo_file";
+    upload_refinfo_div.appendChild( refinfo_file )
 
     var index_donor_button = new dijit.form.Button(
             {id: "index_donor_button", 
@@ -815,24 +830,43 @@ Browser.prototype.createUploadDonorDialog = function(){
                  //hide the dialog, give a working bar, just say you will be alerted when it completes
                  //Allow refreshes, they shouldn't cause issue
                  alert( "Indexing has started. Do not refresh this page.");
-                 upload_donor_dialog.hide()
-                  
+                 brwsr.upload_donor_dialog.hide()
+
+                 var refinfo = "";
+                 var selected = user_assembly_list2.getSelected();
+                 if( selected.length > 0 ){
+                     refinfo = selected[0].innerHTML;
+                 }
+
                  var args = {"donor_name": donor_name.value,
-                             "user_name": brwsr.user_name};
+                             "user_name": brwsr.user_name,
+                             "refinfo" : refinfo};
+                //TODO:
+                //have index donor update refSeqs.json
+                
                  var url = "bin/index_donor.py?" + dojo.objectToQuery( args );
-                 dojo.xhrPost({
+                 dojo.io.iframe.send({
                      url: url,
+                     method: "post",
                      handleAs: "json",
+                     form: dojo.byId("upload_donor_form"),
                      load: function(data,args){
                          alert(data["message"]);
-                         this.upload_donor_dialog.hide();
+                         brwsr.refreshRefseqs();
+                         brwsr.upload_donor_dialog.hide();
                      },
                      error: function(data,args){
                          alert(data);
                      }
                  });
              }
-         }).placeAt( upload_donor_dialog_div );
+         }).placeAt( upload_refinfo_div ); //(upload_donor_dialog_div );
+
+    var new_project_form = new dijit.form.Form(
+        {id: "upload_donor_form",
+        method: "post",
+        encType : "multipart/form-data"},
+    upload_refinfo_div );
 
     this.upload_donor_dialog = new dijit.Dialog({
                     id: "upload_donor_dialog",
@@ -878,12 +912,16 @@ Browser.prototype.createAttachDonorDialog = function(){
                  var project_name = brwsr.tree.selectedItem.name;
 
                  var args = {"donor_names" : donor_names,
-                             "project_name" : project_name};
+                             "project_name" : project_name,
+                             "user_name" : brwsr.user_name,
+                             "assembly" : brwsr.tree.selectedItem.assembly};
+    
                  var url = "bin/attach_donor.py?" + dojo.objectToQuery(args);
                  dojo.xhrPost({
                      url: url,
                      handleAs: "json",
                      load: function(data,args){
+                         var a = 5;
                          brwsr.tree.refresh();
                          //alert(data["message"].join("\n")); 
                          //alert(data["message"]);
@@ -908,7 +946,11 @@ Browser.prototype.createAttachDonorDialog = function(){
 //lots of similar code between this and refreshInterval
 Browser.prototype.refreshAttachableDonors = function(){
     var brwsr = this;
-    args = {"user_name" : brwsr.user_name};
+    args = {"user_name" : brwsr.user_name,
+            "assembly" : brwsr.tree.selectedItem.assembly};
+    //TODO 
+    //better to put this in one script that returns unattached?
+    //yes, because then you can use refreshMultiSelect() straightforwardly
     url = "bin/list_user_donors.py?"+dojo.objectToQuery(args);
     dojo.xhrGet({
         url: url,
@@ -979,19 +1021,14 @@ Browser.prototype.refreshAttachableDonors = function(){
            alert(data);
         }
     });
-
 };
 
-//a function that fills a target div with a list of 
-//user tables associate with the project
-Browser.prototype.refreshIntervalTables = function(){
-    args = {"project_name" : this.tree.selectedItem.name};
-    url = "bin/list_interval_tables.py?"+dojo.objectToQuery(args);
+Browser.prototype.refreshMultiSelect = function( id, url ){
     dojo.xhrGet({
         url: url,
         handleAs: "json",
         load: function(data,args){
-            var widget = dijit.byId("table_dialog_existing_list");
+            var widget = dijit.byId(id);
             //clear the existing stuff
             var a = dojo.query('option', widget.domNode);
             a.forEach( 
@@ -1000,16 +1037,16 @@ Browser.prototype.refreshIntervalTables = function(){
                 });
 
             //repopulate
-            widget.domNode.innerHTML = "Current Tables: <br />";
+            //widget.domNode.innerHTML = "Current Tables: <br />";
             if( data['status'] == "empty" ){
+                dojo.create('option',
+                            {innerHTML: data['message'],
+                             value: data['message']},
+                             widget.domNode);
+                //TODO
+                //grey out the action buttion
             }
             else if( data["status"] == 'ok' ){
-                if( data["message"].length == 0 ){
-                    dojo.create('option',
-                                {innerHTML: message,
-                                 value: message},
-                                 widget.domNode);
-                }
                 data["message"].forEach( 
                     function( message, idx, arr ){
                         dojo.create('option', 
@@ -1024,9 +1061,54 @@ Browser.prototype.refreshIntervalTables = function(){
         },
         error: function(data,args){
            alert(data);
-           alert("trouble fetching the uploaded tables");
+           alert("trouble fetching list from " + url);
         }
     });
+};
+
+Browser.prototype.refreshIntervalTables = function(){
+    args = {"project_name" : this.tree.selectedItem.name};
+    url = "bin/list_interval_tables.py?"+dojo.objectToQuery(args);
+    this.refreshMultiSelect("table_dialog_existing_list", url);
+};
+
+Browser.prototype.refreshRefseqs = function() {
+    var url = "data/refSeqs.js"
+    dojo.xhrGet({
+        url: url,
+        handleAs: "json",
+        load: function(data,args){
+            alert("refreshRefSeq doesn't do anything yet");
+        },
+        error: function(data,args){
+            alert(data);
+        }
+    });
+};
+Browser.prototype.refreshProjectAssemblyMapping = function() {
+    var brwsr = this;
+    var url = "lib/project_assembly_mapping.json"
+    dojo.xhrGet({
+        url: url,
+        handleAs: "json",
+        load: function(data,args){
+            brwsr.project_assembly_mapping = data;
+            alert("refresh PAM doesn't do anything yet");
+        },
+        error: function(data,args){
+            alert(data);
+        }
+    });
+};
+
+Browser.prototype.refreshUserAssemblies = function(){
+    var brwsr = this;
+    args = {"user_name" : brwsr.user_name};
+    url = "bin/list_user_assemblies.py?"+dojo.objectToQuery(args);
+    this.refreshMultiSelect("user_assembly_list",url);
+    //TODO 
+    //name these better
+    this.refreshMultiSelect("user_assembly_list2",url);
 };
 
 Browser.prototype.createNewProjectDialog = function() {
@@ -1043,7 +1125,7 @@ Browser.prototype.createNewProjectDialog = function() {
 
     var project_assembly_p = document.createElement("p");
     project_assembly_p.id = "project_assembly_p";
-    project_assembly_p.innerHTML = "Assembly: <br />";
+    project_assembly_p.innerHTML = "Existing References: <br />";
     new_project_dialog_div.appendChild( project_assembly_p );
 
     var project_name = new dijit.form.ValidationTextBox(
@@ -1053,41 +1135,35 @@ Browser.prototype.createNewProjectDialog = function() {
                          regExp: '\\w+',
                          invalidMessage: 'Only alphanumeric characters' }
                      ).placeAt( project_name_p );
-    var data = [];
-    for (var assembly in this.refSeqs) {
-        var item = {};
-        item[assembly] = assembly;
-        data.push(item);
-    }
 
-    var data2 = [{"hg18":"hg18"}, {"hg19":"hg19"}];
-    var store = new dojox.data.KeyValueStore({
-        dataVar : data
+    var user_assembly_list = new dijit.form.MultiSelect({
+        name: "user_assembly_list",
+        id: "user_assembly_list"
     });
-    
-    var assembly_menu = new dijit.form.Select({
-        name: "assembly_menu",
-        id: "assembly_menu",
-        store: store
-    });
+    project_assembly_p.appendChild(user_assembly_list.domNode);
+    user_assembly_list.startup();
 
-    project_assembly_p.appendChild(assembly_menu.domNode);
-    assembly_menu.startup();
-    
     var new_project_button = new dijit.form.Button(
             {id: "new_project_button", 
              label: "Create Project",
              style: "align-text: right;",
              onClick: function(){ 
+                 var selecteds = user_assembly_list.getSelected();
+                 var assembly = "argwtf";
+                 if( selecteds.len > 0 ){
+                    assembly = selecteds[0].innerHTML;
+                 }
+
                 var args = {"user_name" : brwsr.user_name,
                             "project_name" : dijit.byId("project_name").value,
-                            "assembly": assembly_menu.value};
+                            "assembly": assembly};
                 
                 var url = "bin/create_new_project.py?" + dojo.objectToQuery(args);
                 var xhrArgs = {
                     url: url,
-                    //form: dojo.byId("new_project_form"),
+                    method: "post",
                     handleAs: "json",
+        //form: dojo.byId("new_project_form"),
                     load: function(data,ioargs) {
                         if( data["status"] == "ok" ){
                             brwsr.project_dialog.hide();
@@ -1097,11 +1173,10 @@ Browser.prototype.createNewProjectDialog = function() {
                             alert(data["message"]);
                         }
                     },
-                    error: function(error) {
-                       alert(error); 
+                    error: function(data) {
+                       alert(data); 
                     }
-                }
-                //Call the asynchronous xhrPost
+                };
                 var deferred = dojo.xhrPost(xhrArgs);
              }
 
@@ -1475,6 +1550,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
         prefix: "root_",
         hidden: false,
         onClick: function(e) {
+            brwsr.refreshUserAssemblies();
             brwsr.upload_donor_dialog.show();
             //alert("Email aheiberg@ucsd.edu");
         }

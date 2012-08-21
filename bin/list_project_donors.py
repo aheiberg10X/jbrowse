@@ -25,6 +25,8 @@ utils.printToServer( 'Content-type: text/json\n\n' )
 project_dir = "%s/data/tracks/%s%s/" \
         % (GlobalConfig.ROOT_DIR, GlobalConfig.PROJECT_PREFIX, project_name)
 
+#could alternatively look in 'genomes' direcotry, which symlinks to actual genome data files in DONOR_DIR
+
 donors = []
 for donor in os.listdir( project_dir ) :
     if donor.startswith( GlobalConfig.DONOR_PREFIX ) :

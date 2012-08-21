@@ -18,14 +18,33 @@ out_filename = "%s/index_donor_output.txt" % (GlobalConfig.DEBUG_DIR)
 sys.stdout = open( out_filename,'w')
 
 fields = cgi.FieldStorage()
+print fields
 user_name = fields.getvalue("user_name")
 donor_name = fields.getvalue("donor_name")
-#TODO: get user input
-assembly = "hg18"
+refinfo_file = fields["refinfo_file"]
+
+user_upload_root = "%s/%s" % (GlobalConfig.DONOR_DIR, user_name)
+
+if refinfo_file.filename :
+    splt = refinfo_file.filename.rsplit('.',1)
+    if len(splt) > 1 :
+        refinfo_name = splt[0]
+    else :
+        refinfo_name = refinfo_file.filename
+    os.mkdir( "%s/%s" % (user_upload_root, refinfo_name) )
+    fout = open("%s/%s/%s" % (user_upload_root, refinfo_name, refinfo_file.filename), 'w' )    
+    handle = refinfo_file.file
+    lines = handle.read()
+    fout.write( lines )
+    fout.close()
+    refinfo = refinfo_name
+else :
+    refinfo = fields.getvalue("refinfo")
+
 #project_names = fields.getvalue("project_names")
 #project_names = project_names.split(",")
 
-utils.printToServer( 'Content-type: text/json\n\n' )
+utils.printToServer( 'Content-type: text/html\n\n' )
 
 status, messages = "notcool",[]
 
@@ -33,8 +52,12 @@ upload_dir = "/home/uploader/%s/%s" % (user_name, donor_name)
 #if not os.path.exists( upload_dir ) :
     #messages.append( "No folder named: %s exists" % upload_dir )
 #else :
-root = "%s/%s/%s" % (GlobalConfig.DONOR_DIR, user_name, donor_name)
+root = "%s/%s/%s" %  (user_upload_root, refinfo, donor_name)
 #shutil.move( upload_dir, root )
+
+#TODO
+#index this using the ref file (maybe not all chroms are there, or are named differently)
+#also, run_biosql will need to be changed
 #run script to index
 for chrom in range(1,23) + ['X','Y'] :
     bam = "%s/chr%s.bam" % (root, str(chrom) )
@@ -46,7 +69,7 @@ for chrom in range(1,23) + ['X','Y'] :
             pop = Popen(["bash",\
                          "index_all.sh", \
                          "%s/chr" % root, \
-                         assembly], \
+                         refinfo], \
                     stdin=PIPE, stdout=PIPE, stderr=PIPE )
             (out, err) = pop.communicate()
             #messages.append( "%s : %s" % (str(chrom),out) )
@@ -54,34 +77,6 @@ for chrom in range(1,23) + ['X','Y'] :
             sys.stderr.write( err )
         else :
             messages.append( "%s already exists" % indx )
-
-
-        #if not os.path.exists( mates ) :
-            #print "%s popping locate_mates" % str(chrom)
-            #locate = "%s/indexing/locate_mates" % (GlobalConfig.BIOSQL_HOME)
-            #fmates = open(mates,'w')
-            #pop = Popen([locate, \
-                         #bam], \
-                        #stdin=PIPE, stdout=fmates, stderr=PIPE)
-##
-            #(out, err) = pop.communicate()
-            #fmates.close()
-            #sys.stderr.write( err )
-       # 
-        #if not os.path.exists( indx ) :
-            #print "%s popping index_mates" % str(chrom)
-            #index = "%s/indexing/index_mates" % (GlobalConfig.BIOSQL_HOME)
-            #pop = Popen([index, \
-                         #mates, \
-                         #bam, \
-                         #indx, \
-                         #"chr%s" % str(chrom), \
-                         ####], \
-                        #stdin=PIPE, stdout=PIPE, stderr=PIPE)
-##
-            #(out, err) = pop.communicate()
-            #sys.stdout.write( out )
-            #sys.stderr.write( err )
 
     else :
         messages.append( "chr%s.bam doesn't exist!" % str(chrom) )
@@ -91,4 +86,4 @@ for chrom in range(1,23) + ['X','Y'] :
 
 message = ";".join( messages )
 r = '{"status":"%s","message":"%s"}' % (status,message)
-utils.printToServer( r )
+utils.printPayload( r )
