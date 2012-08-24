@@ -2,7 +2,8 @@ map = {
        "main":"hg18", 
        "hg19":"hg19", 
        "sangwoo":"hg18", 
-       "dev":"hg18", 
+       "Yoruban_Trio_hg18":"hg18", 
+       "Yoruban_SubPopulation_hg19":"hg19",
        "anand":"hg19"
       }
 

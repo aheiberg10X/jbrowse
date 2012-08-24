@@ -38,11 +38,14 @@ else :
     os.mkdir( src_table_dir )
 
     #add the new project:assembly mapping to file
-    fmap = open("../lib/project_assembly_mapping.json")
-    lines = fmap.readlines()
-    lines[-1] = "%s : %s" % (project_name,assembly)
-    lines.append('}')
-    fmap.close()
+    pamfile = "../lib/project_assembly_mapping.json"
+    jpam = utils.fileToJson( pamfile )
+    jpam[project_name] = assembly
+    utils.jsonToFile( jpam, pamfile )
+    #lines = fmap.readlines()
+    #lines[-1] = "%s : %s" % (project_name,assembly)
+    #lines.append('}')
+    #fmap.close()
 
     #add permissions
     perm_file = "../lib/permissions.json"

@@ -160,8 +160,9 @@ for donor in donors :
                 splt = file.split('.')
                 head, ext = splt[0], splt[-1]
                 trackkey = "%s/%s/%s" % (project,query_name,head)
-                
+                something_to_vis = False               
                 if ext == "interval" or ext == "short" :
+                    something_to_vis = True
                     t3 = time.time()
                     print "starting interval2ncl for ", file
                     print "donor", donor, type(donor)
@@ -198,19 +199,19 @@ for donor in donors :
                                   'url' : "%s/trackData.json" % url, \
                                   'type' : "FeatureTrack"}
 
-                else :
-                    track_data = {'label': trackkey, \
-                                  'key': trackkey, \
-                                  'url': "nope", \
-                                  'type': 'DataTrack'}
-                    messages.append( "%s - Nothing to visualize. No interval or short files." % chrom )
+                    #don't want to add duplicate track_data for every chromosome
+                    if trackkey in trackkeys :
+                        pass
+                    else :
+                        track_datas.append( track_data )
+                        trackkeys[trackkey] = 1
 
-                #don't want to add duplicate track_data for every chromosome
-                if trackkey in trackkeys :
-                    pass
-                else :
-                    track_datas.append( track_data )
-                    trackkeys[trackkey] = 1
+            if not something_to_vis :
+                #track_data = {'label': trackkey, \
+                              #'key': trackkey, \
+                              #'url': "nope", \
+                              #'type': 'DataTrack'}
+                messages.append( "%s - Nothing to visualize. No interval or short files." % chrom )
 
 
         #product_folder doesn't exist or is empty

@@ -769,10 +769,12 @@ Browser.prototype.createUploadTableDialog = function(){
 
 Browser.prototype.createUploadDonorDialog = function(){
     var brwsr = this;
-
+ 
+  
     var upload_donor_dialog_div = document.createElement("div");
     upload_donor_dialog_div.id = "upload_donor_dialog_div";
-    upload_donor_dialog_div.innerHTML = "" +
+    upload_donor_dialog_div.innerHTML = "Email ckozanit@eng.ucsd.edu";
+  /*  upload_donor_dialog_div.innerHTML = "" +
         "<ul>" +
            "<li>Email aheiberg@cs.ucsd.edu for the password.</li>" +
            "<li>Do <b>scp -r [donor_folder] uploader@genomequery.ucsd.edu:/home/uploader/[your_user_name]/[donor_name]</b></li>" +
@@ -832,7 +834,7 @@ Browser.prototype.createUploadDonorDialog = function(){
                      }
                  });
              }
-         }).placeAt( upload_donor_dialog_div );
+         }).placeAt( upload_donor_dialog_div );*/
 
     this.upload_donor_dialog = new dijit.Dialog({
                     id: "upload_donor_dialog",
@@ -1352,6 +1354,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
     });
     pMenu.addChild( detach_donor_menuitem );
 
+    /*
     var attach_donor_menuitem = new dijit.MenuItem({
             label: "Attach Donors",
             prefix: "project_",
@@ -1365,8 +1368,9 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
                 brwsr.attach_donor_dialog._setStyleAttr('top:' + 200 + 'px !important;');
             }
         });
-    pMenu.addChild( attach_donor_menuitem );
+    pMenu.addChild( attach_donor_menuitem );*/
 
+    /* 
     var detach_donor_menuitem = new dijit.MenuItem({
             label: "Detach",
             prefix: "donor_",
@@ -1376,13 +1380,14 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
                 alert( "not implemented yet" );
             }
         });
-    pMenu.addChild( detach_donor_menuitem );
+    pMenu.addChild( detach_donor_menuitem );*/
 
     var share_menuitem = new dijit.MenuItem({
             label: "Share Project",
             prefix: "project_",
             hidden: false,
             onClick: function(e) {
+                alert("Coming soon...");
             }
         });
     pMenu.addChild( share_menuitem );
@@ -1492,6 +1497,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
     pMenu.addChild( new_project_menuitem );
 
 
+    /*
     //TODO: prompt to confirm data deletion
     var delete_project_menuitem = new dijit.MenuItem(
             {id: "delete_project_button", 
@@ -1521,10 +1527,10 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
                 }
                 //Call the asynchronous xhrPost
                 var deferred = dojo.xhrPost(xhrArgs);*/
-             }
+    //}
 
-       });
-    pMenu.addChild( delete_project_menuitem );
+//});
+//pMenu.addChild( delete_project_menuitem );
     
     pMenu.startup();
 

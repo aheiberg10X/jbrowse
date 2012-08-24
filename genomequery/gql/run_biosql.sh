@@ -42,6 +42,8 @@ do
     indx_prefx="$user_donor_dir/$donor/"
 
 	all_chr=`grep -v "^#" $chr_info | cut -f1`
+    echo chr_info $chr_info
+    echo $all_chr
 	for chr in $all_chr
 	do
 		#chr="chr"$c

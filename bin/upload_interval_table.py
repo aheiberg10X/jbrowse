@@ -18,6 +18,7 @@ out_filename = "%s/upload_output.txt" % (GlobalConfig.DEBUG_DIR)
 sys.stdout = open( out_filename,'w')
 
 fields = cgi.FieldStorage()
+print fields
 
 utils.printToServer( 'Content-type: text/html\n\n' )
 
