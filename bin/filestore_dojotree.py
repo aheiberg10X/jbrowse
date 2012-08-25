@@ -112,8 +112,7 @@ def makeItem( user_name, path ) :
             item['donor'] = parent_name
             #project/query_name
             item['key'] = "%s/%s" % (gparent_name,name)
-            tt = TRACK_TEMPLATE % \
-                    (gparent_name, parent_name, name, UNBOUND_CHROM)
+
             item['label'] = name
             item['type'] = 'FeatureTrack'
 
@@ -140,12 +139,17 @@ def makeItem( user_name, path ) :
             #pick the first available chrom folder and inspect its contents
             #use them to build up the list of bams, txts, sub_results, ....
             chrom_folder = ""
+            chrprefix = ""
             for listing in os.listdir( path ) :
                 folder = path + '/' + listing
-                if os.path.isdir( folder ) :
+                if os.path.isdir( folder ) : #and listing.startswith(CHROM_PREFIX) :
+                    if listing.startswith("chrom_chr") :
+                        chrprefix = "chr"
                     chrom_folder = folder
                     break
 
+            tt = TRACK_TEMPLATE % \
+                    (gparent_name, parent_name, name, "%s%s" % (chrprefix,UNBOUND_CHROM) )
             print "folder", chrom_folder
             if not chrom_folder :
                 pass

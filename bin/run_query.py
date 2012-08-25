@@ -8,7 +8,7 @@ import re
 import shutil
 import sys
 sys.path.append("../lib")
-from GlobalConfig import ROOT_DIR, DATA_DIR, TRACK_TEMPLATE, PROJECT_PREFIX, DEBUG_DIR, UPLOAD_DIR, UNBOUND_CHROM, DONOR_DIR
+from GlobalConfig import ROOT_DIR, DATA_DIR, TRACK_TEMPLATE, PROJECT_PREFIX, DEBUG_DIR, UPLOAD_DIR, UNBOUND_CHROM, DONOR_DIR, CHROM_PREFIX
 import utils
 import time
 import os.path
@@ -147,88 +147,103 @@ for donor in donors :
     moveIfExists( query_loc, \
                   "%s/%s.gq" % (query_folder, query_name) )
 
-    for chromnum in [str(x) for x in range(1,23) + ['X','Y']] :
+    #for chromnum in [str(x) for x in range(1,23) + ['X','Y']] :
+    for listing in os.listdir( query_folder ) :
+        print listing
+        if listing.startswith(CHROM_PREFIX ) :
+            chrom = utils.unprefix( listing )
+            print "chrom", chrom
+            if chrom.startswith('chr') :
+                chrprefix = "chr"
+                chromnum = chrom[3:]
+            else :
+                chrprefix = ""
+                chromnum = chrom
+            print "chromnum",chromnum
 
-        chrom = "chr%s" % str(chromnum)
-        product_folder = dest_template % (donor, chrom)
-        
-        
-        print "product_folder", product_folder
-        if os.path.exists( product_folder ) and len( os.listdir( product_folder ) ) > 0 :
-            print "exists!\n"
-            for file in os.listdir( product_folder ) :
-                splt = file.split('.')
-                head, ext = splt[0], splt[-1]
-                trackkey = "%s/%s/%s" % (project,query_name,head)
-                something_to_vis = False               
-                if ext == "interval" or ext == "short" :
-                    something_to_vis = True
-                    t3 = time.time()
-                    print "starting interval2ncl for ", file
-                    print "donor", donor, type(donor)
-                    print "chromnum", chromnum, type(chromnum)
-                    print "query_name", query_name, type(query_name)
-                    print "assembly ", assembly
-                    
-                    #make a new sub-folder for the file to be visualized
-                    fldr = product_folder + "/" + head
-                    os.mkdir( fldr )
-                    moveIfExists( product_folder+"/"+file, fldr )
-                    moveIfExists( product_folder+"/"+head+".hist", fldr )
-                    interval_file = fldr + "/" + file
+            #chrom = "chr%s" % str(chromnum)
+            product_folder = dest_template % (donor, chrom)
 
-                    pop = Popen(["perl", "interval2ncl.pl", \
-                                 trackkey, \
-                                 query_name, \
-                                 chromnum, \
-                                 interval_file, \
-                                 assembly], \
-                                stdout=PIPE, stderr=PIPE)
+            print "product_folder", product_folder
+            if os.path.exists( product_folder ) and len( os.listdir( product_folder ) ) > 0 :
+                print "exists!\n"
+                for file in os.listdir( product_folder ) :
+                    splt = file.split('.')
+                    head, ext = splt[0], splt[-1]
+                    trackkey = "%s/%s/%s" % (project,query_name,head)
+                    something_to_vis = False
+                    if ext == "interval" or ext == "short" :
+                        something_to_vis = True
+                        t3 = time.time()
+                        print "starting interval2ncl for ", file
+                        print "donor", donor, type(donor)
+                        print "chromnum", chromnum, type(chromnum)
+                        print "query_name", query_name, type(query_name)
+                        print "assembly ", assembly
 
-                    (out, err) = pop.communicate()
-                    messages.append(out)
+                        #make a new sub-foler for the file to be visualized
+                        fldr = product_folder + "/" + head
+                        os.mkdir( fldr )
+                        moveIfExists( product_folder+"/"+file, fldr )
+                        moveIfExists( product_folder+"/"+head+".hist", fldr )
+                        interval_file = fldr + "/" + file
 
-                    print "\n\nerr: ", err
-                    print "\n\nout: ", out
-                    t4 = time.time()
-                    print "done with interval2ncl, took: %f s" % (t4-t3)
+                        pop = Popen(["perl", "interval2ncl.pl", \
+                                     trackkey, \
+                                     query_name, \
+                                     chromnum, \
+                                     interval_file, \
+                                     assembly], \
+                                    stdout=PIPE, stderr=PIPE)
 
-                    url = TRACK_TEMPLATE % (project, donor, query_name, UNBOUND_CHROM ) + "/" + head
-                    track_data = {'label' : trackkey, \
-                                  'key' : trackkey, \
-                                  'url' : "%s/trackData.json" % url, \
-                                  'type' : "FeatureTrack"}
+                        (out, err) = pop.communicate()
+                        messages.append(out)
 
-                    #don't want to add duplicate track_data for every chromosome
-                    if trackkey in trackkeys :
-                        pass
-                    else :
-                        track_datas.append( track_data )
-                        trackkeys[trackkey] = 1
+                        print "\n\nerr: ", err
+                        print "\n\nout: ", out
+                        t4 = time.time()
+                        print "done with interval2ncl, took: %f s" % (t4-t3)
 
-            if not something_to_vis :
-                #track_data = {'label': trackkey, \
-                              #'key': trackkey, \
-                              #'url': "nope", \
-                              #'type': 'DataTrack'}
-                messages.append( "%s - Nothing to visualize. No interval or short files." % chrom )
+                        url = TRACK_TEMPLATE % \
+                                (project, donor, query_name, \
+                                 "%s%s" % (chrprefix,UNBOUND_CHROM ) ) \
+                                 + "/" + head
+                        
+                        track_data = {'label' : trackkey, \
+                                      'key' : trackkey, \
+                                      'url' : "%s/trackData.json" % url, \
+                                      'type' : "FeatureTrack"}
 
+                        #don't want to add duplicate track_data for every chromosome
+                        if trackkey in trackkeys :
+                            pass
+                        else :
+                            track_datas.append( track_data )
+                            trackkeys[trackkey] = 1
 
-        #product_folder doesn't exist or is empty
-        else :
-            trackkey = "%s/%s" % (project, query_name)
-            track_data = {'label': trackkey, \
-                          'key': trackkey, \
-                          'url': "nope", \
-                          'type': 'BlankTrack'}
-            messages.append( "%s - Nothing to visualize. The destination folder is empty." % chrom )
+                if not something_to_vis :
+                    #track_data = {'label': trackkey, \
+                                  #'key': trackkey, \
+                                  #'url': "nope", \
+                                  #'type': 'DataTrack'}
+                    messages.append( "%s - Nothing to visualize. No interval or short files." % chrom )
 
 
-        if trackkey in trackkeys :
-            pass
-        else :
-            track_datas.append( track_data )
-            trackkeys[trackkey] = 1
+            #product_folder doesn't exist or is empty
+            else :
+                trackkey = "%s/%s" % (project, query_name)
+                track_data = {'label': trackkey, \
+                              'key': trackkey, \
+                              'url': "nope", \
+                              'type': 'BlankTrack'}
+                messages.append( "%s - Nothing to visualize. The destination folder is empty." % chrom )
+
+
+            if trackkey in trackkeys :
+                pass
+            else :
+                track_datas.append( track_data )
+                trackkeys[trackkey] = 1
 
 #TODO 
 #add some sort of trackData here, want to be able to download results

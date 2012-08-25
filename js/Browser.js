@@ -1809,7 +1809,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
             //return trackListCreate(track, hint);
         } 
         else {
-            var replaceData = {refseq: brwsr.refSeq.name, 
+            var replaceData = {refseq: brwsr.refSeq.name.substring(3), 
                                assembly: brwsr.assembly};
             var url = track.url.replace(/\{([^}]+)\}/g, function(match, group) {return replaceData[group];});
             var klass = eval(track.type);
