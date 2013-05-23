@@ -1,9 +1,1 @@
-map = {
-       "main":"hg18", 
-       "hg19":"hg19", 
-       "sangwoo":"hg18", 
-       "Yoruban_Trio_hg18":"hg18", 
-       "Yoruban_SubPopulation_hg19":"hg19",
-       "anand":"hg19"
-      }
-
+{"Yoruban_SubPopulation_hg19": "hg19", "sangwoo": "hg18", "Yoruban_Trio_hg18": "hg18", "andrew_test2": "hg18", "anand": "hg19", "test": "hg19", "hg19": "hg19", "main": "hg18"}

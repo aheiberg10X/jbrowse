@@ -40,6 +40,7 @@ else :
     #add the new project:assembly mapping to file
     pamfile = "../lib/project_assembly_mapping.json"
     jpam = utils.fileToJson( pamfile )
+    print jpam
     jpam[project_name] = assembly
     utils.jsonToFile( jpam, pamfile )
     #lines = fmap.readlines()

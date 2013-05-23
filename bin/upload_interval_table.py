@@ -23,11 +23,15 @@ print fields
 utils.printToServer( 'Content-type: text/html\n\n' )
 
 #TODO: ownership and permission for inteval files
-rename = re.compile(r'#?table\s+(\w+)\s+(.*);', re.I)
+rename_regexp = r'#?table\s+(\w+)\s+(.*);'
+rename = re.compile(rename_regexp, re.I)
 def validateSchema( first_line, filename ) :
 
     #name check
     m = rename.match( first_line )
+    if( not m ) :
+        return (False, "First line in the file should match: '%s'" % rename_regexp)
+
     linename = m.group(1)
     name_check = linename.lower() == filename.lower()
 

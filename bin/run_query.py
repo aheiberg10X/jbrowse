@@ -51,7 +51,7 @@ else :
     fields = cgi.FieldStorage()
     query_name = fields.getvalue("query_name")
     query = fields.getvalue("query_box")
-    #donor = fields.getvalue("query_donor")
+    #donor_name = fields.getvalue("query_donor")
     #chromnum = fields.getvalue("query_chrom")
     project = fields.getvalue("query_project");
     assembly = fields.getvalue("assembly");
@@ -122,7 +122,7 @@ if "syntax error" in first_line :
 else :
     donors = []
     for line in fbyte.readlines() :
-        if "genome" in line :
+        if "__EXPLICITGENOME__" in line :
             donors.append( line.split()[1] )
 
 fbyte.close()
@@ -170,7 +170,7 @@ for donor in donors :
                 for file in os.listdir( product_folder ) :
                     splt = file.split('.')
                     head, ext = splt[0], splt[-1]
-                    trackkey = "%s/%s/%s" % (project,query_name,head)
+                    trackkey = "%s/%s/%s/%s" % (project,donor,query_name,head)
                     something_to_vis = False
                     if ext == "interval" or ext == "short" :
                         something_to_vis = True

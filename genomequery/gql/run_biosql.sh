@@ -32,7 +32,8 @@ then
 	rm $low_level_calls
 fi
 
-genomes=`grep genome bytecode.txt | cut -d " " -f2` #get the individual genomes
+#genomes=`grep genome bytecode.txt | cut -d " " -f2` #get the individual genomes
+genomes=`grep __EXPLICITGENOME__ bytecode.txt | cut -d " " -f2` #get the individual genomes
 for gen in $DONOR_DIR/$genomes
 do 
 	echo gen $gen

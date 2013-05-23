@@ -32,7 +32,7 @@ for donor in os.listdir( project_dir ) :
             donors.append( donor[len(GlobalConfig.DONOR_PREFIX):] )
 
 if len(donors) == 0 :
-    status = "empty"
+    status = "ok"
     message = "\"No genomes associated with this project\""
 else :
     status = "ok"

@@ -205,6 +205,8 @@ var Browser = function(params) {
             //var trackListDiv = brwsr.createTrackList(brwsr.container, params);
             brwsr.createProjectExplorer( containerWidget, params );
             brwsr.createQueryDialog();
+            //brwsr.createAddDonorDialog();
+
             brwsr.createUploadTableDialog();
             brwsr.createNewProjectDialog();
             brwsr.createUploadDonorDialog();
@@ -383,6 +385,7 @@ Browser.prototype.runQuery = function(brwsr){
         var args = {"query_box" : query_box,
                     "query_name" : query_name,
                     "query_project" : project,
+                    //"donor_name" : donor_name, 
                     "assembly" : tree.selectedItem.assembly,
                     "user_name" : brwsr.user_name};
         var url = "bin/run_query.py?" + dojo.objectToQuery(args);
@@ -553,6 +556,68 @@ Browser.prototype.createQueryDialog = function(){
                     title: "New Query",
                    // style: "width: 70%;",
                     content: query_dialog_div
+                });
+    
+};
+
+Browser.prototype.createAddDonorDialog = function(){
+    var brwsr = this; 
+    
+    /*var table_dialog_existing_title = document.createElement("p");*/
+    /*table_dialog_existing_title.innerHTML = "<b>Existing Tables</b>";*/
+    /*table_dialog_existing_cp.domNode.appendChild( table_dialog_existing_title );*/
+
+       //the div to make bordercontainer out of
+    var adddonor_dialog_div = document.createElement("div");
+    adddonor_dialog_div.id = "adddonor_dialog_div";
+
+    var adddialog_name_p = document.createElement("p");
+    adddialog_name_p.innerHTML = "Donor Name <br />";
+    adddonor_dialog_div.appendChild( adddialog_name_p );
+
+    var adddialog_donor_list = document.createElement("p");
+    adddialog_donor_list.id = "adddialog_donor_list";
+    adddialog_name_p.appendChild( adddialog_donor_list); 
+
+    var adddialog_button_p = document.createElement("p");
+    adddonor_dialog_div.appendChild( adddialog_button_p );
+
+   var adddialog_bc = new dijit.layout.BorderContainer(
+            {id:"adddialog_bc",
+             title: "Query",
+             design: 'headline',
+             style: "width: 900px; height: 600px; background-color: #FFFFFF;"
+            }, adddonor_dialog_div) ;
+   
+    var adddialog_name_cp = new dijit.layout.ContentPane(
+            {id: "adddialog_name_cp",
+             style: "height: 90%; background-color: #efefef",
+             region: "center", 
+             layoutPriority: "1"}, adddialog_name_p);
+    
+    var adddialog_button_cp = new dijit.layout.ContentPane(
+            {id: "adddialog_button_cp",
+             style: "height: 10%; background-color: #ffffff; border: none;",
+             region: "bottom", 
+             layoutPriority: "1"}, adddialog_button_p);
+    
+    var table_dialog_existing_list = 
+        dijit.form.MultiSelect( 
+                {id: "adddialog_donor_list"}, 
+                adddialog_donor_list ); 
+
+    var adddialog_button = new dijit.form.Button(
+            {id: "adddialog_button", 
+             label: "Run Query",
+             style: "align-text: left; margin-top: 30px;",
+             onClick: function(){ brwsr.runQuery( brwsr );}
+            }).placeAt( adddialog_button_p) ;
+
+    this.adddonor_dialog = new dijit.Dialog({
+                    id : "adddonor_dialog",
+                    title: "New Query",
+                   // style: "width: 70%;",
+                    content: adddonor_dialog_div
                 });
     
 };
@@ -844,7 +909,6 @@ Browser.prototype.createUploadDonorDialog = function(){
 
 };
 
-
 Browser.prototype.createAttachDonorDialog = function(){
     var brwsr = this;
     
@@ -881,7 +945,7 @@ Browser.prototype.createAttachDonorDialog = function(){
 
                  var args = {"donor_names" : donor_names,
                              "project_name" : project_name};
-                 var url = "bin/attach_donor.py?" + dojo.objectToQuery(args);
+                 var url = "bin/attach_donors.py?" + dojo.objectToQuery(args);
                  dojo.xhrPost({
                      url: url,
                      handleAs: "json",
@@ -1006,19 +1070,15 @@ Browser.prototype.refreshIntervalTables = function(){
             if( data['status'] == "empty" ){
             }
             else if( data["status"] == 'ok' ){
-                if( data["message"].length == 0 ){
-                    dojo.create('option',
-                                {innerHTML: message,
-                                 value: message},
-                                 widget.domNode);
+                if( data["message"].length > 0 ){
+                    data["message"].forEach( 
+                        function( message, idx, arr ){
+                            dojo.create('option', 
+                                        {innerHTML: message, 
+                                             value: message} , 
+                                         widget.domNode)
+                        });
                 }
-                data["message"].forEach( 
-                    function( message, idx, arr ){
-                        dojo.create('option', 
-                                    {innerHTML: message, 
-                                         value: message} , 
-                                     widget.domNode)
-                    });
             }
             else{
                 alert( data["message"] );
@@ -1233,19 +1293,16 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
             //interpolate i into each file to be donwloaded*/
             for( var j=0; j < filenames.length; j++ ){
                 var filename = filenames[j];
+                var replaceData = {refseq: brwsr.refSeq.name.substring(3)};
                 var url = "data/" + 
-                           sprintf( sprintf( globals.TRACK_TEMPLATE, 
-                                             globals.PROJECT_PREFIX,
-                                             globals.DONOR_PREFIX, 
-                                             globals.QUERY_PREFIX,
-                                             globals.CHROM_PREFIX ),
-                                    project_name, 
-                                    donor_name, 
-                                    query_name,
-                                    brwsr.refSeq.name ) + 
-                           //"/" + query_name + "_" + chromnum + 
-                                 //"_" + i + "." + ext;
-                           "/" + filename;
+                          selected.template.replace(
+                              /\{([^}]+)\}/g, 
+                              function(match, group) {
+                                  return replaceData[group];
+                              }
+                          ) +
+                         "/" + filename; 
+
                 window.open(url);
                 //setTimeout(function() {},1250);
                 //window.location = url;
@@ -1286,22 +1343,18 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
             hidden: false,
             onClick: function(e) {
                 var item = brwsr.tree.clickedItem;
-                var host_chrom = brwsr.refSeq.name;
-                var chromnum = host_chrom.substring(3);
                 var query_name = item.name;
-                var donor_name = item.donor;
-                var project_name = item.project;
+                
+                var replaceData = {refseq: brwsr.refSeq.name.substring(3)};
                 var url = "data/" + 
-                           sprintf( sprintf( globals.TRACK_TEMPLATE, 
-                                             globals.PROJECT_PREFIX,
-                                             globals.DONOR_PREFIX, 
-                                             globals.QUERY_PREFIX,
-                                             globals.CHROM_PREFIX ), 
-                                    project_name,
-                                    donor_name, 
-                                    query_name,
-                                    brwsr.refSeq.name ) +  
-                           "/../" + query_name + ".gq";
+                          item.template.replace(
+                              /\{([^}]+)\}/g, 
+                              function(match, group) {
+                                  return replaceData[group];
+                              }
+                          ) +
+                         "/../" + query_name + ".gq"; 
+
                  dojo.xhrGet({
                     url: url,
                     handleAs: "text",
@@ -1350,11 +1403,22 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
         });
     pMenu.addChild( query_menuitem );
 
+    /*
+    var adddonor_menuitem = new dijit.MenuItem({
+            label: "Add Donor",
+            prefix: "project_",
+            hidden: false,
+            onClick: function(e) {
+                brwsr.adddonor_dialog.show();
+            }
+        });
+    pMenu.addChild( adddonor_menuitem );
+    */
+
     var detach_donor_menuitem = new dijit.MenuItem({
     });
     pMenu.addChild( detach_donor_menuitem );
 
-    /*
     var attach_donor_menuitem = new dijit.MenuItem({
             label: "Attach Donors",
             prefix: "project_",
@@ -1368,7 +1432,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
                 brwsr.attach_donor_dialog._setStyleAttr('top:' + 200 + 'px !important;');
             }
         });
-    pMenu.addChild( attach_donor_menuitem );*/
+    pMenu.addChild( attach_donor_menuitem );
 
     /* 
     var detach_donor_menuitem = new dijit.MenuItem({
@@ -1809,6 +1873,7 @@ Browser.prototype.createProjectExplorer = function( parent, params) {
             //return trackListCreate(track, hint);
         } 
         else {
+            //chop off the 'chr' prefix
             var replaceData = {refseq: brwsr.refSeq.name.substring(3), 
                                assembly: brwsr.assembly};
             var url = track.url.replace(/\{([^}]+)\}/g, function(match, group) {return replaceData[group];});

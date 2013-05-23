@@ -111,7 +111,7 @@ def makeItem( user_name, path ) :
             item['project'] = gparent_name
             item['donor'] = parent_name
             #project/query_name
-            item['key'] = "%s/%s" % (gparent_name,name)
+            item['key'] = "%s/%s/%s" % (gparent_name,parent_name,name)
 
             item['label'] = name
             item['type'] = 'FeatureTrack'
@@ -150,6 +150,7 @@ def makeItem( user_name, path ) :
 
             tt = TRACK_TEMPLATE % \
                     (gparent_name, parent_name, name, "%s%s" % (chrprefix,UNBOUND_CHROM) )
+            item["template"] = tt
             print "folder", chrom_folder
             if not chrom_folder :
                 pass

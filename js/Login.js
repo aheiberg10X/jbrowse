@@ -124,8 +124,18 @@ var Login = function(containerID){
             login.login_dialog.show();
         }
         else{
-           login.user_name = user_name_cookie;
-           login.passwd = passwd_cookie;
+            login.user_name = user_name_cookie;
+            login.passwd = passwd_cookie;
+
+            ///Hacked in 
+            //login.user_name = "dev";
+            //login.passwd = "yreuqemoneg";
+            //dojo.cookie("user_name",
+            //login.user_name,
+            //{expires: 3});
+            //dojo.cookie("passwd",login.passwd,{expires:3});
+            /////Hacked in
+
            var def = login.validate( login.user_name, login.passwd, false );
            def.then(
                function(valid){
